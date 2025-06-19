@@ -1,0 +1,211 @@
+const express = require('express');
+const fs = require('fs');
+const path = require('path');
+const readline = require('readline');
+const app = express();
+const PORT = 3123;
+
+// Middleware para servir arquivos estáticos
+app.use(express.static('public'));
+app.use(express.json());
+app.use('/local-pages', express.static(__dirname + '/local-pages'));
+
+const CONFIGS_PATH = "configs";
+const CONFIG_PATH = path.join(__dirname, CONFIGS_PATH, 'layout.config-{view-name}.json');
+const VIEWS_PATH = path.join(__dirname, CONFIGS_PATH, 'views.json');
+const CARDS_PATH = path.join(__dirname, "cards", 'cards-examples.json');
+
+// Endpoint para obter o layout atual
+app.get('/api/layout/:viewName', (req, res) => {
+    const viewName = req.params.viewName;
+    const viewPath = CONFIG_PATH.replace('{view-name}', viewName);
+
+    // Verifica se o arquivo existe
+    if (!fs.existsSync(viewPath)) {
+        return res.json([]); // Retorna um array vazio se o arquivo não existir
+    }
+
+    fs.readFile(viewPath, 'utf8', (err, data) => {
+        if (err) {
+            console.error(`Erro ao ler o layout da visão "${viewName}":`, err);
+            return res.status(500).json({ error: `Erro ao ler configuração para visão "${viewName}"` });
+        }
+
+        try {
+            res.json(JSON.parse(data));
+        } catch (parseError) {
+            console.error(`Erro ao parsear o layout da visão "${viewName}":`, parseError);
+            return res.status(500).json({ error: `Erro ao interpretar configuração para visão "${viewName}"` });
+        }
+    });
+});
+
+// Endpoint para salvar o layout atualizado
+app.post('/api/layout/:viewName', (req, res) => {
+    const layoutData = req.body;
+    const viewName = req.params.viewName;
+    const viewPath = CONFIG_PATH.replace('{view-name}', viewName);
+
+    fs.writeFile(viewPath, JSON.stringify(layoutData, null, 2), 'utf8', (err) => {
+        if (err) {
+            console.error('Erro ao salvar configuração:', err);
+            return res.status(500).send('Erro ao salvar configuração');
+        }
+        res.sendStatus(200);
+    });
+});
+
+// Rota da API para retornar as visões
+app.get('/api/views', (req, res) => {  
+  fs.readFile(VIEWS_PATH, 'utf8', (err, data) => {
+    if (err) {
+        console.error('Erro ao ler o arquivo views.json:', err);
+        return res.status(500).json({ error: 'Erro ao ler visões' });
+    }
+    res.json(JSON.parse(data));
+  });
+});
+
+// Rota da API para retornar os cards
+app.get('/api/cards', (req, res) => {  
+  fs.readFile(CARDS_PATH, 'utf8', (err, data) => {
+    if (err) {
+        console.error('Erro ao ler o arquivo json de cards:', err);
+        return res.status(500).json({ error: 'Erro ao ler os cards' });
+    }
+    res.json(JSON.parse(data));
+  });
+});
+
+app.get('/api/partial-csv', async (req, res) => {
+  const filePath = sanitizePath(`public/${req.query.file}`);
+  const limit = parseInt(req.query.limit) || 10;
+
+  if (!fs.existsSync(filePath)) {
+    return res.status(404).json({ error: 'Arquivo não encontrado' });
+  }
+
+  try {
+    const lines = [];
+    const stream = fs.createReadStream(filePath, { encoding: 'utf8' });
+    const rl = readline.createInterface({ input: stream });
+
+    let headerLine = null;
+
+    for await (const line of rl) {
+      if (!headerLine) {
+        headerLine = line;
+        continue;
+      }
+
+      lines.push(line);
+      if (lines.length > limit) {
+        lines.shift(); // remove o mais antigo
+      }
+    }
+
+    const finalCsv = [headerLine, ...lines].join('\n');
+
+    
+
+    try {
+      //Temporariamente ignora alterações nesse arquivo
+      watcher.unwatch(filePath);
+
+      //Regrava arquivo para manter apenas os X últimos itens
+      await fs.promises.writeFile(filePath, finalCsv, 'utf8');
+
+    } catch (err) {
+      console.error(err);
+    } finally {
+      //Reativa o watcher após pequeno atraso para evitar reação ao próprio evento
+      setTimeout(() => watcher.add(filePath), 100);
+    }
+    
+    res.setHeader('Content-Type', 'text/csv');
+    res.send(finalCsv);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Erro ao processar CSV' });
+  }
+});
+
+//Rota dinâmica para qualquer visão
+app.get('/:view?', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+app.listen(PORT, () => {
+    console.log(`Servidor rodando em http://localhost:${PORT}`);
+});
+
+/**************************************************************** 
+ * WEB SOCKET
+*/
+
+const WebSocket = require('ws');
+const chokidar = require('chokidar');
+const suppressedFiles = new Set();
+
+const wss = new WebSocket.Server({ port: 8080 });
+console.log('WebSocket server escutando na porta 8080');
+
+const watchedFiles = new Map(); // filePath -> cardId[]
+const clients = new Set(); // conexões WebSocket
+
+function sanitizePath(path) {
+  let sanitizedPath = path.replace(/\/\//g, '/');   // Remove barras duplas
+  sanitizedPath = sanitizedPath.replace(/\//g, '\\');   // Converte para contra-barras
+
+  return sanitizedPath;
+}
+
+wss.on('connection', (ws) => {
+  console.log('Cliente WebSocket conectado.');
+  clients.add(ws);
+
+  ws.on('close', () => {
+    clients.delete(ws);
+    console.log('Cliente desconectado.');
+  });
+
+  ws.on('message', (msg) => {
+    try {
+      const { type, filePath, cardId } = JSON.parse(msg);
+      if (type === 'watch') {
+        const sanitizedPath = sanitizePath(filePath);
+
+        if (!watchedFiles.has(sanitizedPath)) {
+          watchedFiles.set(sanitizedPath, new Set());
+          watcher.add(sanitizedPath);
+        }
+        watchedFiles.get(sanitizedPath).add(cardId);
+        console.log(`Cliente solicitou monitorar: ${sanitizedPath} -> ${cardId}`);
+      }
+    } catch (e) {
+      console.error('Erro ao interpretar mensagem do cliente:', e.message);
+    }
+  });
+});
+
+const watcher = chokidar.watch([], { ignoreInitial: true });
+
+watcher.on('change', (changedPath) => {
+  console.log(`Alteração detectada em: ${changedPath}`);
+
+  const cardIds = watchedFiles.get(changedPath);
+  if (cardIds) {
+    cardIds.forEach(cardId => {
+      broadcast({ type: 'update', cardId });
+    });
+  }
+});
+
+function broadcast(messageObj) {
+  const message = JSON.stringify(messageObj);
+  clients.forEach(ws => {
+    if (ws.readyState === WebSocket.OPEN) {
+      ws.send(message);
+    }
+  });
+}

@@ -1,0 +1,26 @@
+.frame-wrapper {
+  margin-top: 18px;
+  margin-right: 0px;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+  border-radius: 6px;
+  
+  position: relative;
+  overflow: hidden;
+}
+
+.frame-wrapper iframe {
+  width: 100%;
+  height: 95%;
+  border: none;
+  border-radius: 10px;
+  display: block;
+  transform-origin: top left;
+}
+
+.card-zoom-controls .zoom-percentage {
+  font-size: 0.75rem;
+  color: #ccc;
+  margin-left: 8px;
+}

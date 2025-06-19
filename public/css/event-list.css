@@ -1,0 +1,55 @@
+.event-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  font-size: 0.9rem;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  height: 100%;
+  overflow-y: auto;
+}
+
+.event-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  padding: 4px 6px;
+  border-bottom: 1px solid #f17777;
+  background-color: transparent;
+}
+
+.event-item:nth-child(even) {
+  background-color: #353548;
+}
+
+.event-date {
+  flex: 0 0 130px;
+  color: #555;
+  font-family: monospace;
+  font-size: small;
+}
+
+.event-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #ffffffaf;
+}
+
+.event-link {
+  flex: 0 0 auto;
+  color: #ffffffaf;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: small;
+}
+
+.event-link:hover {
+  text-decoration: underline;
+}
+
+.event-list, .event-item {
+  user-select: text;
+  -webkit-user-drag: none;
+}

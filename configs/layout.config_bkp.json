@@ -1,0 +1,82 @@
+[
+  {
+    "id": "logins-por-hora",
+    "order": 0,
+    "title": "Eventos de Firewall 2",
+    "columns": 2,
+    "rows": 2,
+    "zoom": 1
+  },
+  {
+    "id": "detecoes-ameaças",
+    "order": 1,
+    "title": "Ameaças Detectadas",
+    "columns": 1,
+    "rows": 1,
+    "zoom": 1
+  },
+  {
+    "id": "trafego-mbps",
+    "order": 2,
+    "title": "Tráfego de Rede",
+    "columns": 1,
+    "rows": 1,
+    "zoom": 1
+  },
+  {
+    "id": "eventos-recentes",
+    "order": 3,
+    "title": "Eventos Recentes",
+    "columns": 2,
+    "rows": 1,
+    "zoom": 1
+  },
+  {
+    "id": "ssllabs-sample",
+    "order": 4,
+    "title": "SSLabs Scan",
+    "columns": 4,
+    "rows": 2,
+    "zoom": 0.85
+  },
+  {
+    "id": "estado-maquinas",
+    "order": 5,
+    "title": "Estado das Máquinas",
+    "columns": 1,
+    "rows": 1,
+    "zoom": 1
+  },
+  {
+    "id": "uso-recursos",
+    "order": 6,
+    "title": "Uso de Recursos",
+    "columns": 1,
+    "rows": 1,
+    "zoom": 1
+  },
+  {
+    "id": "pendencias-ti",
+    "order": 7,
+    "title": "Pendências de TI",
+    "columns": 1,
+    "rows": 1,
+    "zoom": 1
+  },
+  {
+    "id": "falhas-diarias",
+    "order": 8,
+    "title": "Falhas Diárias",
+    "columns": 1,
+    "rows": 1,
+    "zoom": 1
+  },
+  {
+    "id": "logs-sistema",
+    "order": 9,
+    "title": "Logs do Sistema",
+    "columns": 1,
+    "rows": 1,
+    "zoom": 1
+  }
+]

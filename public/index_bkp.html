@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Interativo</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>      
+  </head>
+
+  <body>
+
+    <!-- 🔥 Barra superior de controle -->
+    <div class="top-bar">
+      <div class="left">
+        <label for="view-selector">Visão:</label>
+        <select id="view-selector">
+        </select>
+      </div>
+      <div class="right">
+        <button id="btn-new-card">➕ Adicionar Card</button>        
+      </div>
+    </div>
+
+    <!-- 🔥 Grid dos cards -->
+    <div class="grid">  </div>
+
+    <!-- 🔥 Modal de seleção de cards -->
+    <div id="add-card-modal" class="modal">
+      <div class="modal-content">
+        <h2>Selecionar Cards</h2>
+        <div id="card-selection-list"></div>
+        <div class="add-card-actions">
+          <button class="btn-close" id="close-add-card-modal">Fechar</button>
+          <button class="btn-apply" id="confirm-add-cards">Confirmar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 🔥 Modal de configurações -->
+    <div id="settings-modal" class="modal">
+        <div class="modal-content">
+          <h2>Configurações</h2>
+          <div class="modal-row">
+            <label for="card-title">Título:</label>
+            <input type="text" id="card-title">
+          </div>
+      
+          <div class="modal-row">
+            <label for="columns">Colunas:</label>
+            <input type="number" id="columns" min="1">
+          </div>
+      
+          <div class="modal-row">
+            <label for="rows">Linhas:</label>
+            <input type="number" id="rows" min="1">
+          </div> 
+          <div class="modal-actions">
+          <div class="left-actions">
+            <button class="btn-remove" id="btn-remove">Remover Card</button>
+          </div>
+          <div class="right-actions">
+            <button class="btn-close" id="btn-close">Fechar</button>
+            <button class="btn-apply" id="btn-apply">Aplicar</button>
+          </div>
+        </div>
+        </div>
+    </div>
+
+    <!-- 🔥 Scripts -->
+    <script src="js/consts.js"></script>
+    <script src="js/cardsettings.js"></script>
+    <script src="js/carddrag.js"></script>
+    <script src="js/resizecards.js"></script>
+    <script src="js/addcards.js"></script>
+    <script src="js/script.js"></script>
+  </body>
+</html>

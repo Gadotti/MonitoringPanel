@@ -1,0 +1,66 @@
+[
+  {
+    "id": "logins-por-hora",
+    "order": 0,
+    "title": "Logins por Hora",
+    "columns": 1,
+    "rows": 1,
+    "zoom": 1
+  },
+  {
+    "id": "estado-maquinas",
+    "order": 1,
+    "title": "Estado das Máquinas",
+    "columns": 1,
+    "rows": 1,
+    "zoom": 1
+  },
+  {
+    "id": "trafego-mbps",
+    "order": 2,
+    "title": "Tráfego de Rede (Mbps)",
+    "columns": 1,
+    "rows": 1,
+    "zoom": 1
+  },
+  {
+    "id": "detecoes-ameaças",
+    "order": 3,
+    "title": "Detecções de Ameaças",
+    "columns": 1,
+    "rows": 1,
+    "zoom": 1
+  },
+  {
+    "id": "uso-recursos",
+    "order": 4,
+    "title": "Uso de Recursos",
+    "columns": 4,
+    "rows": 1,
+    "zoom": 1
+  },
+  {
+    "id": "pendencias-ti",
+    "order": 5,
+    "title": "Pendências de TI",
+    "columns": 1,
+    "rows": 1,
+    "zoom": 1
+  },
+  {
+    "id": "falhas-diarias",
+    "order": 6,
+    "title": "Falhas Diárias",
+    "columns": 1,
+    "rows": 1,
+    "zoom": 1
+  },
+  {
+    "id": "eventos-recentes",
+    "order": 7,
+    "title": "Eventos Recentes",
+    "columns": 2,
+    "rows": 1,
+    "zoom": 1
+  }
+]

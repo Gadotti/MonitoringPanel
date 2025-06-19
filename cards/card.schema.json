@@ -1,0 +1,44 @@
+{
+  "id": "exemplo-card",
+  "title": "Título do Card",
+  "description": "Breve descrição sobre o conteúdo deste card.",
+  "cardType": "chart | list | frame",
+  "view": "infra",
+
+  "chart": {
+    "type": "bar",
+    "data": {
+      "labels": ["Exemplo A", "Exemplo B"],
+      "datasets": [{
+        "label": "Demo",
+        "data": [10, 20],
+        "backgroundColor": ["#3498db", "#2ecc71"]
+      }]
+    },
+    "options": {
+      "responsive": true,
+      "maintainAspectRatio": false
+    }
+  },
+
+  "list": {
+    "items": [
+      {
+        "timestamp": "2025-06-06T12:30:00Z",
+        "event": "Login de administrador",
+        "detailsUrl": "/eventos/123"
+      }
+    ],
+    "orderBy": "timestamp",
+    "order": "desc",
+    "limit": 5,
+    "sourceItems": "/local-events/recent-events.csv" 
+  },
+
+  "frame": {
+    "url": "https://exemplo.com"
+  },
+
+  "tags": ["exemplo", "modelo"],
+  "editable": false
+}

@@ -1,0 +1,6 @@
+[
+  { "value": "default", "title": "Padrão" },
+  { "value": "infra", "title": "Infraestrutura" },
+  { "value": "seguranca", "title": "Segurança" },
+  { "value": "financeiro", "title": "Financeiro" }
+]

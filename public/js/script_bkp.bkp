@@ -1,0 +1,495 @@
+async function loadViewOptions() {
+  const res = await fetch('api/views');
+  const views = await res.json();
+  
+  viewSelector.innerHTML = '';
+
+  views.forEach(view => {
+    const option = document.createElement('option');
+    option.value = view.value;
+    option.textContent = view.title;
+    viewSelector.appendChild(option);
+  });
+
+  if (!views.some(v => v.value === selectedView)) {
+    selectedView = 'default';
+  }
+
+  updateViewSelector();
+}
+
+function getCurrentView() {  
+  return viewSelector?.value || 'default';
+}
+
+viewSelector.addEventListener('change', (e) => {
+  const view = e.target.value; 
+  selectedView = view
+  loadLayoutConfig();
+  adjustCardColSpans();
+});
+
+function updateViewSelector() {  
+  if (viewSelector && selectedView) {
+    viewSelector.value = selectedView;
+  }
+
+  updateUrlForView();
+}
+
+function updateUrlForView() {
+  const newUrl = `/${selectedView}`;
+  window.history.replaceState({}, '', newUrl);
+}
+
+function initializeCardEvents(card) {  
+  const contentArea = card.querySelector('.card-content');
+
+  if (contentArea) {
+    contentArea.addEventListener('mouseover', e => {
+      if (e.target.closest('.event-list')) {
+        card.setAttribute('draggable', false);
+      }
+    });
+
+    contentArea.addEventListener('mouseout', e => {
+      if (e.target.closest('.event-list')) {
+        card.setAttribute('draggable', true);
+      }
+    });
+  }
+
+  const frameWrapper = card.querySelector('.frame-wrapper');
+  if (frameWrapper) {
+    frameWrapper.addEventListener('mouseover', e => {
+      if (e.target.closest('.card-content')) {
+        card.setAttribute('draggable', false);
+      }
+    });
+
+    frameWrapper.addEventListener('mouseout', e => {
+      if (e.target.closest('.card-content')) {
+        card.setAttribute('draggable', true);
+      }
+    });
+
+    const zoomOutButton = card.querySelector('.zoom-out-button');
+    const zoomInButton = card.querySelector('.zoom-in-button');
+
+    if (zoomOutButton && zoomInButton) {
+      zoomOutButton.addEventListener('click', () => adjustFrameZoom(card, -0.01));
+      zoomInButton.addEventListener('click', () => adjustFrameZoom(card, +0.01));
+    }
+  }
+
+  card.setAttribute('draggable', true);
+
+  card.addEventListener('dragstart', (e) => {
+    draggedItem = card;
+    setTimeout(() => {
+      card.classList.add('dragging');
+    }, 0);
+  });
+
+  card.addEventListener('dragend', () => {
+    draggedItem = null;
+    document.querySelectorAll('.card').forEach(c => c.classList.remove('dragging'));
+    saveLayoutConfig();
+  });
+
+  const rightHandle = card.querySelector('.resize-handle.right');
+  const bottomHandle = card.querySelector('.resize-handle.bottom');
+  const cornerHandle = card.querySelector('.resize-handle.corner');
+
+  if (rightHandle) rightHandle.addEventListener('mousedown', e => startResize(e, card, 'right'));
+  if (bottomHandle) bottomHandle.addEventListener('mousedown', e => startResize(e, card, 'bottom'));
+  if (cornerHandle) cornerHandle.addEventListener('mousedown', e => startResize(e, card, 'corner'));
+
+  const settingsButton = card.querySelector('.settings-button');
+  if (settingsButton) {
+    settingsButton.addEventListener('click', (e) => {
+      openSettings(card);
+    });
+  }
+
+  const expandButton = card.querySelector('.expand-button');
+  if (expandButton) {
+    expandButton.addEventListener('click', (e) => {
+      e.stopPropagation();
+
+      const frameWrapper = card.querySelector('.frame-wrapper');
+      if (frameWrapper && frameWrapper.dataset.url) {
+        // Tipo frame → abre URL em nova aba
+        window.open(frameWrapper.dataset.url, '_blank');
+      } else {
+        if (card.dataset.view && card.dataset.view !== '') {
+          window.open(card.dataset.view, '_blank');
+        }        
+      }
+    });
+  }
+}
+
+function getLayoutConfig() {
+  const cards = Array.from(grid.querySelectorAll('.card'));
+  return cards.map((card, index) => {
+    const title = card.querySelector('.card-header .title').innerText;
+    const gridColumn = card.style.gridColumn.match(/span (\d+)/);
+    const gridRow = card.style.gridRow.match(/span (\d+)/);
+
+    const zoomWrapper = card.querySelector('.frame-wrapper');
+    const zoomFrame = zoomWrapper?.querySelector('iframe');
+    const zoomScale = zoomFrame?.dataset.scale || 1;
+
+    return {
+      id: card.dataset.id || `card${index + 1}`,
+      order: index,
+      title: title,
+      columns: gridColumn ? parseInt(gridColumn[1]) : 1,
+      rows: gridRow ? parseInt(gridRow[1]) : 1,
+      zoom: parseFloat(zoomScale)
+    };
+  });
+}
+
+function saveLayoutConfig() {
+  const currentView = getCurrentView();
+  const config = getLayoutConfig();
+
+  fetch(`/api/layout/${currentView}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(config)
+  })
+  .then(response => {
+    if (!response.ok) throw new Error('Erro ao salvar layout');
+  })
+  .catch(err => console.error(err));
+}
+
+async function fetchLayout(view = 'default') {
+  try {
+    const response = await fetch(`/api/layout/${view}`);
+    if (!response.ok) throw new Error('Erro ao obter layout');
+    const data = await response.json();
+    return data || [];
+  } catch (err) {
+    console.error('Erro ao obter layout:', err);
+    return [];
+  }
+}
+
+function loadLayoutConfig() {
+  localStorage.setItem('lastView', selectedView);
+  updateUrlForView();
+
+  let cardElementsList = [];
+
+  Promise.all([fetchLayout(selectedView), fetchAvailableCards()])
+    .then(([layout, allCards]) => {
+      const grid = document.querySelector('.grid');
+      grid.innerHTML = ''; // Limpa a grid antes de carregar
+
+      const cardPromises = layout.map(async layoutItem => {
+        const fullCardConfig = allCards.find(card => card.id === layoutItem.id);
+        if (!fullCardConfig) return;
+
+        const mergedConfig = {
+          ...fullCardConfig,
+          ...layoutItem // sobrescreve colunas, linhas e título
+        };
+
+        if (mergedConfig.list?.sourceItems) {
+          const data = await fetchSourceItems(mergedConfig.list.sourceItems);        
+          mergedConfig.list.sourceItems = data;
+        }
+
+        const cardElement = createCardElement(mergedConfig);
+        adjustFrameZoom(cardElement, 0, false);
+        cardElementsList.push(cardElement);
+        initializeCardEvents(cardElement);
+      });
+
+      return Promise.all(cardPromises);
+    })
+  .then(() => {
+    // Só executa isso depois que todos os cards foram adicionados corretamente
+    renderCardsInOrder(grid, cardElementsList);
+    loadCardsContent();
+    adjustCardColSpans();
+  })
+  .catch(err => {
+    console.error('Erro ao carregar configuração do layout:', err);
+  });
+}
+
+function renderCardsInOrder(container, cardElementsList) {
+  // Ordena os elementos com base no dataset.order (convertido para número)
+  const sortedCards = cardElementsList.sort((a, b) => {
+    return Number(a.dataset.order) - Number(b.dataset.order);
+  });
+
+  // Faz o appendChild de cada card ordenadamente no grid
+  sortedCards.forEach(card => {
+    container.appendChild(card);
+  });
+}
+
+function createCardElement(config) {
+  const card = document.createElement('div');
+  const columns = config.columns ?? 1;
+  const rows = config.rows ?? 1;
+  const view = config.view ?? '';
+  
+  card.className = 'card';
+  card.id = config.id;
+  card.dataset.id = config.id;
+  card.dataset.colSpan = columns;
+  card.dataset.rowSpan = rows;
+  card.dataset.view = view;
+  card.dataset.order = config.order;
+  card.style.gridColumn = `span ${columns}`;
+  card.style.gridRow = `span ${rows}`;
+  card.setAttribute('draggable', true);
+  
+  let contentHtml = '';
+  let contentZoomControls = '';
+
+  if (config.cardType === 'chart') {
+    contentHtml = `<canvas id="chart-${config.id}"></canvas>`;
+  } else if (config.cardType === 'list' && config.list) {
+    const list = config.list;
+    let sourceItems = list.sourceItems ?? [];
+
+    const sortedItems = [...sourceItems].sort((a, b) => {
+      const valA = new Date(a[list.orderBy]);
+      const valB = new Date(b[list.orderBy]);
+      return list.order === 'asc' ? valA - valB : valB - valA;
+    });
+
+    const limitedItems = sortedItems.slice(0, list.limit);
+
+    contentHtml = `
+      <ul class="event-list">
+        ${limitedItems.map(item => {
+          const pad = n => n.toString().padStart(2, '0');
+          const date = new Date(item.timestamp);
+          const formattedDate = `${pad(date.getDate())}-${pad(date.getMonth() + 1)}-${date.getFullYear()} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+
+          return `
+            <li class="event-item">
+              <span class="event-date">${formattedDate}</span>
+              <span class="event-name">${item.event}</span>
+              <a href="${item.detailsUrl}" target="_blank" class="event-link">Ver detalhes</a>
+            </li>
+          `;
+        }).join('')}
+      </ul>
+    `;
+  } else if (config.cardType === 'frame' && config.frame?.url) {
+    contentZoomControls = `
+      <div class="card-zoom-controls">
+        <button class="zoom-in-button" title="Aumentar zoom">➕</button>
+        <button class="zoom-out-button" title="Reduzir zoom">➖</button>
+        <span class="zoom-percentage">(100%)</span>
+      </div>
+    `
+    contentHtml = `
+      <div class="frame-wrapper" data-url="${config.frame.url}" title="Clique para abrir em nova aba">
+        <iframe src="${config.frame.url}" frameborder="0"></iframe>
+      </div>`;
+  }
+
+  card.innerHTML = `          
+    <div class="card-header">
+      ${contentZoomControls}
+      <span class="title">${config.title}</span>
+      <div class="card-controls">
+        <button class="expand-button" title="Expandir">⛶</button>
+        <button class="settings-button" title="Opções">⚙️</button>
+      </div>
+    </div>
+    <div class="card-content">
+      ${contentHtml}
+    </div>
+    <div class="resize-handle right"></div>
+    <div class="resize-handle bottom"></div>
+    <div class="resize-handle corner"></div>          
+  `;
+
+  const iframe = getFrameFromCardElement(card);
+  if (iframe) {
+    const zoomScale = config.zoom ?? 1;
+    iframe.dataset.scale = zoomScale;
+  }
+
+  return card;
+}
+
+async function fetchSourceItems(sourceItems) {
+  if (!sourceItems) return;
+
+  try {
+    const response = await fetch(sourceItems);
+    if (!response.ok) {
+      throw new Error(`Erro ao buscar o arquivo: ${response.status}`);
+    }
+
+    const contentType = response.headers.get('content-type');
+
+    if (contentType.includes('application/json')) {
+      // Retorna JSON diretamente
+      return await response.json();
+    } else if (contentType.includes('text/csv')) {
+      // Converte CSV para JSON
+      const csvText = await response.text();
+      return csvToJson(csvText);
+    } else {
+      throw new Error('Formato de arquivo não suportado. Use CSV ou JSON.');
+    }
+  } catch (error) {
+    console.error('Erro ao carregar eventos:', error);
+    return [];
+  }
+}
+
+// Função auxiliar para converter CSV → JSON
+function csvToJson(csv) {
+  const lines = csv.trim().split('\n');
+  const headers = lines[0].split(',').map(h => h.replace(/^"|"$/g, '').trim());
+
+  return lines.slice(1).map(line => {
+    const values = line.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g)?.map(v =>
+      v.replace(/^"|"$/g, '').trim()
+    );
+
+    return headers.reduce((obj, header, idx) => {
+      obj[header] = values[idx] || '';
+      return obj;
+    }, {});
+  });
+}
+
+function getFrameFromCardElement(cardElement) {
+  const wrapper = cardElement.querySelector('.frame-wrapper');
+  const iframe = wrapper?.querySelector('iframe');
+
+  return iframe;
+}
+
+function adjustFrameZoom(cardElement, delta = 0, saveLayout = true) {  
+  const iframe = getFrameFromCardElement(cardElement);
+  if (!iframe) return;
+
+  const zoomDisplay = cardElement.querySelector('.zoom-percentage');
+
+  // Pega o scale atual (se existir)
+  let currentScale = parseFloat(iframe.dataset.scale) || 1.0;
+  currentScale = Math.max(0.1, Math.min(2, currentScale + delta));
+
+  // Aplica transform
+  iframe.style.transform = `scale(${currentScale})`;
+  // iframe.style.transformOrigin = 'top left';
+  iframe.style.width = `${100 / currentScale}%`;
+  iframe.style.height = `${95 / currentScale}%`;
+
+  // Salva o novo scale no dataset para rastrear
+  iframe.dataset.scale = currentScale.toFixed(2);
+
+  // Atualiza o texto da porcentagem
+  if (zoomDisplay) {
+    zoomDisplay.textContent = `(${Math.round(currentScale * 100)}%)`;
+  }
+
+  if (saveLayout) {
+    saveLayoutConfig();
+  }
+}
+
+function createChart(ctx, config) {
+  return new Chart(ctx, config);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const path = window.location.pathname.replace(/^\/+|\/+$/g, ''); // remove barras
+
+  if (path) {
+    selectedView = path;
+  } else {
+    selectedView = localStorage.getItem('lastView') || 'default';
+  } 
+  
+  loadViewOptions().then(() => {
+    loadLayoutConfig();     
+  });  
+});
+
+async function fetchAvailableCards() {
+  try {
+    const response = await fetch('/api/cards');
+    if (!response.ok) throw new Error('Erro ao carregar os cards');
+
+    const cards = await response.json();
+    return cards;
+  } catch (err) {
+    console.error('Erro ao carregar os cards:', err);
+    return [];
+  }
+}
+
+function loadCardsContent() {  
+  const charts = [];
+  fetchAvailableCards().then(cards => {
+    cards.forEach((card, index) => {
+      const chartElementId = `chart-${card.id}`;
+      const chartElement = document.getElementById(chartElementId);
+
+      if (chartElement && 
+        card.cardType === 'chart' && 
+        card.chart &&
+        !Chart.getChart(chartElement)) {
+        const chart = createChart(chartElement, {
+          type: card.chart.type,
+          data: card.chart.data,
+          options: card.chart.options || { responsive: true, maintainAspectRatio: false }
+        });
+
+        charts.push(chart);
+      }
+    });
+  });  
+}
+
+function adjustCardColSpans() {
+  const grid = document.querySelector('.grid');
+  const cards = grid.querySelectorAll('.card');
+
+  const gridWidth = grid.clientWidth;
+  const colMinWidth = 280; // mesmo valor do minmax(280px, 1fr)
+  const maxCols = Math.floor(gridWidth / colMinWidth);
+
+  cards.forEach(card => {
+    const requestedCols = parseInt(card.dataset.colSpan || '1', 10);
+
+    // Use o menor entre o solicitado e o possível
+    const spanCols = Math.min(requestedCols, maxCols);
+
+    card.style.gridColumn = `span ${spanCols}`;
+  });
+}
+
+window.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    if (modal.classList.contains('show')) {
+      closeSettings();
+    }
+    
+    if (addCardModal.classList.contains('show')) {
+      closeAddCard();
+    }
+  }
+});
+
+window.addEventListener('resize', adjustCardColSpans);

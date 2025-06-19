@@ -1,0 +1,58 @@
+[
+  {
+    "id": "ransom-look",
+    "order": 0,
+    "title": "Breaches - All",
+    "columns": 2,
+    "rows": 1,
+    "zoom": 1
+  },
+  {
+    "id": "ransom-look-tag",
+    "order": 1,
+    "title": "Breaches - Tags",
+    "columns": 2,
+    "rows": 1,
+    "zoom": 1
+  },
+  {
+    "id": "falhas-diarias",
+    "order": 2,
+    "title": "Falhas Diárias",
+    "columns": 1,
+    "rows": 1,
+    "zoom": 1
+  },
+  {
+    "id": "ssllabs-sample",
+    "order": 3,
+    "title": "SSLabs Scan",
+    "columns": 6,
+    "rows": 2,
+    "zoom": 0.62
+  },
+  {
+    "id": "trafego-mbps",
+    "order": 4,
+    "title": "Tráfego de Rede",
+    "columns": 1,
+    "rows": 1,
+    "zoom": 1
+  },
+  {
+    "id": "detecoes-ameaças",
+    "order": 5,
+    "title": "Ameaças Detectadas",
+    "columns": 1,
+    "rows": 1,
+    "zoom": 1
+  },
+  {
+    "id": "pendencias-ti",
+    "order": 6,
+    "title": "Pendências de TI",
+    "columns": 1,
+    "rows": 1,
+    "zoom": 1
+  }
+]

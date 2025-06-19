@@ -1,0 +1,78 @@
+/* @keyframes highlightBorder {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 200, 0, 0.8);
+    border-color: rgba(255, 200, 0, 0.8);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 200, 0, 0);
+    border-color: transparent;
+  }
+}
+
+.card.highlight {
+  animation: highlightBorder 1.2s ease-out;
+  border: 2px solid rgba(255, 200, 0, 0.8);
+} */
+
+/* ******************************************* */
+
+@keyframes pulseBorder {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7);
+    border-color: rgba(255, 255, 255, 0.9);
+  }
+  50% {    
+    box-shadow: 0 0 10px 6px rgba(255, 255, 255, 0.3);
+    border-color: rgba(255, 255, 255, 0.5);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(0, 255, 204, 0);
+    border-color: transparent;
+  }
+}
+
+.card.highlight {
+  animation: pulseBorder 1.0s ease-out;
+}
+
+/* ******************************************* */
+
+/* @keyframes flashFade {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 230, 100, 0.9);
+    border-color: rgba(255, 230, 100, 1);
+  }
+  30% {
+    box-shadow: 0 0 12px 6px rgba(255, 230, 100, 0.6);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 230, 100, 0);
+    border-color: transparent;
+  }
+}
+
+.card.highlight {
+  animation: flashFade 1s ease-out;
+  border: 2px solid rgba(255, 230, 100, 0.8);
+} */
+
+/* ******************************************* */
+
+/* @keyframes alertGlow {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 77, 77, 0.8);
+    border-color: rgba(255, 77, 77, 0.9);
+  }
+  50% {
+    box-shadow: 0 0 15px 5px rgba(255, 77, 77, 0.5);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 77, 77, 0);
+    border-color: transparent;
+  }
+}
+
+.card.highlight {
+  animation: alertGlow 1.6s ease-out;
+  border: 2px solid rgba(255, 77, 77, 0.8);
+} */
