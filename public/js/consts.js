@@ -14,6 +14,7 @@ const cardSelectionList = document.getElementById('card-selection-list');
 
 const btnRemove = document.getElementById('btn-remove');
 
+const chartInstances = {};
 let availableCards = [];
 let currentCard = null;
 let resizing = null;

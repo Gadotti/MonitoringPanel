@@ -1,7 +1,8 @@
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
-const readline = require('readline');
+const readline = require('readline')
+const { spawn } = require('child_process');;
 const app = express();
 const PORT = 3123;
 
@@ -78,7 +79,7 @@ app.get('/api/cards', (req, res) => {
 });
 
 app.get('/api/partial-csv', async (req, res) => {
-  const filePath = sanitizePath(`public/${req.query.file}`);
+  const filePath = sanitizePath(req.query.file);
   const limit = parseInt(req.query.limit) || 10;
 
   if (!fs.existsSync(filePath)) {
@@ -103,24 +104,24 @@ app.get('/api/partial-csv', async (req, res) => {
         lines.shift(); // remove o mais antigo
       }
     }
-
+    
     const finalCsv = [headerLine, ...lines].join('\n');
 
-    
+    // Essa aplicação não pode ser a responsável pela manutenção do tamanho do arquivo, 
+    //   isso deve ser delegado para a aplicação que gera e atualizar o arquivo
+      // try {
+      //   //Temporariamente ignora alterações nesse arquivo
+      //   watcher.unwatch(filePath);
 
-    try {
-      //Temporariamente ignora alterações nesse arquivo
-      watcher.unwatch(filePath);
+      //   //Regrava arquivo para manter apenas os X últimos itens
+      //   await fs.promises.writeFile(filePath, finalCsv, 'utf8');
 
-      //Regrava arquivo para manter apenas os X últimos itens
-      await fs.promises.writeFile(filePath, finalCsv, 'utf8');
-
-    } catch (err) {
-      console.error(err);
-    } finally {
-      //Reativa o watcher após pequeno atraso para evitar reação ao próprio evento
-      setTimeout(() => watcher.add(filePath), 100);
-    }
+      // } catch (err) {
+      //   console.error(err);
+      // } finally {
+      //   //Reativa o watcher após pequeno atraso para evitar reação ao próprio evento
+      //   setTimeout(() => watcher.add(filePath), 100);
+      // }
     
     res.setHeader('Content-Type', 'text/csv');
     res.send(finalCsv);
@@ -128,6 +129,46 @@ app.get('/api/partial-csv', async (req, res) => {
     console.error(err);
     res.status(500).json({ error: 'Erro ao processar CSV' });
   }
+});
+
+app.post('/api/chart-data', (req, res) => {
+  const { scriptPath, sourceFile,  args } = req.body;
+
+  if (!scriptPath) {
+    return res.status(400).json({ error: 'Parâmetro "scriptPath" é obrigatório.' });
+  }
+
+  const resolvedScriptPath = path.resolve(__dirname, scriptPath);
+  const resolverSourceFile = path.resolve(__dirname, sourceFile);
+  console.log(resolvedScriptPath);
+  console.log(resolverSourceFile);
+
+  // Garante que os args sejam sempre um array
+  // const finalArgs = Array.isArray(args) ? args : [];
+
+  const python = spawn('python', [resolvedScriptPath, resolverSourceFile]);
+
+  let stdout = '';
+  let stderr = '';
+
+  python.stdout.on('data', data => {
+    stdout += data.toString();
+  });
+
+  python.stderr.on('data', data => {
+    stderr += data.toString();
+  });
+
+  python.on('close', code => {
+    if (code === 0) {
+      res.json({ output: stdout.trim() });
+    } else {
+      res.status(500).json({
+        error: `Erro ao executar o script (code ${code})`,
+        stderr: stderr.trim()
+      });
+    }
+  });
 });
 
 //Rota dinâmica para qualquer visão
@@ -153,9 +194,10 @@ console.log('WebSocket server escutando na porta 8080');
 const watchedFiles = new Map(); // filePath -> cardId[]
 const clients = new Set(); // conexões WebSocket
 
-function sanitizePath(path) {
-  let sanitizedPath = path.replace(/\/\//g, '/');   // Remove barras duplas
+function sanitizePath(partialPath) {
+  let sanitizedPath = partialPath.replace(/\/\//g, '/');   // Remove barras duplas
   sanitizedPath = sanitizedPath.replace(/\//g, '\\');   // Converte para contra-barras
+  sanitizedPath = path.resolve(__dirname, sanitizedPath);
 
   return sanitizedPath;
 }
@@ -174,6 +216,9 @@ wss.on('connection', (ws) => {
       const { type, filePath, cardId } = JSON.parse(msg);
       if (type === 'watch') {
         const sanitizedPath = sanitizePath(filePath);
+
+        // const resolvedScriptPath = path.resolve(__dirname, sanitizedPath);
+        // console.log(resolvedScriptPath);
 
         if (!watchedFiles.has(sanitizedPath)) {
           watchedFiles.set(sanitizedPath, new Set());

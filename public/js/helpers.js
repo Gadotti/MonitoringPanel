@@ -4,7 +4,13 @@ function csvToJson(csv) {
   const headers = parseCSVLine(lines[0]);
 
   return lines.slice(1).map(line => {
-    const values = line.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g)?.map(v =>
+    //Regex para , como separador
+    // const values = line.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g)?.map(v =>
+    //   v.replace(/^"|"$/g, '').trim()
+    // );
+
+    //Regex para ; como separador
+    const values = line.match(/(".*?"|[^";\s]+)(?=\s*;|\s*$)/g)?.map(v =>
       v.replace(/^"|"$/g, '').trim()
     );
 
@@ -16,7 +22,12 @@ function csvToJson(csv) {
 }
 
 function parseCSVLine(line) {
-  const regex = /(?:\"([^\"]*(?:\"\"[^\"]*)*)\")|([^,]+)/g;
+  //Regex para , como separador
+  //const regex = /(?:\"([^\"]*(?:\"\"[^\"]*)*)\")|([^,]+)/g;
+
+  //Regex para ; como separador
+  const regex = /(?:\"([^\"]*(?:\"\"[^\"]*)*)\")|([^;]+)/g;
+  
   const result = [];
   let match;
   while ((match = regex.exec(line)) !== null) {

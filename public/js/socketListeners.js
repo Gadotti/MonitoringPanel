@@ -9,7 +9,7 @@ function signSocketListeners() {
         cards.forEach(card => {   
             if (!card.dataset.externalSourceMonitor || card.dataset.externalSourceMonitor === 'undefined') return
 
-            const filePath = `public/${card.dataset.externalSourceMonitor}`;
+            const filePath = card.dataset.externalSourceMonitor;
             const cardId = card.dataset.id;
             socket.send(JSON.stringify({
                 type: 'watch',

@@ -8,18 +8,18 @@
     "zoom": 1
   },
   {
-    "id": "ransom-look-tag",
+    "id": "ransom-look-chart",
     "order": 1,
-    "title": "Breaches - Tags",
+    "title": "Chart: Breaches - All",
     "columns": 2,
     "rows": 1,
     "zoom": 1
   },
   {
-    "id": "falhas-diarias",
+    "id": "ransom-look-tag",
     "order": 2,
-    "title": "Falhas Diárias",
-    "columns": 1,
+    "title": "Breaches - Tags",
+    "columns": 2,
     "rows": 1,
     "zoom": 1
   },
@@ -27,7 +27,7 @@
     "id": "ssllabs-sample",
     "order": 3,
     "title": "SSLabs Scan",
-    "columns": 6,
+    "columns": 4,
     "rows": 2,
     "zoom": 0.62
   },

@@ -162,6 +162,7 @@ function createCardElement(config) {
 
   switch (config.cardType) {
     case 'chart':
+      externalSourceMonitor = config.sourceItems;
       contentHtml = `<canvas id="chart-${config.id}"></canvas>`;
       break;
     case 'list':
@@ -169,7 +170,7 @@ function createCardElement(config) {
       contentHtml = '<ul class="event-list"></ul>';
       break;
     case 'frame':
-      externalSourceMonitor = config.frame.url;
+      externalSourceMonitor = config.sourceItems;
       contentZoomControls = `
         <div class="card-zoom-controls">
           <button class="zoom-in-button" title="Aumentar zoom">➕</button>
@@ -299,19 +300,58 @@ function reloadCardFrame(card) {
   iframeElement.src = card.frame.url;
 }
 
-function loadCardContentChart(card) {
+async function loadCardContentChart(card) {
   const chartElementId = `chart-${card.id}`;
   const chartElement = document.getElementById(chartElementId);
 
   if (chartElement && 
     card.cardType === 'chart' && 
-    card.chart &&
-    !Chart.getChart(chartElement)) {
-      createChart(chartElement, {
+    card.chart) {
+
+      // Se houver script para gerar os dados
+      if (card.chart.data.datasets[0]?.script) {     
+        
+        try {
+          const response = await fetch('/api/chart-data', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              scriptPath: card.chart.data.datasets[0].script,
+              sourceFile: card.sourceItems
+              // args: ['', '', '']
+            })
+          });
+
+          if (!response.ok) throw new Error(`Erro ao processar dados para gráfico: ${response.status}`);
+
+          const responseData = await response.json();
+          const outputJson = JSON.parse(responseData.output);
+          card.chart.data.datasets[0].data = outputJson.data;
+
+          if (responseData.data.labels) {
+            card.chart.data.labels = outputJson.labels;
+          }
+
+        } catch (error) {
+          console.error('Erro ao carregar eventos:', error);
+        }
+      }
+
+      // Destrói gráfico anterior se existir
+      if (chartInstances[card.id]) {
+        chartInstances[card.id].destroy();
+        delete chartInstances[card.id];
+      }
+
+      // Cria novo gráfico
+      const newChart = new Chart(chartElement, {
         type: card.chart.type,
         data: card.chart.data,
         options: card.chart.options || { responsive: true, maintainAspectRatio: false }
       });
+
+      // Salva a instância
+      chartInstances[card.id] = newChart;
   }
 }
 
@@ -375,7 +415,6 @@ async function fetchSourceItems(sourceItems, limit) {
 }
 
 function adjustCardColSpans() {
-  //const grid = document.querySelector('.grid');
   const cards = grid.querySelectorAll('.card');
 
   const gridWidth = grid.clientWidth;

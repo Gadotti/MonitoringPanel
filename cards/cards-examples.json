@@ -117,7 +117,7 @@
       "options": { "responsive": true, "maintainAspectRatio": false }
     },
     "tags": ["ti", "pendências", "barras"]
-  },
+  },  
   {
     "id": "falhas-diarias",
     "title": "Falhas Diárias",
@@ -167,15 +167,16 @@
       "orderBy": "timestamp",
       "order": "desc",
       "limit": 15,
-      "sourceItems": "/local-events/recent-events.csv"      
+      "sourceItems": "public/local-events/recent-events.csv"      
     }
   },
   {
     "id": "ssllabs-sample",
     "title": "SSLabs Scan",
     "cardType": "frame",
+    "sourceItems": "public/local-pages/sslabs-scan/index.html",
     "frame": {
-      "url": "/local-pages/sslabs-scan/index.html"
+      "url": "/local-pages/sslabs-scan/"
     }
   },
   {
@@ -186,7 +187,7 @@
       "orderBy": "timestamp",
       "order": "desc",
       "limit": 50,
-      "sourceItems": "/local-events/ransomlook/breachs_posts.csv"      
+      "sourceItems": "public/local-events/ransomlook/breachs_posts.csv"      
     }
   },
   {
@@ -197,7 +198,31 @@
       "orderBy": "timestamp",
       "order": "desc",
       "limit": 50,
-      "sourceItems": "/local-events/ransomlook/breachs_posts_tags.csv"      
+      "sourceItems": "public/local-events/ransomlook/breachs_posts_tags.csv"      
     }
+  },
+  {
+    "id": "ransom-look-chart",
+    "title": "Chart: Breaches - All",
+    "description": "Quantidade de vazamentos por dia da semana",
+    "cardType": "chart",
+    "sourceItems": "public/local-events/ransomlook/breachs_posts.csv",
+    "chart": {
+      "type": "line",
+      "data": {
+        "labels": ["Seg", "Ter", "Qua", "Qui", "Sex", "Sab", "Dom"],
+        "datasets": [{
+          "label": "Breaches",
+          "data": [],
+          "script": "charts_scripts/count_events_by_weekday.py",
+          "borderColor": "#e74c3c",
+          "backgroundColor": "rgba(231,76,60,0.3)",
+          "tension": 0.4,
+          "fill": true
+        }]
+      },
+      "options": { "responsive": true, "maintainAspectRatio": false }
+    },
+    "tags": ["vazamentos", "monitoramento", "ransomlook"]
   }
 ]
