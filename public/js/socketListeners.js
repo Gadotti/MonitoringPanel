@@ -27,7 +27,6 @@ function signSocketListeners() {
             
             if (card) {
                 loadCardsContent(card.id);                
-                animateCardHighlight(card.id);
             }
         }
     });

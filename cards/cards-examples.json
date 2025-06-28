@@ -224,5 +224,12 @@
       "options": { "responsive": true, "maintainAspectRatio": false }
     },
     "tags": ["vazamentos", "monitoramento", "ransomlook"]
+  },
+  {
+    "id": "uptime-results",
+    "title": "Site e Serviços",
+    "cardType": "uptime",
+    "sourceItems": "public/local-data-uptimes/uptime-results.json",
+    "animateHighlight": false
   }
 ]

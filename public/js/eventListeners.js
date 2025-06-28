@@ -73,6 +73,21 @@ function initializeCardEvents(card) {
     }
   }
 
+  const uptimeWrapper = card.querySelector('.uptime-card');
+  if (uptimeWrapper) {
+    uptimeWrapper.addEventListener('mouseover', e => {
+      if (e.target.closest('.card-content')) {
+        card.setAttribute('draggable', false);
+      }
+    });
+
+    uptimeWrapper.addEventListener('mouseout', e => {
+      if (e.target.closest('.card-content')) {
+        card.setAttribute('draggable', true);
+      }
+    });
+  }
+
   card.setAttribute('draggable', true);
 
   card.addEventListener('dragstart', (e) => {
