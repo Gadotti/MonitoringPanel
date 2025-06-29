@@ -1,18 +1,23 @@
 {
-  "lastChecked": "2025-06-28T12:42:00Z",
-  "servicesStatus":
-    [
-      {
-        "url": "https://api.meusite.com",
-        "status": "online", 
-        "lastStatusOnline": "2025-06-28T12:42:00Z",
-        "lastStatusOffine": "2025-06-01T05:15:00Z"
-      },
-      {
-        "url": "https://google.com",
-        "status": "offline", 
-        "lastStatusOnline": "2025-06-28T12:42:00Z",
-        "lastStatusOffine": "2025-06-01T05:15:00Z"
-      }
-    ]
+  "lastChecked": "2025-06-29T21:48:30.669816+00:00",
+  "servicesStatus": [
+    {
+      "url": "https://api.meusite.com",
+      "status": "online",
+      "lastStatusOnline": "2025-06-29T21:48:30.669816+00:00",
+      "lastStatusOffline": ""
+    },
+    {
+      "url": "https://google.com",
+      "status": "online",
+      "lastStatusOnline": "2025-06-29T21:48:30.669816+00:00",
+      "lastStatusOffline": ""
+    },
+    {
+      "url": "https://não-existe-!@#123.com",
+      "status": "offline",
+      "lastStatusOnline": "",
+      "lastStatusOffline": "2025-06-29T21:48:30.669816+00:00"
+    }
+  ]
 }

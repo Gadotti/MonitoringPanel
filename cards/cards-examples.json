@@ -214,7 +214,7 @@
         "datasets": [{
           "label": "Breaches",
           "data": [],
-          "script": "charts_scripts/count_events_by_weekday.py",
+          "script": "scripts/count_events_by_weekday.py",
           "borderColor": "#e74c3c",
           "backgroundColor": "rgba(231,76,60,0.3)",
           "tension": 0.4,
