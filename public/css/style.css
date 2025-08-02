@@ -2,342 +2,352 @@
    Reset e corpo
 ------------------------------- */
 body {
-    margin: 0;
-    background-color: #1e1e2f;
-    font-family: Arial, sans-serif;
-    color: white;
-  }
+  margin: 0;
+  background-color: #1e1e2f;
+  font-family: Arial, sans-serif;
+  color: white;
+}
 
-  .top-bar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background-color: #2c3e50;
-    color: white;
-    padding: 10px 20px;
-    border-bottom: 2px solid #34495e;
-  }
+.iframe-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 9999;
+  background: transparent;
+  cursor: nwse-resize;
+}
 
-  .top-bar .left {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
+.top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #2c3e50;
+  color: white;
+  padding: 10px 20px;
+  border-bottom: 2px solid #34495e;
+}
 
-  .top-bar .right button {
-    background-color: #3498db;
-    color: white;
-    border: none;
-    padding: 8px 12px;
-    border-radius: 4px;
-    cursor: pointer;
-  }
+.top-bar .left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
 
-  .top-bar .right button:hover {
-    background-color: #2980b9;
-  }
+.top-bar .right button {
+  background-color: #3498db;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+}
 
-  .top-bar select {
-    padding: 4px 8px;
-    border-radius: 4px;
-    border: none;
-  }
+.top-bar .right button:hover {
+  background-color: #2980b9;
+}
+
+.top-bar select {
+  padding: 4px 8px;
+  border-radius: 4px;
+  border: none;
+}
+
+/* ------------------------------
+    Grid
+------------------------------- */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-auto-rows: 200px;
+  gap: 15px;
+  padding: 15px;
+}
+
+/* ------------------------------
+    Cards
+------------------------------- */
+.card {
+  background-color: #2b2b3d;
+  border-radius: 10px;
+  padding: 10px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+  user-select: none;
+  min-height: 0;
+}
+
+.card-header {
+  position: relative;
+  padding: 6px 10px;
+  background-color: #2b2b3d;
+  color: #fff;
+  font-weight: bold;
+  font-size: 1rem;
+  border-bottom: 1px solid #444;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.card-header .title {
+  flex: 1;
+  text-align: center;
+  cursor: grab;
+}
+
+.card-header .title:active {
+  cursor: grabbing;
+} 
+
+.card-controls,
+.card-zoom-controls  {
+  position: absolute;
+  top: 34%;
+  transform: translateY(-50%);
+  display: flex;
+}
+
+.card-controls {
+  right: 10px;
+}
+
+.card-zoom-controls {
+  left: 10px;
+}
+
+.card-controls button,
+.card-zoom-controls button {
+  background: none;
+  border: none;
+  color: #aaa;    
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.card-controls button:hover,
+.card-zoom-controls button:hover {
+  color: #fff;
+}
+
+.settings-button,
+.expand-button {
+  font-size: 0.8rem;
+}
+
+.expand-button {
+  display: none;
+}
+
+.zoom-out-button,
+.zoom-in-button {
+  font-size: 0.6rem;
+}
+
+/* ******************************** */
   
-  /* ------------------------------
-     Grid
-  ------------------------------- */
-  .grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    grid-auto-rows: 200px;
-    gap: 15px;
-    padding: 15px;
-  }
-  
-  /* ------------------------------
-     Cards
-  ------------------------------- */
-  .card {
-    background-color: #2b2b3d;
-    border-radius: 10px;
-    padding: 10px;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.5);
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    position: relative;
-    user-select: none;
-    min-height: 0;
-  }
-  
-  .card-header {
-    position: relative;
-    padding: 6px 10px;
-    background-color: #2b2b3d;
-    color: #fff;
-    font-weight: bold;
-    font-size: 1rem;
-    border-bottom: 1px solid #444;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
+.card-content {
+  /* overflow-y: auto; */
+  flex-grow: 1;
+  max-height: 100%;
+  padding-right: 8px; /* espaço para rolagem */
+  height: 100%;
+  min-height: 0;
+}
+.card-content::-webkit-scrollbar {
+  width: 6px;
+}
 
-  .card-header .title {
-    flex: 1;
-    text-align: center;
-    cursor: grab;
-  }
+.card-content::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+}
 
-  .card-header .title:active {
-    cursor: grabbing;
-  } 
+.card.dragging {
+  opacity: 0.5;
+  transform: scale(0.98);
+}
 
-  .card-controls,
-  .card-zoom-controls  {
-    position: absolute;
-    top: 34%;
-    transform: translateY(-50%);
-    display: flex;
-  }
+/* ------------------------------
+    Modal
+------------------------------- */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 999;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0,0,0,0.7);
+  justify-content: center;
+  align-items: center;
+}
 
-  .card-controls {
-    right: 10px;
-  }
+.modal-content {
+  background-color: #2b2b3d;
+  padding: 20px;
+  border-radius: 10px;
+  width: 450px;
+  max-width: 95%;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
 
-  .card-zoom-controls {
-    left: 10px;
-  }
+.btn-remove {
+  background-color: #e74c3c;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+}
 
-  .card-controls button,
-  .card-zoom-controls button {
-    background: none;
-    border: none;
-    color: #aaa;    
-    cursor: pointer;
-    transition: color 0.2s ease;
-  }
+.btn-remove:hover {
+  background-color: #c0392b;
+}
 
-  .card-controls button:hover,
-  .card-zoom-controls button:hover {
-    color: #fff;
-  }
+.modal-content h2 {
+  margin-top: 0;
+  text-align: center;
+}
 
-  .settings-button,
-  .expand-button {
-    font-size: 0.8rem;
-  }
+.modal-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
 
-  .expand-button {
-    display: none;
-  }
+.modal-row label {
+  width: 100px;
+  text-align: right;
+}
 
-  .zoom-out-button,
-  .zoom-in-button {
-    font-size: 0.6rem;
-  }
+.modal-row input {
+  flex: 1;
+  padding: 8px 10px;
+  border: none;
+  border-radius: 5px;
+  background-color: #3a3a4f;
+  color: white;
+  box-sizing: border-box;
+}
 
-  /* ******************************** */
-    
-  .card-content {
-    /* overflow-y: auto; */
-    flex-grow: 1;
-    max-height: 100%;
-    padding-right: 8px; /* espaço para rolagem */
-    height: 100%;
-    min-height: 0;
-  }
-  .card-content::-webkit-scrollbar {
-    width: 6px;
-  }
+/**/
 
-  .card-content::-webkit-scrollbar-thumb {
-    background-color: rgba(255, 255, 255, 0.2);
-    border-radius: 3px;
-  }
+.modal-header {
+  font-size: 18px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid #444;
+  padding-bottom: 5px;
+}
 
-  .card.dragging {
-    opacity: 0.5;
-    transform: scale(0.98);
-  }
-  
-  /* ------------------------------
-     Modal
-  ------------------------------- */
-  .modal {
-    display: none;
-    position: fixed;
-    z-index: 999;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0,0,0,0.7);
-    justify-content: center;
-    align-items: center;
-  }
-  
-  .modal-content {
-    background-color: #2b2b3d;
-    padding: 20px;
-    border-radius: 10px;
-    width: 450px;
-    max-width: 95%;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.5);
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-  }
+.modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
 
-  .btn-remove {
-    background-color: #e74c3c;
-    color: white;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 4px;
-    cursor: pointer;
-  }
+.modal-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+}
 
-  .btn-remove:hover {
-    background-color: #c0392b;
-  }
-  
-  .modal-content h2 {
-    margin-top: 0;
-    text-align: center;
-  }
-  
-  .modal-row {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-  
-  .modal-row label {
-    width: 100px;
-    text-align: right;
-  }
-  
-  .modal-row input {
-    flex: 1;
-    padding: 8px 10px;
-    border: none;
-    border-radius: 5px;
-    background-color: #3a3a4f;
-    color: white;
-    box-sizing: border-box;
-  }
+.left-actions {
+  flex-shrink: 0;
+}
 
-  /**/
-  
-  .modal-header {
-    font-size: 18px;
-    margin-bottom: 10px;
-    border-bottom: 1px solid #444;
-    padding-bottom: 5px;
-  }
-  
-  .modal-body {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-  
-  .modal-actions {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 20px;
-  }
+.right-actions {
+  display: flex;
+  gap: 10px;
+  flex-shrink: 0;
+}
 
-  .left-actions {
-    flex-shrink: 0;
-  }
+.modal input[type="number"] {
+  width: 60px;
+  padding: 4px;
+  border-radius: 4px;
+  border: none;
+}
 
-  .right-actions {
-    display: flex;
-    gap: 10px;
-    flex-shrink: 0;
-  }
-  
-  .modal input[type="number"] {
-    width: 60px;
-    padding: 4px;
-    border-radius: 4px;
-    border: none;
-  }
-  
-  .modal label {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  
-  .modal button {
-    padding: 6px 12px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    color: white;
-  }
+.modal label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
 
-  .modal.show {
-    display: flex;
-  }
-  
-  .btn-close {
-    background-color: #777;
-  }
-  
-  .btn-close:hover {
-    background-color: #999;
-  }
-  
-  .btn-apply {
-    background-color: #2ecc71;
-  }
-  
-  .btn-apply:hover {
-    background-color: #27ae60;
-  }
+.modal button {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  color: white;
+}
 
-  /* Reset para ações do modal de adicionar cards */
-  .add-card-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-    margin-top: 20px;
-  }
-  
-  /* ------------------------------
-     Resize Handles
-  ------------------------------- */
-  .resize-handle {
-    position: absolute;
-    background: transparent;
-    z-index: 10;
-  }
-  
-  .resize-handle.right {
-    width: 8px;
-    right: 0;
-    top: 0;
-    bottom: 0;
-    cursor: ew-resize;
-  }
-  
-  .resize-handle.bottom {
-    height: 8px;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    cursor: ns-resize;
-  }
-  
-  .resize-handle.corner {
-    width: 12px;
-    height: 12px;
-    right: 0;
-    bottom: 0;
-    cursor: nwse-resize;
-  }
+.modal.show {
+  display: flex;
+}
 
+.btn-close {
+  background-color: #777;
+}
+
+.btn-close:hover {
+  background-color: #999;
+}
+
+.btn-apply {
+  background-color: #2ecc71;
+}
+
+.btn-apply:hover {
+  background-color: #27ae60;
+}
+
+/* Reset para ações do modal de adicionar cards */
+.add-card-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+/* ------------------------------
+    Resize Handles
+------------------------------- */
+.resize-handle {
+  position: absolute;
+  background: transparent;
+  z-index: 10;
+}
+
+.resize-handle.right {
+  width: 8px;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  cursor: ew-resize;
+}
+
+.resize-handle.bottom {
+  height: 8px;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  cursor: ns-resize;
+}
+
+.resize-handle.corner {
+  width: 12px;
+  height: 12px;
+  right: 0;
+  bottom: 0;
+  cursor: nwse-resize;
+}

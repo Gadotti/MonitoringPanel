@@ -291,7 +291,7 @@ function loadCardsContent(cardId = '') {
 
       if (card.cardType === 'frame' || card.view) {
         const cardElement = document.getElementById(card.id);
-        const expandButton = cardElement.querySelector('.expand-button');
+        const expandButton = cardElement?.querySelector('.expand-button');
         if (expandButton) {
           expandButton.style.display = 'block';
         }

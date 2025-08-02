@@ -12,6 +12,10 @@ function startResize(e, card, direction) {
   resizing.startCols = colMatch ? parseInt(colMatch[1]) : 1;
   resizing.startRows = rowMatch ? parseInt(rowMatch[1]) : 1;
 
+  const overlay = document.createElement('div');
+  overlay.className = 'iframe-overlay';
+  document.body.appendChild(overlay);
+
   window.addEventListener('mousemove', doResize);
   window.addEventListener('mouseup', stopResize);
 }
@@ -36,6 +40,9 @@ function doResize(e) {
 }
 
 function stopResize() {
+  const overlay = document.querySelector('.iframe-overlay');
+  if (overlay) overlay.remove();
+  
   window.removeEventListener('mousemove', doResize);
   window.removeEventListener('mouseup', stopResize);
   resizing = null;

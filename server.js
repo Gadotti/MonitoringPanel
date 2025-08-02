@@ -198,8 +198,8 @@ const WebSocket = require('ws');
 const chokidar = require('chokidar');
 const suppressedFiles = new Set();
 
-const wss = new WebSocket.Server({ port: 8080 });
-console.log('WebSocket server escutando na porta 8080');
+const wss = new WebSocket.Server({ port: 8123 });
+console.log('WebSocket server escutando na porta 8123');
 
 const watchedFiles = new Map(); // filePath -> cardId[]
 const clients = new Set(); // conexões WebSocket
