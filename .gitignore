@@ -128,3 +128,12 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+
+# Custom
+_deploys/
+public/local-data-uptimes/
+public/local-data-charts/
+public/local-events/
+public/local-pages/
+cards/cards-list.json
+configs/

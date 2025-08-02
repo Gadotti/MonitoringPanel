@@ -1,5 +1,5 @@
 function signSocketListeners() {
-    const socket = new WebSocket('ws://localhost:8080');
+    const socket = new WebSocket('ws://localhost:8123');
    
     socket.addEventListener('open', () => {
         console.log('WebSocket conectado.');

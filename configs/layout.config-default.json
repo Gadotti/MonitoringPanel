@@ -48,17 +48,17 @@
     "zoom": 1
   },
   {
-    "id": "detecoes-ameaças",
+    "id": "pendencias-ti",
     "order": 6,
-    "title": "Ameaças Detectadas",
+    "title": "Pendências de TI",
     "columns": 1,
     "rows": 1,
     "zoom": 1
   },
   {
-    "id": "pendencias-ti",
+    "id": "detecoes-ameaças",
     "order": 7,
-    "title": "Pendências de TI",
+    "title": "Ameaças Detectadas",
     "columns": 1,
     "rows": 1,
     "zoom": 1

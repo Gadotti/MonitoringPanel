@@ -14,7 +14,7 @@ app.use('/local-pages', express.static(__dirname + '/local-pages'));
 const CONFIGS_PATH = "configs";
 const CONFIG_PATH = path.join(__dirname, CONFIGS_PATH, 'layout.config-{view-name}.json');
 const VIEWS_PATH = path.join(__dirname, CONFIGS_PATH, 'views.json');
-const CARDS_PATH = path.join(__dirname, "cards", 'cards-examples.json');
+const CARDS_PATH = path.join(__dirname, "cards", 'cards-list.json');
 
 // Endpoint para obter o layout atual
 app.get('/api/layout/:viewName', (req, res) => {
@@ -73,6 +73,16 @@ app.get('/api/cards', (req, res) => {
     if (err) {
         console.error('Erro ao ler o arquivo json de cards:', err);
         return res.status(500).json({ error: 'Erro ao ler os cards' });
+    }
+    res.json(JSON.parse(data));
+  });
+});
+
+app.get('/version', (req, res) => {  
+  fs.readFile("version.json", 'utf8', (err, data) => {
+    if (err) {
+        console.error('Erro ao ler o arquivo json de versões:', err);
+        return res.status(500).json({ error: 'Erro ao ler a versão' });
     }
     res.json(JSON.parse(data));
   });

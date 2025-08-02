@@ -86,9 +86,7 @@ body {
   .card-header .title {
     flex: 1;
     text-align: center;
-    /* pointer-events: none; */
     cursor: grab;
-    /* transform: translateY(-21%); */
   }
 
   .card-header .title:active {
