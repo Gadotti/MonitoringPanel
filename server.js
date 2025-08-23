@@ -4,7 +4,6 @@ const path = require('path');
 const readline = require('readline')
 const { spawn } = require('child_process');;
 const app = express();
-const PORT = 3123;
 
 // Middleware para servir arquivos estáticos
 app.use(express.static('public'));
@@ -15,6 +14,37 @@ const CONFIGS_PATH = "configs";
 const CONFIG_PATH = path.join(__dirname, CONFIGS_PATH, 'layout.config-{view-name}.json');
 const VIEWS_PATH = path.join(__dirname, CONFIGS_PATH, 'views.json');
 const CARDS_PATH = path.join(__dirname, "cards", 'cards-list.json');
+
+
+
+// Caminhos dos arquivos de configuração
+const SERVERCONFIG_PATH = path.join(__dirname, 'server-config.json');
+const WSCONFIG_PATH = path.join(__dirname, 'public', 'websocket-config.json');
+
+// Leitura e parse do server-config.json
+let serverConfig = {};
+try {
+  serverConfig = JSON.parse(fs.readFileSync(SERVERCONFIG_PATH, 'utf-8'));
+} catch (err) {
+  console.error(`Erro ao ler server-config.json: ${err.message}`);
+  process.exit(1);
+}
+
+// Leitura e parse do websocket-config.json
+let wsConfig = {};
+try {
+  wsConfig = JSON.parse(fs.readFileSync(WSCONFIG_PATH, 'utf-8'));
+} catch (err) {
+  console.error(`Erro ao ler websocket-config.json: ${err.message}`);
+  process.exit(1);
+}
+
+// Variáveis globais de configuração
+const PORT = serverConfig.port || 3123;
+const ADDRESS = serverConfig.address || 'localhost';
+const WSPORT = wsConfig.port || 8123;
+
+console.log('Configurações carregadas:');
 
 // Endpoint para obter o layout atual
 app.get('/api/layout/:viewName', (req, res) => {
@@ -187,7 +217,7 @@ app.get('/:view?', (req, res) => {
 });
 
 app.listen(PORT, () => {
-    console.log(`Servidor rodando em http://localhost:${PORT}`);
+    console.log(`Servidor rodando em http://${ADDRESS}:${PORT}`);
 });
 
 /**************************************************************** 
@@ -198,8 +228,8 @@ const WebSocket = require('ws');
 const chokidar = require('chokidar');
 const suppressedFiles = new Set();
 
-const wss = new WebSocket.Server({ port: 8123 });
-console.log('WebSocket server escutando na porta 8123');
+const wss = new WebSocket.Server({ port: WSPORT });
+console.log(`WebSocket server escutando na porta ${WSPORT}`);
 
 const watchedFiles = new Map(); // filePath -> cardId[]
 const clients = new Set(); // conexões WebSocket
@@ -208,6 +238,9 @@ function sanitizePath(partialPath) {
   let sanitizedPath = partialPath.replace(/\/\//g, '/');   // Remove barras duplas
   sanitizedPath = sanitizedPath.replace(/\//g, '\\');   // Converte para contra-barras
   sanitizedPath = path.resolve(__dirname, sanitizedPath);
+
+  sanitizedPath = partialPath.replace(/\/\//g, '/');   // Remove barras duplas
+  sanitizedPath = sanitizedPath.replace(/\//g, '\\');   // Converte para contra-barras
 
   return sanitizedPath;
 }

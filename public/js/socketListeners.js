@@ -1,5 +1,24 @@
+let WS_HOST;
+let WS_PORT;
+
+async function loadWsConfig() {
+  try {
+    const response = await fetch('../websocket-config.json');
+    const config = await response.json();
+    WS_PORT = config.port || 8123;
+    WS_HOST = window.location.hostname;
+  } catch (err) {
+    console.error("Erro ao carregar websocket-config.json:", err);
+    WS_PORT = 8123;
+    WS_HOST = window.location.hostname;
+  }
+}
+
+// chamada na inicialização da página
+loadWsConfig(); // garante que as variáveis fiquem preenchidas antes
+
 function signSocketListeners() {
-    const socket = new WebSocket('ws://localhost:8123');
+    const socket = new WebSocket(`ws://${WS_HOST}:${WS_PORT}`);
    
     socket.addEventListener('open', () => {
         console.log('WebSocket conectado.');

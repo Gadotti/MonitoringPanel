@@ -1,7 +1,31 @@
 [
   {
-    "id": "ransom-look",
+    "id": "ransom-look-tag",
     "order": 0,
+    "title": "Breaches - Tags",
+    "columns": 2,
+    "rows": 2,
+    "zoom": 1
+  },
+  {
+    "id": "uptime-results",
+    "order": 1,
+    "title": "Site e Serviços",
+    "columns": 1,
+    "rows": 2,
+    "zoom": 1
+  },
+  {
+    "id": "logs-sistema",
+    "order": 2,
+    "title": "Logs do Sistema",
+    "columns": 1,
+    "rows": 1,
+    "zoom": 1
+  },
+  {
+    "id": "ransom-look",
+    "order": 3,
     "title": "Breaches - All",
     "columns": 2,
     "rows": 2,
@@ -9,31 +33,15 @@
   },
   {
     "id": "ransom-look-chart",
-    "order": 1,
+    "order": 4,
     "title": "Chart: Breaches - All",
     "columns": 1,
     "rows": 1,
     "zoom": 1
   },
   {
-    "id": "uptime-results",
-    "order": 2,
-    "title": "Site e Serviços",
-    "columns": 1,
-    "rows": 2,
-    "zoom": 1
-  },
-  {
-    "id": "ransom-look-tag",
-    "order": 3,
-    "title": "Breaches - Tags",
-    "columns": 1,
-    "rows": 1,
-    "zoom": 1
-  },
-  {
     "id": "ssllabs-sample",
-    "order": 4,
+    "order": 5,
     "title": "SSLabs Scan",
     "columns": 4,
     "rows": 2,
@@ -41,7 +49,7 @@
   },
   {
     "id": "trafego-mbps",
-    "order": 5,
+    "order": 6,
     "title": "Tráfego de Rede",
     "columns": 1,
     "rows": 1,
@@ -49,7 +57,7 @@
   },
   {
     "id": "pendencias-ti",
-    "order": 6,
+    "order": 7,
     "title": "Pendências de TI",
     "columns": 1,
     "rows": 1,
@@ -57,16 +65,8 @@
   },
   {
     "id": "detecoes-ameaças",
-    "order": 7,
-    "title": "Ameaças Detectadas",
-    "columns": 1,
-    "rows": 1,
-    "zoom": 1
-  },
-  {
-    "id": "logs-sistema",
     "order": 8,
-    "title": "Logs do Sistema",
+    "title": "Ameaças Detectadas",
     "columns": 1,
     "rows": 1,
     "zoom": 1
