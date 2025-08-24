@@ -88,6 +88,21 @@ function initializeCardEvents(card) {
     });
   }
 
+  const cveassetsWrapper = card.querySelector('.asset-card');
+  if (cveassetsWrapper) {
+    cveassetsWrapper.addEventListener('mouseover', e => {
+      if (e.target.closest('.card-content')) {
+        card.setAttribute('draggable', false);
+      }
+    });
+
+    cveassetsWrapper.addEventListener('mouseout', e => {
+      if (e.target.closest('.card-content')) {
+        card.setAttribute('draggable', true);
+      }
+    });
+  }
+
   card.setAttribute('draggable', true);
 
   card.addEventListener('dragstart', (e) => {

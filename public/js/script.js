@@ -173,6 +173,10 @@ function createCardElement(config) {
       externalSourceMonitor = config.sourceItems;
       contentHtml = "<div class='uptime-card'></div>";
       break;
+    case 'cve-assets':
+      externalSourceMonitor = config.sourceItems;
+      contentHtml = "<div class='asset-card'></div>";
+      break;
     case 'frame':
       externalSourceMonitor = config.sourceItems;
       contentZoomControls = `
@@ -284,6 +288,9 @@ function loadCardsContent(cardId = '') {
           break;
         case 'uptime':
           loadCardContentUptime(card);
+          break;
+        case 'cve-assets':
+          loadCardContentCveAssets(card);
           break;
         default:
           break;
@@ -411,6 +418,130 @@ async function loadCardContentList(card) {
       eventList.innerHTML = '';
       eventList.insertAdjacentHTML('beforeend', contentHtml);
     } 
+}
+
+async function loadCardContentCveAssets(card) {
+  const cardElement = document.getElementById(card.id);
+  if (!cardElement || !card.sourceItems) return;
+  
+  const wrapper = cardElement.querySelector('.asset-card');
+
+  try {
+    const filePath = card.sourceItems.replace(/^public\//, '').trim();
+    const response = await fetch(filePath);
+      if (!response.ok) {
+        throw new Error(`Erro ao carregar status de uptime: ${response.status}`);
+      }
+
+    const data = await response.json();
+    const lastChecked = data?.last_checked;
+    const reportItens = data?.report_itens || [];
+
+    let cveReportBlocksHtml = '';
+
+    reportItens.forEach(report => {
+      const url = report.url;
+      const name = report.nome;
+      const currentVersion = report.versao_atual;
+      const recommendedVersion = report.versao_recomendada;
+      const risk = report.risco;
+      const upToDate = !report.desatualizada;
+      const currentExploits = report.exploits_ativos;
+      const alert = report.alerta;
+      const upToDateDesc = upToDate ? "Atualizado" : "Desatualizado";
+      const upToDateCss = upToDate ? "status-ok" : "status-outdated";
+
+      const cvesList = report.cves || []
+      let cveItensListBlockHtml = ''
+
+      let riskCss = '';
+      switch (risk.toLowerCase()) {
+        case 'alto':
+          riskCss = 'risco-alto';          
+          break;
+        case 'médio':
+          riskCss = 'risco-medio';
+          break;
+        case 'baixo':
+          riskCss = 'risco-baixo';
+          break;      
+        default:
+          riskCss = 'risco-nao';
+          break;
+      }
+
+      cvesList.forEach(cve => {
+        cveItensListBlockHtml += `
+          <div class="cve-item">
+            <div class="cve-id">${cve.cve_id}</div>
+            <div class="cve-desc">${cve.descricao}</div>
+            <div class="cve-severity ${cve.severity.toLowerCase()}">${cve.severity}</div>
+          </div>
+        `;
+      });
+
+      cveReportBlocksHtml += `
+        <div class="asset-row" onclick="toggleCveAssetsDetails(this)">
+          <div class="col url" target="_blank" href="${url}">
+            <span class="asset-toggle-icon">▶</span>
+            ${url}
+          </div>
+          <div class="col ativo">${name}</div>
+          <div class="col versao">${currentVersion}</div>
+          <div class="col status"><span class="${upToDateCss}">${upToDateDesc}</span></div>
+          <div class="col risco"><span class="${riskCss}">${risk}</span></div>
+        </div>
+        <div class="asset-details asset-collapsible">
+          <div class="details-content">
+            <p><strong>Versão recomendada:</strong> ${recommendedVersion}</p>
+            <p><strong>Exploits ativos:</strong> ${currentExploits}</p>
+            <p><strong>Alerta:</strong> ${alert}</p>
+            
+            <h4>CVEs Identificados:</h4>
+            <div class="cve-list">
+              ${cveItensListBlockHtml}
+            </div>
+          </div>
+        </div>
+      `;
+    });
+
+    wrapper.innerHTML = `
+      <div class="asset-card-content">
+    
+        <div class="asset-header">
+          <div class="col url">Url</div>
+          <div class="col ativo">Ativo</div>
+          <div class="col versao">Versão</div>
+          <div class="col status">Status</div>
+          <div class="col risco">Risco</div>
+        </div>
+
+        <div class="asset-list">
+          ${cveReportBlocksHtml}
+        </div>
+
+        <div class="asset-footer">
+          Última verificação: ${lastChecked}
+        </div>
+      </div>
+    `;
+
+    const contentArea = cardElement.querySelector('.card-content');
+    contentArea.innerHTML = '';
+    contentArea.appendChild(wrapper);    
+  } catch (err) {
+    console.error(`Erro ao carregar dados de cve assets para ${card.id}:`, err);
+  }
+}
+
+function toggleCveAssetsDetails(row) {
+  const isExpanded = row.classList.toggle('expanded');
+  const metaEl = row.nextElementSibling;
+
+  if (metaEl && metaEl.classList.contains('asset-collapsible')) {
+    metaEl.classList.toggle('expanded', isExpanded);
+  }
 }
 
 async function loadCardContentUptime(card) {  

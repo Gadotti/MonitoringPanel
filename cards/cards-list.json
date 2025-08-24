@@ -231,5 +231,11 @@
     "cardType": "uptime",
     "sourceItems": "public/local-data-uptimes/uptime-results.json",
     "animateHighlight": false
+  },
+  {
+    "id": "cve-check",
+    "title": "CVE's Board",
+    "cardType": "cve-assets",
+    "sourceItems": "public/local-events/cve-report.json"
   }
 ]
