@@ -1,4 +1,5 @@
 { 
     "address": "localhost",
-    "port": 3123
+    "port": 3123,
+    "python_cmd": "python"
 }

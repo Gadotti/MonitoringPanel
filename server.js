@@ -42,6 +42,7 @@ try {
 // Variáveis globais de configuração
 const PORT = serverConfig.port || 3123;
 const ADDRESS = serverConfig.address || 'localhost';
+const PYTHON_CMD = serverConfig.python_cmd || 'python';
 const WSPORT = wsConfig.port || 8123;
 
 console.log('Configurações carregadas:');
@@ -119,7 +120,8 @@ app.get('/version', (req, res) => {
 });
 
 app.get('/api/partial-csv', async (req, res) => {
-  const filePath = sanitizePath(req.query.file);
+  //const filePath = sanitizePath(req.query.file);
+  const filePath = req.query.file;
   const limit = parseInt(req.query.limit) || 10;
 
   if (!fs.existsSync(filePath)) {
@@ -186,7 +188,7 @@ app.post('/api/chart-data', (req, res) => {
   // Garante que os args sejam sempre um array
   // const finalArgs = Array.isArray(args) ? args : [];
 
-  const python = spawn('python', [resolvedScriptPath, resolverSourceFile]);
+  const python = spawn(PYTHON_CMD, [resolvedScriptPath, resolverSourceFile]);
 
   let stdout = '';
   let stderr = '';
@@ -279,9 +281,10 @@ wss.on('connection', (ws) => {
 const watcher = chokidar.watch([], { ignoreInitial: true });
 
 watcher.on('change', (changedPath) => {
-  console.log(`Alteração detectada em: ${changedPath}`);
+  const sanitizedPath = sanitizePath(changedPath);
+  console.log(`Alteração detectada em: ${sanitizedPath}`);
 
-  const cardIds = watchedFiles.get(changedPath);
+  const cardIds = watchedFiles.get(sanitizedPath);
   if (cardIds) {
     cardIds.forEach(cardId => {
       broadcast({ type: 'update', cardId });

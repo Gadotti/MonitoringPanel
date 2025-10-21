@@ -566,6 +566,7 @@ async function loadCardContentUptime(card) {
 
     servicesStatus.forEach(service => {
       const url = service.url;
+      const name = service.name ?? service.url;
       const status = service.status.toLowerCase(); // "online" ou "offline"
       const statusText = status === 'online' ? 'Online' : 'Offline';
 
@@ -589,7 +590,7 @@ async function loadCardContentUptime(card) {
         <div class="uptime-header" onclick="toggleUptimeMeta(this)">
           <div class="uptime-header-left">
             <span class="uptime-toggle-icon">▶</span>
-            <a class="uptime-url" target="_blank" href="${url}">${url}</a>
+            <a class="uptime-url" target="_blank" href="${url}">${name}</a>
           </div>
           <div class="uptime-status-indicator ${status}">${statusText}</div>
         </div>
