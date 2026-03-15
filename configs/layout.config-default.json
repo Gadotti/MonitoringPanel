@@ -16,9 +16,9 @@
     "zoom": 1
   },
   {
-    "id": "logs-sistema",
+    "id": "uptime-results-must-be-off",
     "order": 2,
-    "title": "Logs do Sistema",
+    "title": "Site e Serviços (Off)",
     "columns": 1,
     "rows": 1,
     "zoom": 1
@@ -32,9 +32,9 @@
     "zoom": 1
   },
   {
-    "id": "ransom-look-chart",
+    "id": "logs-sistema",
     "order": 4,
-    "title": "Chart: Breaches - All",
+    "title": "Logs do Sistema",
     "columns": 1,
     "rows": 1,
     "zoom": 1
@@ -48,8 +48,16 @@
     "zoom": 0.62
   },
   {
-    "id": "trafego-mbps",
+    "id": "ransom-look-chart",
     "order": 6,
+    "title": "Chart: Breaches - All",
+    "columns": 1,
+    "rows": 1,
+    "zoom": 1
+  },
+  {
+    "id": "trafego-mbps",
+    "order": 7,
     "title": "Tráfego de Rede",
     "columns": 1,
     "rows": 1,
@@ -57,7 +65,7 @@
   },
   {
     "id": "pendencias-ti",
-    "order": 7,
+    "order": 8,
     "title": "Pendências de TI",
     "columns": 1,
     "rows": 1,
@@ -65,7 +73,7 @@
   },
   {
     "id": "detecoes-ameaças",
-    "order": 8,
+    "order": 9,
     "title": "Ameaças Detectadas",
     "columns": 1,
     "rows": 1,

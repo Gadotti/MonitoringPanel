@@ -233,6 +233,13 @@
     "animateHighlight": false
   },
   {
+    "id": "uptime-results-must-be-off",
+    "title": "Site e Serviços (Off)",
+    "cardType": "uptime",
+    "sourceItems": "public/local-data-uptimes/uptime-results-must-be-off.json",
+    "animateHighlight": false
+  },
+  {
     "id": "cve-check",
     "title": "CVE's Board",
     "cardType": "cve-assets",

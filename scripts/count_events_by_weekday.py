@@ -1,35 +1,3 @@
-# import csv
-# import json
-# import sys
-# from datetime import datetime
-
-# def contar_eventos_por_dia_semana(caminho_csv):
-#     # Inicializa contadores para os dias da semana: 0 (segunda) até 6 (domingo)
-#     contadores = [0] * 7
-
-#     # Abre o arquivo CSV
-#     with open(caminho_csv, newline='', encoding='utf-8') as csvfile:
-#         leitor = csv.DictReader(csvfile, delimiter=';')
-#         for linha in leitor:
-#             try:
-#                 # Converte o timestamp para objeto datetime
-#                 data_evento = datetime.fromisoformat(linha['timestamp'].replace('Z', '+00:00'))
-#                 dia_semana = data_evento.weekday()  # 0=segunda, 6=domingo
-#                 contadores[dia_semana] += 1
-#             except Exception as e:
-#                 print(f"Erro ao processar linha: {linha}. Erro: {e}", file=sys.stderr)
-
-#     # Imprime o resultado como JSON (array simples)
-#     print(json.dumps(contadores))
-
-# if __name__ == "__main__":
-#     if len(sys.argv) != 2:
-#         print("Uso: python count_events_by_weekday.py <caminho_para_arquivo_csv>")
-#         sys.exit(1)
-
-#     caminho_arquivo = sys.argv[1]
-#     contar_eventos_por_dia_semana(caminho_arquivo)
-
 import csv
 import json
 import sys

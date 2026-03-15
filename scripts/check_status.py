@@ -1,10 +1,7 @@
-#### Version 1.2
-
 import asyncio
 import aiohttp
 import json
 import argparse
-import aiohttp
 from urllib.parse import quote
 from datetime import datetime, UTC
 
@@ -55,8 +52,6 @@ async def update_services_status(filepath, timeout=5):
         else:
             service['lastStatusOffline'] = now_utc
 
-        
-
     # Atualiza o campo geral de verificação
     data['lastChecked'] = now_utc
 
@@ -68,28 +63,59 @@ async def update_services_status(filepath, timeout=5):
 
 async def send_notification(notificationHook, service):
     """
-    Envia notificação para endpoint local caso o status atual tenha mudado para 'offline'.
-    
-    - name: nome do serviço
-    - url: endereço do serviço monitorado
-    - status: status atual ("online" ou "offline")
-    - lastStatusOnline: última data/hora que foi online
-    - lastStatusOffline: última data/hora que foi offline
+    Envia notificação para endpoint local conforme o modo configurado em 'notificationHookMode'.
+
+    Modos disponíveis:
+    - "off"          : Nunca envia notificação.
+    - "when-online"  : Envia notificação quando o serviço ficar online (apenas na transição).
+    - "when-offline" : Envia notificação quando o serviço ficar offline (apenas na transição).
+
+    Campos do serviço utilizados:
+    - name            : nome do serviço
+    - url             : endereço do serviço monitorado
+    - status          : status atual ("online" ou "offline")
+    - notificationHookMode : modo de notificação (padrão: "when-offline")
+    - lastStatusOnline  : última data/hora que foi online
+    - lastStatusOffline : última data/hora que foi offline
     """
 
     if notificationHook == '':
         return
-    
-    name = service.get('name') or service.get('url')
-    url = service.get('url')
-    status = service.get('status')
-    lastStatusOnline = service.get('lastStatusOnline')
-    lastStatusOffline = service.get('lastStatusOffline')
 
-    if status != "offline":
+    mode = service.get('notificationHookMode', 'when-offline')
+
+    # Modo desligado: não faz nada
+    if mode == 'off':
         return
 
-    if lastStatusOffline and (not lastStatusOnline or lastStatusOffline > lastStatusOnline):
+    name    = service.get('name') or service.get('url')
+    url     = service.get('url')
+    status  = service.get('status')
+    lastStatusOnline  = service.get('lastStatusOnline')
+    lastStatusOffline = service.get('lastStatusOffline')
+
+    if mode == 'when-offline':
+        # Só notifica se o status atual for "offline"
+        if status != 'offline':
+            return
+
+        # Evita reenvio: só dispara se lastStatusOffline NÃO for mais recente que lastStatusOnline
+        # (ou seja, é uma nova queda, não uma queda já conhecida)
+        if lastStatusOffline and (not lastStatusOnline or lastStatusOffline > lastStatusOnline):
+            return
+
+    elif mode == 'when-online':
+        # Só notifica se o status atual for "online"
+        if status != 'online':
+            return
+
+        # Evita reenvio: só dispara se lastStatusOnline NÃO for mais recente que lastStatusOffline
+        # (ou seja, é uma nova recuperação, não uma online já conhecida)
+        if lastStatusOnline and (not lastStatusOffline or lastStatusOnline > lastStatusOffline):
+            return
+
+    else:
+        print(f"notificationHookMode desconhecido: '{mode}'. Notificação ignorada para {name}.")
         return
 
     notify_url = (
