@@ -1,0 +1,26 @@
+Abra o terminal na pasta painel/ e execute:
+> npm install
+> npm start
+
+Acesse http://localhost:3123 no navegador
+
+
+## Tecnologias de teste
+ 
+| Lib | Versão | Uso |
+|-----|--------|-----|
+| [Jest](https://jestjs.io) | ^29 | Test runner, mocks, coverage |
+| [Supertest](https://github.com/ladjs/supertest) | ^7 | HTTP assertions sem subir servidor |
+
+## Executar testes
+ 
+```bash
+# Rodar todos os testes
+npm test
+ 
+# Modo watch (reexecuta ao salvar)
+npm run test:watch
+ 
+# Com relatório de cobertura
+npm run test:coverage
+```
