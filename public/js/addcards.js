@@ -1,26 +1,32 @@
 function showAddCardModal() {
-  fetchAvailableCards().then(cards => {
-    fetchLayout(selectedView).then(layout => {
-      availableCards = cards;
-      currentLayout = layout;
+  // Abre o modal imediatamente com estado de carregamento
+  cardSelectionList.innerHTML = `<p style="color:#aaa;">Carregando cards disponíveis...</p>`;
+  addCardModal.classList.add('show');
 
-      const existingCardIds = new Set(layout.map(card => card.id));
-      const cardsToShow = cards.filter(card => !existingCardIds.has(card.id));
+  // Paraleliza os dois fetches em vez de encadeá-los
+  Promise.all([
+    availableCards.length > 0 ? Promise.resolve(availableCards) : fetchAvailableCards(),
+    fetchLayout(selectedView)
+  ]).then(([cards, layout]) => {
+    availableCards = cards;
 
-      if (cardsToShow.length === 0) {
-        cardSelectionList.innerHTML = `<p>Nenhum card disponível para adicionar.</p>`;
-      } else {
-        cardSelectionList.innerHTML = cardsToShow.map(card => `
-          <div>
-            <label>
-              <input type="checkbox" value="${card.id}" /> ${card.title}
-            </label>
-          </div>
-        `).join('');
-      }
+    const existingCardIds = new Set(layout.map(card => card.id));
+    const cardsToShow = cards.filter(card => !existingCardIds.has(card.id));
 
-      addCardModal.classList.add('show');
-    });
+    if (cardsToShow.length === 0) {
+      cardSelectionList.innerHTML = `<p>Nenhum card disponível para adicionar.</p>`;
+    } else {
+      cardSelectionList.innerHTML = cardsToShow.map(card => `
+        <div>
+          <label>
+            <input type="checkbox" value="${card.id}" /> ${card.title}
+          </label>
+        </div>
+      `).join('');
+    }
+  }).catch(err => {
+    console.error('Erro ao carregar cards disponíveis:', err);
+    cardSelectionList.innerHTML = `<p style="color:#e74c3c;">Erro ao carregar cards.</p>`;
   });
 }
 

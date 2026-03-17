@@ -1,0 +1,599 @@
+/* ================================================
+   MENU GAVETA FLUTUANTE — Inspirado na Claude UI
+   ================================================ */
+
+:root {
+  --drawer-width-expanded: 240px;
+  --drawer-width-collapsed: 56px;
+  --drawer-bg: #1c1c28;
+  --drawer-border: rgba(255, 255, 255, 0.07);
+  --drawer-hover: rgba(255, 255, 255, 0.06);
+  --drawer-active: rgba(255, 255, 255, 0.1);
+  --drawer-text: #c8c8d4;
+  --drawer-text-muted: #6b6b80;
+  --drawer-text-bright: #f0f0f5;
+  --drawer-accent: #cc785c;
+  --drawer-transition: 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+  --drawer-shadow: 4px 0 24px rgba(0, 0, 0, 0.4);
+}
+
+/* ── Gaveta principal ── */
+.side-drawer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  width: var(--drawer-width-collapsed);
+  background-color: var(--drawer-bg);
+  border-right: 1px solid var(--drawer-border);
+  box-shadow: var(--drawer-shadow);
+  display: flex;
+  flex-direction: column;
+  z-index: 200;
+  overflow: hidden;
+  transition: width var(--drawer-transition);
+  will-change: width;
+}
+
+.side-drawer.expanded {
+  width: var(--drawer-width-expanded);
+}
+
+/* ── Botão de toggle ── */
+.drawer-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 52px;
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--drawer-border);
+  color: var(--drawer-text-muted);
+  cursor: pointer;
+  padding: 0;
+  flex-shrink: 0;
+  transition: color var(--drawer-transition), background-color var(--drawer-transition);
+}
+
+.drawer-toggle:hover {
+  background-color: var(--drawer-hover);
+  color: var(--drawer-text-bright);
+}
+
+.drawer-toggle .icon-close {
+  display: none;
+}
+
+.side-drawer.expanded .drawer-toggle .icon-menu {
+  display: none;
+}
+
+.side-drawer.expanded .drawer-toggle .icon-close {
+  display: block;
+}
+
+/* ── Cabeçalho ── */
+.drawer-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 0;
+  padding-left: 16px;
+  flex-shrink: 0;
+  overflow: hidden;
+  min-width: var(--drawer-width-expanded);
+}
+
+.drawer-logo {
+  width: 24px;
+  height: 24px;
+  color: var(--drawer-accent);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.drawer-brand {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--drawer-text-bright);
+  white-space: nowrap;
+  letter-spacing: 0.02em;
+  opacity: 0;
+  transform: translateX(-6px);
+  transition: opacity var(--drawer-transition), transform var(--drawer-transition);
+  font-family: 'Segoe UI', system-ui, sans-serif;
+}
+
+.side-drawer.expanded .drawer-brand {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* ── Separador ── */
+.drawer-divider {
+  height: 1px;
+  background: var(--drawer-border);
+  margin: 0 12px 8px;
+  flex-shrink: 0;
+}
+
+/* ── Navegação ── */
+.drawer-nav {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 4px 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.side-drawer.expanded .drawer-nav {
+  padding: 4px 8px;
+}
+
+.drawer-nav::-webkit-scrollbar {
+  width: 3px;
+}
+.drawer-nav::-webkit-scrollbar-thumb {
+  background: var(--drawer-border);
+  border-radius: 2px;
+}
+
+.drawer-section-label {
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--drawer-text-muted);
+  padding: 8px 8px 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  opacity: 0;
+  height: 0;
+  transition: opacity var(--drawer-transition), height var(--drawer-transition);
+}
+
+.side-drawer.expanded .drawer-section-label {
+  opacity: 1;
+  height: 28px;
+}
+
+/* ── Item genérico do drawer ── */
+.drawer-item {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  min-height: 40px;
+  border-radius: 8px;
+  padding: 0;
+  overflow: hidden;
+  transition: background-color var(--drawer-transition), gap var(--drawer-transition);
+  position: relative;
+  cursor: pointer;
+}
+
+.side-drawer.expanded .drawer-item {
+  gap: 10px;
+  padding-right: 8px;
+}
+
+.drawer-item:hover {
+  background-color: var(--drawer-hover);
+}
+
+/* ── Ícone do item ── */
+.drawer-item-icon {
+  width: var(--drawer-width-collapsed);
+  min-width: var(--drawer-width-collapsed);
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--drawer-text-muted);
+  flex-shrink: 0;
+  transition: color var(--drawer-transition);
+}
+
+.drawer-item:hover .drawer-item-icon {
+  color: var(--drawer-text);
+}
+
+/* ── Conteúdo do item ── */
+.drawer-item-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+  overflow: hidden;
+  flex: 1;
+  min-width: 0;
+}
+
+.drawer-item-label {
+  font-size: 0.7rem;
+  color: var(--drawer-text-muted);
+  font-weight: 500;
+  white-space: nowrap;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  line-height: 1;
+}
+
+/* ── View Selector customizado ── */
+.view-item {
+  overflow: visible !important; /* permite dropdown flutuar para fora */
+  position: relative;
+}
+
+.view-selector-icon {
+  flex-shrink: 0;
+  transition: color var(--drawer-transition);
+}
+
+.view-item:hover .view-selector-icon {
+  color: var(--drawer-accent);
+}
+
+/* Wrapper do dropdown — oculto quando drawer recolhido */
+.view-selector-custom {
+  flex: 1;
+  min-width: 0;
+  position: relative;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--drawer-transition);
+}
+
+.side-drawer.expanded .view-selector-custom {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Botão trigger do dropdown */
+.view-selector-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 8px;
+  color: var(--drawer-text-bright);
+  font-size: 0.83rem;
+  font-family: inherit;
+  font-weight: 500;
+  padding: 6px 10px;
+  cursor: pointer;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.view-selector-trigger:hover {
+  background: rgba(255, 255, 255, 0.09);
+  border-color: rgba(255, 255, 255, 0.16);
+}
+
+.view-selector-trigger.open {
+  background: rgba(255, 255, 255, 0.09);
+  border-color: rgba(204, 120, 92, 0.5);
+}
+
+.view-selector-label {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.view-chevron {
+  flex-shrink: 0;
+  color: var(--drawer-text-muted);
+  transition: transform 0.2s ease;
+}
+
+.view-selector-trigger.open .view-chevron {
+  transform: rotate(180deg);
+}
+
+/* Painel dropdown */
+.view-selector-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  background: #252535;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 2px 8px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+  z-index: 500;
+  padding: 4px;
+  display: none;
+  opacity: 0;
+  transform: translateY(-6px) scale(0.98);
+  transform-origin: top center;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.view-selector-dropdown.open {
+  display: block;
+  animation: dropdown-in 0.15s ease forwards;
+}
+
+@keyframes dropdown-in {
+  from { opacity: 0; transform: translateY(-6px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0)   scale(1);    }
+}
+
+/* Opções */
+.view-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  background: none;
+  border: none;
+  border-radius: 7px;
+  color: var(--drawer-text);
+  font-family: inherit;
+  font-size: 0.83rem;
+  font-weight: 400;
+  padding: 7px 8px;
+  cursor: pointer;
+  text-align: left;
+  transition: background-color 0.12s ease, color 0.12s ease;
+}
+
+.view-option:hover {
+  background: rgba(255, 255, 255, 0.07);
+  color: var(--drawer-text-bright);
+}
+
+.view-option.selected {
+  color: var(--drawer-text-bright);
+  font-weight: 500;
+}
+
+/* Ícone de check */
+.view-option-icon {
+  width: 14px;
+  height: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--drawer-accent);
+  flex-shrink: 0;
+  opacity: 0;
+  transition: opacity 0.12s ease;
+}
+
+.view-option.selected .view-option-icon {
+  opacity: 1;
+}
+
+.view-option-label {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── Adicionar Card ── */
+.add-card-item {
+  cursor: default; /* clique vai no trigger interno */
+}
+
+.add-card-icon {
+  flex-shrink: 0;
+  transition: color var(--drawer-transition);
+}
+
+.add-card-item:hover .add-card-icon {
+  color: var(--drawer-accent);
+}
+
+/* Mesmo padrão de fade-in do view-selector-custom */
+.add-card-custom {
+  flex: 1;
+  min-width: 0;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--drawer-transition);
+}
+
+.side-drawer.expanded .add-card-custom {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Trigger — sem fundo/borda, aparência de item de lista */
+.add-card-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  width: 100%;
+  background: none;
+  border: none;
+  border-radius: 8px;
+  color: var(--drawer-text);
+  font-size: 0.83rem;
+  font-family: inherit;
+  font-weight: 400;
+  padding: 6px 10px 6px 0;
+  cursor: pointer;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.add-card-trigger:hover {
+  color: var(--drawer-text-bright);
+}
+
+.add-card-trigger:active {
+  color: var(--drawer-accent);
+}
+
+.add-card-label {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+
+
+/* ── Tooltip no modo recolhido ── */
+.drawer-item[title]:not(.drawer-action-btn)::after,
+.drawer-action-btn[title]::after {
+  content: attr(title);
+  position: absolute;
+  left: calc(var(--drawer-width-collapsed) + 8px);
+  top: 50%;
+  transform: translateY(-50%);
+  background: #2c2c40;
+  color: var(--drawer-text-bright);
+  font-size: 0.78rem;
+  padding: 5px 10px;
+  border-radius: 6px;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  z-index: 300;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  border: 1px solid var(--drawer-border);
+}
+
+.side-drawer:not(.expanded) .drawer-item[title]:hover::after,
+.side-drawer:not(.expanded) .drawer-action-btn[title]:hover::after {
+  opacity: 1;
+}
+
+/* ── Rodapé com versão ── */
+.drawer-footer {
+  flex-shrink: 0;
+  border-top: 1px solid var(--drawer-border);
+  padding: 8px 0;
+}
+
+.side-drawer.expanded .drawer-footer {
+  padding: 8px;
+}
+
+.drawer-footer-inner {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  border-radius: 8px;
+  min-height: 44px;
+  overflow: hidden;
+  transition: gap var(--drawer-transition), padding var(--drawer-transition);
+}
+
+.side-drawer.expanded .drawer-footer-inner {
+  gap: 10px;
+  padding-right: 8px;
+}
+
+.version-icon {
+  color: var(--drawer-text-muted);
+}
+
+.drawer-version-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  overflow: hidden;
+  flex: 1;
+  min-width: 0;
+}
+
+.version-label {
+  font-size: 0.62rem;
+  color: var(--drawer-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 600;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity var(--drawer-transition);
+}
+
+.version-value {
+  font-size: 0.8rem;
+  color: var(--drawer-text);
+  font-weight: 500;
+  white-space: nowrap;
+  font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+  opacity: 0;
+  transition: opacity var(--drawer-transition);
+}
+
+.side-drawer.expanded .version-label,
+.side-drawer.expanded .version-value {
+  opacity: 1;
+}
+
+/* ── Grid e layout responsivo ── */
+.grid {
+  margin-left: var(--drawer-width-collapsed) !important;
+  transition: margin-left var(--drawer-transition);
+}
+
+body.drawer-expanded .grid {
+  margin-left: var(--drawer-width-expanded) !important;
+}
+
+/* ── Overlay mobile ── */
+.drawer-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(2px);
+  z-index: 150;
+  opacity: 0;
+  transition: opacity var(--drawer-transition);
+}
+
+/* ── Responsividade ── */
+@media (max-width: 768px) {
+  .side-drawer {
+    width: var(--drawer-width-collapsed);
+  }
+
+  .side-drawer.expanded {
+    width: var(--drawer-width-expanded);
+  }
+
+  .drawer-overlay {
+    display: block;
+    pointer-events: none;
+  }
+
+  .drawer-overlay.visible {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  body.drawer-expanded .grid {
+    margin-left: var(--drawer-width-collapsed) !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .side-drawer.expanded {
+    width: 100vw;
+  }
+
+  body.drawer-expanded .grid {
+    margin-left: 0 !important;
+  }
+}

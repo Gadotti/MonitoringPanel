@@ -6,6 +6,7 @@
     <title>Painel Interativo</title>
     <link rel="icon" type="image/png" href="favicon.png">
     <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/drawer.css">
     <link rel="stylesheet" href="css/event-list.css">
     <link rel="stylesheet" href="css/frame-card.css">
     <link rel="stylesheet" href="css/highlight.css">
@@ -16,20 +17,109 @@
 
   <body>
 
-    <!-- 🔥 Barra superior de controle -->
-    <div class="top-bar">
-      <div class="left">
-        <label for="view-selector">Visão:</label>
-        <select id="view-selector">
-        </select>
+    <!-- 🗂 Menu Gaveta Lateral Flutuante -->
+    <aside class="side-drawer" id="side-drawer">
+
+      <!-- Botão de toggle -->
+      <button class="drawer-toggle" id="drawer-toggle" title="Expandir / Recolher menu">
+        <svg class="icon-menu" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="3" y1="6" x2="21" y2="6"/>
+          <line x1="3" y1="12" x2="21" y2="12"/>
+          <line x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
+        <svg class="icon-close" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="15 18 9 12 15 6"/>
+        </svg>
+      </button>
+
+      <!-- Cabeçalho do drawer -->
+      <div class="drawer-header">
+        <div class="drawer-logo">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="7" height="7" rx="1"/>
+            <rect x="14" y="3" width="7" height="7" rx="1"/>
+            <rect x="3" y="14" width="7" height="7" rx="1"/>
+            <rect x="14" y="14" width="7" height="7" rx="1"/>
+          </svg>
+        </div>
+        <span class="drawer-brand">Painel</span>
       </div>
-      <div class="right">
-        <button id="btn-new-card">➕ Adicionar Card</button>        
+
+      <!-- Separador -->
+      <div class="drawer-divider"></div>
+
+      <!-- Navegação principal -->
+      <nav class="drawer-nav">
+
+        <!-- Seleção de Visão -->
+        <div class="drawer-section-label">Navegação</div>
+
+        <div class="drawer-item view-item" id="view-selector-wrapper" title="Selecionar Visão">
+          <!-- Select oculto — mantém compatibilidade total com JS existente -->
+          <select id="view-selector" style="display:none;"></select>
+
+          <!-- Ícone (sempre visível; centralizado no estado recolhido) -->
+          <div class="drawer-item-icon view-selector-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+              <circle cx="12" cy="12" r="3"/>
+            </svg>
+          </div>
+
+          <!-- Dropdown customizado (visível só no estado expandido) -->
+          <div class="view-selector-custom">
+            <button class="view-selector-trigger" id="view-selector-trigger" type="button">
+              <span class="view-selector-label" id="view-selector-label">—</span>
+              <svg class="view-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6 9 12 15 18 9"/>
+              </svg>
+            </button>
+            <div class="view-selector-dropdown" id="view-selector-dropdown"></div>
+          </div>
+        </div>
+
+        <!-- Adicionar Card -->
+        <div class="drawer-item add-card-item" title="Adicionar Card">
+          <div class="drawer-item-icon add-card-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="2"/>
+              <line x1="12" y1="8" x2="12" y2="16"/>
+              <line x1="8" y1="12" x2="16" y2="12"/>
+            </svg>
+          </div>
+          <div class="add-card-custom">
+            <button class="add-card-trigger" id="btn-new-card" type="button">
+              <span class="add-card-label">Adicionar Card</span>
+            </button>
+          </div>
+        </div>
+
+      </nav>
+
+      <!-- Rodapé com versão -->
+      <div class="drawer-footer">
+        <div class="drawer-footer-inner">
+          <div class="drawer-item-icon version-icon">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="8" x2="12" y2="12"/>
+              <line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+          </div>
+          <div class="drawer-version-info">
+            <span class="version-label">Versão</span>
+            <span class="version-value" id="app-version">—</span>
+          </div>
+        </div>
       </div>
-    </div>
+
+    </aside>
+
+    <!-- Overlay para mobile -->
+    <div class="drawer-overlay" id="drawer-overlay"></div>
 
     <!-- 🔥 Grid dos cards -->
-    <div class="grid">  </div>
+    <div class="grid"></div>
 
     <!-- 🔥 Modal de seleção de cards -->
     <div id="add-card-modal" class="modal">
@@ -51,30 +141,29 @@
             <label for="card-title">Título:</label>
             <input type="text" id="card-title">
           </div>
-      
           <div class="modal-row">
             <label for="columns">Colunas:</label>
             <input type="number" id="columns" min="1">
           </div>
-      
           <div class="modal-row">
             <label for="rows">Linhas:</label>
             <input type="number" id="rows" min="1">
           </div> 
           <div class="modal-actions">
-          <div class="left-actions">
-            <button class="btn-remove" id="btn-remove">Remover Card</button>
+            <div class="left-actions">
+              <button class="btn-remove" id="btn-remove">Remover Card</button>
+            </div>
+            <div class="right-actions">
+              <button class="btn-close" id="btn-close">Fechar</button>
+              <button class="btn-apply" id="btn-apply">Aplicar</button>
+            </div>
           </div>
-          <div class="right-actions">
-            <button class="btn-close" id="btn-close">Fechar</button>
-            <button class="btn-apply" id="btn-apply">Aplicar</button>
-          </div>
-        </div>
         </div>
     </div>
 
     <!-- 🔥 Scripts -->
     <script src="js/consts.js"></script>
+    <script src="js/drawer.js"></script>
     <script src="js/cardsettings.js"></script>
     <script src="js/carddrag.js"></script>
     <script src="js/resizecards.js"></script>
@@ -83,5 +172,6 @@
     <script src="js/script.js"></script>
     <script src="js/eventListeners.js"></script>
     <script src="js/socketListeners.js"></script>
+    <script src="js/view-selector.js"></script>
   </body>
 </html>
