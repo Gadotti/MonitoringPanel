@@ -12,11 +12,22 @@ The project is designed to be lightweight and local-first: data is produced exte
 
 ```
 painel/
-├── server.js                          # Express HTTP + WebSocket server
+├── server.js                          # Bootstrap only: app.listen + WebSocket server
+├── src/
+│   └── app.js                         # Express app factory — testável, sem side effects
 ├── server-config.json                 # Server port, address, python command
 ├── version.json                       # Current release version
 ├── package.json
+├── jest.setup.js                      # Jest global setup (silencia logs durante testes)
 ├── release.py                         # Builds a versioned .zip release artifact
+│
+├── tests/
+│   ├── app.smoke.test.js              # Smoke tests: criação do app e SPA fallback
+│   ├── api.layout.test.js             # GET /api/layout/:viewName
+│   ├── api.layout.save.test.js        # POST /api/layout/:viewName
+│   ├── api.meta.test.js               # GET /api/views, /api/cards, /version
+│   ├── api.csv.test.js                # GET /api/partial-csv
+│   └── api.chartdata.test.js          # POST /api/chart-data
 │
 ├── public/                            # Static assets served to the browser
 │   ├── index.html                     # Single-page app shell
@@ -78,6 +89,8 @@ painel/
 | Charts | Chart.js (CDN) |
 | Data scripts | Python 3 (`asyncio`, `aiohttp`, `requests`, `beautifulsoup4`) |
 | Data formats | JSON (configs, uptime, CVE reports), CSV (event lists) |
+| Test runner | Jest 29.x |
+| HTTP test client | Supertest 7.x |
 
 ---
 
@@ -85,10 +98,18 @@ painel/
 
 ### Server
 
-- The Express server is a thin static file host plus a small REST API. It does not own data — it only reads and writes config files and proxies CSV reads.
-- The WebSocket server runs on a **separate port** (default `8123`) from the HTTP server (default `3123`). Clients subscribe to file paths; the server broadcasts `{ type: "update", cardId }` when a watched file changes.
-- Python scripts are spawned on-demand via `child_process.spawn` for chart data aggregation. Scripts receive the source file path as an argument and return JSON on stdout.
-- Layout configs are stored as flat JSON arrays (`layout.config-{view}.json`), one per view. The frontend is authoritative for layout mutations; saving always POSTs the full current layout.
+- **`server.js` é apenas bootstrap** — lê configs, chama `createApp()` e sobe `app.listen` + WebSocket. Não contém lógica de rotas.
+- **`src/app.js` é o app factory** — exporta `createApp({ rootDir, PYTHON_CMD, spawn })`. Não chama `app.listen`. Toda a lógica de rotas vive aqui.
+- Essa separação permite que os testes importem o Express app sem subir servidor real ou porta de rede.
+- O WebSocket server roda em **porta separada** (padrão `8123`) do HTTP server (padrão `3123`). Clientes subscrevem file paths; o servidor faz broadcast de `{ type: "update", cardId }` quando um arquivo monitorado muda.
+- Python scripts são spawned on-demand via `child_process.spawn` para agregação de dados de chart. `spawn` é injetado como dependência em `createApp` para facilitar testes (ver Convenções).
+- Layout configs são stored como flat JSON arrays (`layout.config-{view}.json`), um por view. O frontend é autoritativo para mutações de layout; salvar sempre faz POST do layout completo atual.
+
+### WebSocket — detalhes de implementação
+
+- `watchedFiles`: `Map<sanitizedPath, Set<cardId>>` — usa `Set` para evitar cardIds duplicados.
+- `sanitizePath()` deve ser aplicado tanto ao receber a mensagem `watch` do cliente quanto ao processar o evento `change` do Chokidar — garante que a chave de inserção e a de lookup no Map sejam sempre idênticas.
+- Chokidar iniciado com `{ ignoreInitial: true }` — não dispara eventos para o estado atual dos arquivos ao iniciar, apenas para mudanças reais posteriores.
 
 ### Frontend
 
@@ -134,6 +155,7 @@ A card definition lives in `cards/cards-list.json`. Its structure is documented 
 - **Card creation is pure** — `createCardElement(config)` returns a DOM node without side effects. Content loading is a separate step via `loadCardsContent()`.
 - **Layout save is fire-and-forget** — `saveLayoutConfig()` always POSTs the full current DOM state. Never patch individual fields.
 - **CSS class toggles for expand/collapse** — use `.expanded` class + CSS `max-height` transitions; avoid inline style toggling for animations.
+- **Injeção de dependência para módulos de sistema** — dependências como `child_process.spawn` devem ser passadas como parâmetro para funções/factories (`createApp({ spawn })`), não importadas com desestruturação no topo do módulo. Desestruturação captura a referência no momento do `require`, tornando-a invisível para mocks de teste.
 
 ### Python
 
@@ -149,6 +171,55 @@ A card definition lives in `cards/cards-list.json`. Its structure is documented 
 - Each card type has its own CSS file under `public/css/`. Do not add cross-card styles to a card-specific file.
 - Dark theme base colors: background `#1e1e2f`, card surface `#2b2b3d`, border `#444`, dimmed text `#aaa`.
 - Use CSS `max-height` + `overflow: hidden` transitions for smooth expand/collapse, not `display: none` toggling.
+
+---
+
+## Testing
+
+### Executar testes
+
+```bash
+npm test                # roda todos os testes
+npm run test:watch      # modo watch (reexecuta ao salvar)
+npm run test:coverage   # com relatório de cobertura HTML + lcov
+```
+
+### Cobertura mínima exigida (threshold)
+
+| Métrica | Mínimo |
+|---|---|
+| Linhas | 80% |
+| Funções | 80% |
+| Branches | 70% |
+| Statements | 80% |
+
+A build falha automaticamente se a cobertura cair abaixo desses limites.
+
+### Casos cobertos
+
+| Suíte | Endpoint | Casos |
+|---|---|---|
+| `api.layout.test.js` | `GET /api/layout/:viewName` | view inexistente → `[]`; JSON válido → layout; erro de leitura → 500; JSON inválido → 500 |
+| `api.layout.save.test.js` | `POST /api/layout/:viewName` | salva com sucesso → 200; erro de escrita → 500; path correto por view |
+| `api.meta.test.js` | `GET /api/views`, `/api/cards`, `/version` | leitura OK → 200; erro → 500; JSON inválido → 500 |
+| `api.csv.test.js` | `GET /api/partial-csv` | sem `file` → 400; arquivo inexistente → 404; header sempre incluso; respeita `limit`; erro de stream → 500 |
+| `api.chartdata.test.js` | `POST /api/chart-data` | sem `scriptPath` → 400; exit 0 → 200 com stdout; exit != 0 → 500 com stderr; executável configurável; output trimado |
+| `app.smoke.test.js` | — | `createApp` retorna app Express válido; SPA fallback captura rotas desconhecidas |
+
+### Regras de mock
+
+- **`fs`** — nunca mockar o módulo inteiro (`jest.mock('fs')`). Usar sempre a factory com `jest.requireActual` para preservar o `fs` real que `express.static` usa internamente:
+  ```js
+  jest.mock('fs', () => ({
+    ...jest.requireActual('fs'),
+    existsSync: jest.fn(),
+    readFile:   jest.fn(),
+    writeFile:  jest.fn(),
+    createReadStream: jest.fn(),
+  }));
+  ```
+- **`child_process.spawn`** — não mockar o módulo. Injetar o mock diretamente via `createApp({ spawn: jest.fn() })`.
+- **Processos Python falsos** — usar `EventEmitter` puro para `stdout`/`stderr`, nunca `Readable` streams. Usar sempre `mockImplementation(() => makeFakePython(...))`, nunca `mockReturnValue(makeFakePython(...))` — `mockReturnValue` executa a factory antes da requisição existir, agendando o `setImmediate` antes de os listeners serem anexados.
 
 ---
 
@@ -198,7 +269,7 @@ python release.py
 
 The zip excludes: `.git`, `.gitignore`, `.gitattributes`, `release.py` itself, `node_modules/`, and all `public/local-*/`, `configs/`, and runtime-generated files listed in `.gitignore`.
 
-The zip **includes** everything a new deployment needs to get started: `server.js`, `public/`, `cards/cards-examples.json`, `scripts/`, `package.json`, `server-config.json`, `public/websocket-config.json`, and `version.json`.
+The zip **includes** everything a new deployment needs to get started: `server.js`, `src/`, `public/`, `cards/cards-examples.json`, `scripts/`, `package.json`, `server-config.json`, `public/websocket-config.json`, and `version.json`.
 
 ### Deploying a Release
 
