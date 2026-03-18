@@ -1,27 +1,45 @@
+/* ================================================
+   UPTIME CARD — alinhado ao design system
+   ================================================ */
+
 .uptime-card {
   user-select: text;
   -webkit-user-drag: none;
   pointer-events: auto;
-
   height: 100%;
   overflow-y: auto;
 }
 
+.uptime-card::-webkit-scrollbar {
+  width: 3px;
+}
+
+.uptime-card::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+}
+
 .uptime-card-content {
-  padding: 12px 16px;
-  background-color: #2b2b3d;
+  padding: 10px 14px;
   border-radius: 8px;
-  color: #e0e0e0;
-  font-family: 'Segoe UI', Tahoma, sans-serif;
-  font-size: 0.95rem;
+  color: var(--text);
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  font-size: 0.9rem;
 }
 
 .uptime-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
+  padding: 5px 0;
+  border-bottom: 1px solid var(--border-subtle);
   cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+
+.uptime-header:hover {
+  opacity: 0.85;
 }
 
 .uptime-header-left {
@@ -34,61 +52,76 @@
 }
 
 .uptime-url {
-  color: #93c5fd;
+  color: #7fb3f5;
   text-decoration: none;
   max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  font-size: 0.85rem;
+  transition: color 0.15s ease;
 }
 
 .uptime-url:hover {
+  color: #a8cdf8;
   text-decoration: underline;
 }
 
 .uptime-status-indicator {
-  padding: 4px 10px;
+  padding: 3px 10px;
   border-radius: 20px;
-  font-size: 0.85rem;
+  font-size: 0.75rem;
   font-weight: 600;
   text-transform: uppercase;
+  letter-spacing: 0.05em;
+  flex-shrink: 0;
   transition: background-color 0.3s ease;
 }
 
 .uptime-status-indicator.online {
-  background-color: #2d6333;
-  color: #a0f5b3;
+  background-color: rgba(45, 99, 51, 0.6);
+  color: #6ee78e;
+  border: 1px solid rgba(110, 231, 142, 0.2);
 }
 
 .uptime-status-indicator.offline {
-  background-color: #632d2d;
-  color: #f5b3b3;
+  background-color: rgba(99, 45, 45, 0.6);
+  color: #f58a8a;
+  border: 1px solid rgba(245, 138, 138, 0.2);
 }
 
 .uptime-footer {
-  font-size: 0.85rem;
-  color: #bbbbbb;
+  font-size: 0.78rem;
+  color: var(--text-muted);
   margin-top: auto;
   display: flex;
   gap: 4px;
-  padding-top: 10px;
+  padding-top: 8px;
 }
 
 .uptime-label {
   font-weight: 500;
-  color: #999;
+  color: var(--text-muted);
 }
 
 .uptime-meta {
   font-size: 0.75rem;
-  color: #999;
-  line-height: 1.3;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+.uptime-meta .uptime-time {
+  padding: 3px 0 3px 20px;
+}
+
+.uptime-meta .uptime-time:last-child {
+  padding-bottom: 8px;
 }
 
 .collapsible {
   max-height: 0;
   overflow: hidden;
-  transition: max-height 0.3s ease;
+  transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .collapsible.expanded {
@@ -96,10 +129,12 @@
 }
 
 .uptime-toggle-icon {
-  transition: transform 0.3s ease;
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  flex-shrink: 0;
 }
 
 .uptime-header.expanded .uptime-toggle-icon {
   transform: rotate(90deg);
 }
-

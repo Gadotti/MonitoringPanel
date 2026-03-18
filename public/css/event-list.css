@@ -1,32 +1,50 @@
+/* ================================================
+   EVENT LIST — alinhado ao design system
+   ================================================ */
+
 .event-list {
   list-style: none;
   padding: 0;
   margin: 0;
-  font-size: 0.9rem;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-size: 0.85rem;
+  font-family: 'Segoe UI', system-ui, sans-serif;
   height: 100%;
   overflow-y: auto;
+}
+
+.event-list::-webkit-scrollbar {
+  width: 3px;
+}
+
+.event-list::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
 }
 
 .event-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 6px;
-  padding: 4px 6px;
-  border-bottom: 1px solid #f17777;
+  gap: 8px;
+  padding: 5px 8px;
+  border-bottom: 1px solid rgba(241, 119, 119, 0.2);
   background-color: transparent;
+  transition: background-color 0.15s ease;
 }
 
 .event-item:nth-child(even) {
-  background-color: #353548;
+  background-color: rgba(255, 255, 255, 0.025);
+}
+
+.event-item:hover {
+  background-color: rgba(255, 255, 255, 0.04);
 }
 
 .event-date {
-  flex: 0 0 130px;
-  color: #555;
-  font-family: monospace;
-  font-size: small;
+  flex: 0 0 128px;
+  color: var(--text-muted);
+  font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+  font-size: 0.75rem;
 }
 
 .event-name {
@@ -34,22 +52,26 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  color: #ffffffaf;
+  color: var(--text);
 }
 
 .event-link {
   flex: 0 0 auto;
-  color: #ffffffaf;
+  color: var(--accent);
   text-decoration: none;
   font-weight: 500;
-  font-size: small;
+  font-size: 0.78rem;
+  opacity: 0.8;
+  transition: opacity 0.15s ease;
 }
 
 .event-link:hover {
+  opacity: 1;
   text-decoration: underline;
 }
 
-.event-list, .event-item {
+.event-list,
+.event-item {
   user-select: text;
   -webkit-user-drag: none;
 }

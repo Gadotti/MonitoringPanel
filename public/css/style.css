@@ -1,11 +1,33 @@
+/* ================================================
+   TOKENS GLOBAIS — alinhados ao drawer.css
+   ================================================ */
+:root {
+  --app-bg:          #1c1c28;
+  --surface-bg:      #252535;
+  --card-bg:         #2b2b3d;
+  --border-subtle:   rgba(255, 255, 255, 0.07);
+  --border-mid:      rgba(255, 255, 255, 0.11);
+  --text:            #c8c8d4;
+  --text-muted:      #6b6b80;
+  --text-bright:     #f0f0f5;
+  --accent:          #cc785c;
+  --accent-hover:    #d98b71;
+  --danger:          #c0392b;
+  --danger-hover:    #a93226;
+  --ease-std:        cubic-bezier(0.4, 0, 0.2, 1);
+  --radius-sm:       6px;
+  --radius-md:       8px;
+  --radius-lg:       12px;
+}
+
 /* ------------------------------
    Reset e corpo
 ------------------------------- */
 body {
   margin: 0;
-  background-color: #1e1e2f;
-  font-family: Arial, sans-serif;
-  color: white;
+  background-color: var(--app-bg);
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  color: var(--text);
 }
 
 .iframe-overlay {
@@ -20,41 +42,48 @@ body {
 }
 
 /* ------------------------------
-    Grid — margem gerenciada pelo drawer.css
+    Grid
 ------------------------------- */
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   grid-auto-rows: 200px;
-  gap: 15px;
-  padding: 15px;
-  /* margin-left é controlado por drawer.css via variável CSS */
+  gap: 14px;
+  padding: 14px;
 }
 
 /* ------------------------------
     Cards
 ------------------------------- */
 .card {
-  background-color: #2b2b3d;
-  border-radius: 10px;
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
   padding: 10px;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.35);
   display: flex;
   flex-direction: column;
   overflow: hidden;
   position: relative;
   user-select: none;
   min-height: 0;
+  transition: box-shadow 0.2s var(--ease-std), border-color 0.2s var(--ease-std);
+}
+
+.card:hover {
+  border-color: var(--border-mid);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.45);
 }
 
 .card-header {
   position: relative;
-  padding: 6px 10px;
-  background-color: #2b2b3d;
-  color: #fff;
-  font-weight: bold;
-  font-size: 1rem;
-  border-bottom: 1px solid #444;
+  padding: 5px 10px;
+  background-color: var(--card-bg);
+  color: var(--text-bright);
+  font-weight: 600;
+  font-size: 0.88rem;
+  letter-spacing: 0.01em;
+  border-bottom: 1px solid var(--border-subtle);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -68,10 +97,10 @@ body {
 
 .card-header .title:active {
   cursor: grabbing;
-} 
+}
 
 .card-controls,
-.card-zoom-controls  {
+.card-zoom-controls {
   position: absolute;
   top: 34%;
   transform: translateY(-50%);
@@ -79,25 +108,25 @@ body {
 }
 
 .card-controls {
-  right: 10px;
+  right: 8px;
 }
 
 .card-zoom-controls {
-  left: 10px;
+  left: 8px;
 }
 
 .card-controls button,
 .card-zoom-controls button {
   background: none;
   border: none;
-  color: #aaa;    
+  color: var(--text-muted);
   cursor: pointer;
-  transition: color 0.2s ease;
+  transition: color 0.18s var(--ease-std);
 }
 
 .card-controls button:hover,
 .card-zoom-controls button:hover {
-  color: #fff;
+  color: var(--text-bright);
 }
 
 .settings-button,
@@ -114,41 +143,39 @@ body {
   font-size: 0.6rem;
 }
 
-/* ******************************** */
-  
 .card-content {
   flex-grow: 1;
   max-height: 100%;
-  padding-right: 8px;
+  padding-right: 6px;
   height: 100%;
   min-height: 0;
 }
+
 .card-content::-webkit-scrollbar {
-  width: 6px;
+  width: 3px;
 }
 
 .card-content::-webkit-scrollbar-thumb {
-  background-color: rgba(255, 255, 255, 0.2);
-  border-radius: 3px;
+  background-color: rgba(255, 255, 255, 0.12);
+  border-radius: 2px;
 }
 
 .card.dragging {
-  opacity: 0.5;
+  opacity: 0.45;
   transform: scale(0.98);
 }
 
 /* ------------------------------
-    Modal
+    Modal — backdrop
 ------------------------------- */
 .modal {
   display: none;
   position: fixed;
   z-index: 999;
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0,0,0,0.7);
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
   justify-content: center;
   align-items: center;
 }
@@ -157,66 +184,78 @@ body {
   display: flex;
 }
 
+/* ------------------------------
+    Modal — painel
+------------------------------- */
 .modal-content {
-  background-color: #2b2b3d;
-  padding: 20px;
-  border-radius: 10px;
-  width: 450px;
+  background-color: var(--surface-bg);
+  border: 1px solid var(--border-mid);
+  padding: 24px;
+  border-radius: var(--radius-lg);
+  width: 420px;
   max-width: 95%;
-  box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+  box-shadow:
+    0 8px 40px rgba(0, 0, 0, 0.55),
+    0 2px 8px rgba(0, 0, 0, 0.3);
   display: flex;
   flex-direction: column;
-  gap: 15px;
-}
-
-.btn-remove {
-  background-color: #e74c3c;
-  color: white;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.btn-remove:hover {
-  background-color: #c0392b;
+  gap: 16px;
 }
 
 .modal-content h2 {
-  margin-top: 0;
+  margin: 0;
   text-align: center;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-bright);
+  letter-spacing: 0.01em;
 }
 
+/* ------------------------------
+    Modal — linhas de form
+------------------------------- */
 .modal-row {
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 6px;
 }
 
 .modal-row label {
-  font-size: 0.85rem;
-  color: #aaa;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
 }
 
 .modal-row input {
-  background-color: #1e1e2f;
-  border: 1px solid #444;
-  border-radius: 4px;
-  color: white;
-  padding: 6px 10px;
-  font-size: 0.9rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-mid);
+  border-radius: var(--radius-md);
+  color: var(--text-bright);
+  padding: 8px 12px;
+  font-size: 0.88rem;
+  font-family: inherit;
+  transition: border-color 0.18s var(--ease-std), background 0.18s var(--ease-std);
+  outline: none;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .modal-row input:focus {
-  outline: none;
-  border-color: #3498db;
+  border-color: var(--accent);
+  background: rgba(255, 255, 255, 0.08);
 }
 
+/* ------------------------------
+    Modal — ações
+------------------------------- */
 .modal-actions {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
+  padding-top: 4px;
 }
 
 .left-actions,
@@ -225,37 +264,124 @@ body {
   gap: 8px;
 }
 
-.btn-close {
-  background-color: #555;
-  color: white;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 4px;
+/* Botão base */
+.btn-close,
+.btn-apply,
+.btn-remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 7px 16px;
+  border-radius: var(--radius-md);
+  border: 1px solid transparent;
+  font-family: inherit;
+  font-size: 0.83rem;
+  font-weight: 500;
   cursor: pointer;
+  white-space: nowrap;
+  transition: background-color 0.18s var(--ease-std),
+              border-color 0.18s var(--ease-std),
+              color 0.18s var(--ease-std);
+}
+
+/* Fechar — neutro com borda */
+.btn-close {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: var(--border-mid);
+  color: var(--text);
 }
 
 .btn-close:hover {
-  background-color: #666;
+  background: rgba(255, 255, 255, 0.09);
+  border-color: rgba(255, 255, 255, 0.18);
+  color: var(--text-bright);
 }
 
+/* Aplicar — accent */
 .btn-apply {
-  background-color: #3498db;
-  color: white;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 4px;
-  cursor: pointer;
+  background: var(--accent);
+  border-color: transparent;
+  color: #fff;
 }
 
 .btn-apply:hover {
-  background-color: #2980b9;
+  background: var(--accent-hover);
 }
 
+/* Remover — destrutivo sutil */
+.btn-remove {
+  background: rgba(192, 57, 43, 0.15);
+  border-color: rgba(192, 57, 43, 0.3);
+  color: #e57373;
+}
+
+.btn-remove:hover {
+  background: rgba(192, 57, 43, 0.28);
+  border-color: rgba(192, 57, 43, 0.5);
+  color: #ef9a9a;
+}
+
+/* Ações do modal de adicionar cards */
 .add-card-actions {
   display: flex;
   justify-content: flex-end;
   gap: 8px;
-  margin-top: 10px;
+  padding-top: 4px;
+}
+
+/* Lista de seleção de cards */
+#card-selection-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 320px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+#card-selection-list::-webkit-scrollbar {
+  width: 3px;
+}
+
+#card-selection-list::-webkit-scrollbar-thumb {
+  background: var(--border-mid);
+  border-radius: 2px;
+}
+
+#card-selection-list div {
+  border-radius: var(--radius-sm);
+}
+
+#card-selection-list label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  cursor: pointer;
+  color: var(--text);
+  font-size: 0.88rem;
+  border-radius: var(--radius-sm);
+  transition: background-color 0.15s var(--ease-std), color 0.15s var(--ease-std);
+}
+
+#card-selection-list label:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-bright);
+}
+
+#card-selection-list input[type="checkbox"] {
+  accent-color: var(--accent);
+  width: 14px;
+  height: 14px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+#card-selection-list p {
+  margin: 0;
+  padding: 12px 4px;
+  color: var(--text-muted);
+  font-size: 0.85rem;
 }
 
 /* ------------------------------

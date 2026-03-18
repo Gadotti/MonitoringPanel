@@ -48,8 +48,16 @@
     "zoom": 0.62
   },
   {
-    "id": "ransom-look-chart",
+    "id": "pendencias-ti",
     "order": 6,
+    "title": "Pendências de TI",
+    "columns": 2,
+    "rows": 1,
+    "zoom": 1
+  },
+  {
+    "id": "ransom-look-chart",
+    "order": 7,
     "title": "Chart: Breaches - All",
     "columns": 1,
     "rows": 1,
@@ -57,7 +65,7 @@
   },
   {
     "id": "trafego-mbps",
-    "order": 7,
+    "order": 8,
     "title": "Tráfego de Rede",
     "columns": 1,
     "rows": 1,
@@ -65,17 +73,17 @@
   },
   {
     "id": "detecoes-ameaças",
-    "order": 8,
+    "order": 9,
     "title": "Ameaças Detectadas",
     "columns": 1,
     "rows": 1,
     "zoom": 1
   },
   {
-    "id": "pendencias-ti",
-    "order": 9,
-    "title": "Pendências de TI",
-    "columns": 1,
+    "id": "cve-check",
+    "order": 10,
+    "title": "CVE's Board",
+    "columns": 3,
     "rows": 1,
     "zoom": 1
   }
