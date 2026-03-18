@@ -1,8 +1,8 @@
-# CLAUDE.md — Painel de Monitoramento
+# CLAUDE.md — Painel 42
 
 ## Project Overview
 
-**Painel de Monitoramento** is a self-hosted, real-time security and infrastructure monitoring dashboard. It renders configurable card-based layouts with charts, event lists, uptime monitors, CVE asset reports, and embedded iframes. The dashboard supports multiple named "views", each with its own independently saved layout, and updates cards in real time via WebSocket when their source data files change on disk.
+**Painel 42** is a self-hosted, real-time security and infrastructure monitoring dashboard. It renders configurable card-based layouts with charts, event lists, uptime monitors, CVE asset reports, and embedded iframes. The dashboard supports multiple named "views", each with its own independently saved layout, and updates cards in real time via WebSocket when their source data files change on disk.
 
 The project is designed to be lightweight and local-first: data is produced externally by Python scripts (e.g., uptime checkers, CVE scanners, breach feed consumers) and written to JSON/CSV files that the server watches and broadcasts changes from.
 
@@ -31,9 +31,11 @@ painel/
 │
 ├── public/                            # Static assets served to the browser
 │   ├── index.html                     # Single-page app shell
+│   ├── favicon.svg                    # SVG favicon — ícone dos quadradinhos (accent #cc785c)
 │   ├── websocket-config.json          # WebSocket host/port for the frontend
 │   ├── css/
-│   │   ├── style.css                  # Global layout, grid, cards, modals
+│   │   ├── style.css                  # Global layout, grid, cards, modals + design tokens (:root)
+│   │   ├── drawer.css                 # Menu gaveta lateral flutuante + design tokens do drawer
 │   │   ├── event-list.css             # List card styles
 │   │   ├── frame-card.css             # iframe card + zoom controls
 │   │   ├── highlight.css              # Card update pulse animation
@@ -41,14 +43,16 @@ painel/
 │   │   └── cve-assets.css             # CVE assets board styles
 │   └── js/
 │       ├── consts.js                  # DOM references and shared state
+│       ├── drawer.js                  # Drawer toggle, estado persistido em localStorage, carga de versão
 │       ├── script.js                  # Core: layout load/save, card rendering, content loaders
 │       ├── eventListeners.js          # DOM event wiring, card interaction init
 │       ├── carddrag.js                # Drag-and-drop card reordering
 │       ├── resizecards.js             # Mouse-resize card spans
 │       ├── cardsettings.js            # Settings modal (title, cols, rows, remove)
-│       ├── addcards.js                # Add-card modal
+│       ├── addcards.js                # Add-card modal (abertura imediata + fetches paralelos)
 │       ├── socketListeners.js         # WebSocket connection and update handling
-│       └── helpers.js                 # CSV parsing utilities
+│       ├── helpers.js                 # CSV parsing utilities
+│       └── view-selector.js           # Dropdown customizado de seleção de visão (sincronizado ao <select> oculto)
 │
 ├── cards/
 │   ├── cards-list.json                # Master registry of all available cards
@@ -114,10 +118,26 @@ painel/
 ### Frontend
 
 - The app is a single HTML page. JavaScript files are loaded in a strict dependency order via `<script>` tags in `index.html`. There is no bundler.
+- **Ordem de carregamento dos scripts** (deve ser respeitada):
+  `consts.js` → `drawer.js` → `cardsettings.js` → `carddrag.js` → `resizecards.js` → `addcards.js` → `helpers.js` → `script.js` → `eventListeners.js` → `socketListeners.js` → `view-selector.js`
 - **State is minimal and explicit**: `consts.js` holds all shared DOM references and mutable globals (`currentCard`, `draggedItem`, `resizing`, `selectedView`, `chartInstances`).
 - Cards are rendered from two merged sources: the layout config (order, spans, title, zoom) merged over the card definition (type, data, source paths).
 - Card content loading is **type-dispatched** in `loadCardsContent()` → one function per `cardType` (`chart`, `list`, `uptime`, `cve-assets`, `frame`).
 - Real-time updates use a single WebSocket connection per page load. On reconnection (view change), `signSocketListeners()` re-registers all current cards.
+
+### Navegação — Menu Gaveta Lateral
+
+- O `.top-bar` (header fixo) foi removido. A navegação é feita pelo `<aside class="side-drawer">`, um menu gaveta flutuante à esquerda.
+- O drawer possui dois estados: **recolhido** (`56px` — apenas ícones) e **expandido** (`240px` — ícones + labels). O estado é persistido em `localStorage` com a chave `drawer_expanded`.
+- `drawer.js` gerencia o toggle, o overlay mobile e carrega a versão via `GET /version` para exibir no rodapé do drawer.
+- A seleção de visão usa um dropdown completamente customizado (`.view-selector-custom`). O `<select id="view-selector">` permanece no DOM como fonte de verdade — todo o código existente que referencia `viewSelector` continua funcionando sem alteração. `view-selector.js` sincroniza o dropdown customizado ao select oculto via `MutationObserver` e despacha eventos `change` nativos.
+- O ícone principal do drawer (quatro quadradinhos) usa a cor accent `#cc785c` e é também o `favicon.svg` do projeto.
+
+### Add Card — comportamento
+
+- `addcards.js`: ao clicar em "Adicionar Card", o modal abre **imediatamente** com mensagem de carregamento.
+- Os dois fetches necessários (`fetchAvailableCards` e `fetchLayout`) são disparados em paralelo com `Promise.all`.
+- Se `availableCards` já estiver populado de um carregamento anterior, o fetch de cards é pulado (cache em memória).
 
 ### Data Flow
 
@@ -169,7 +189,25 @@ A card definition lives in `cards/cards-list.json`. Its structure is documented 
 
 - **BEM-style class naming** for card component internals: `.asset-card`, `.asset-card-content`, `.asset-row`, `.asset-collapsible`.
 - Each card type has its own CSS file under `public/css/`. Do not add cross-card styles to a card-specific file.
-- Dark theme base colors: background `#1e1e2f`, card surface `#2b2b3d`, border `#444`, dimmed text `#aaa`.
+- **Design tokens** — as cores e valores de espaçamento base estão definidos como custom properties em `:root` em `style.css`. Usar sempre as variáveis, nunca valores hexadecimais fixos em arquivos de componentes:
+
+  | Token | Valor | Uso |
+  |---|---|---|
+  | `--app-bg` | `#1c1c28` | Fundo da página |
+  | `--surface-bg` | `#252535` | Superfície de modais e dropdowns |
+  | `--card-bg` | `#2b2b3d` | Fundo dos cards |
+  | `--border-subtle` | `rgba(255,255,255,0.07)` | Bordas de cards e separadores |
+  | `--border-mid` | `rgba(255,255,255,0.11)` | Bordas de inputs e modais |
+  | `--text` | `#c8c8d4` | Texto padrão |
+  | `--text-muted` | `#6b6b80` | Labels, metadados |
+  | `--text-bright` | `#f0f0f5` | Títulos e texto em destaque |
+  | `--accent` | `#cc785c` | Cor de destaque (botão apply, check, ícone logo) |
+  | `--ease-std` | `cubic-bezier(0.4,0,0.2,1)` | Curva de easing padrão para transições |
+  | `--radius-sm/md/lg` | `6px / 8px / 12px` | Border-radius padronizados |
+
+- **Fonte base:** `'Segoe UI', system-ui, -apple-system, sans-serif` (não usar `Arial`).
+- **Scrollbars:** largura `3px`, thumb `rgba(255,255,255,0.12)`, border-radius `2px` — padrão em todos os componentes.
+- **Colapsáveis:** o padding de espaçamento **nunca** deve estar no elemento com `max-height: 0` — colocar nos filhos internos para evitar que o padding vaze visualmente quando recolhido.
 - Use CSS `max-height` + `overflow: hidden` transitions for smooth expand/collapse, not `display: none` toggling.
 
 ---
@@ -208,7 +246,8 @@ A build falha automaticamente se a cobertura cair abaixo desses limites.
 
 ### Regras de mock
 
-- **`fs`** — nunca mockar o módulo inteiro (`jest.mock('fs')`). Usar sempre a factory com `jest.requireActual` para preservar o `fs` real que `express.static` usa internamente:
+- **`fs`** — nunca mockar o módulo inteiro (`jest.mock('fs')`).
+  Usar sempre a factory com `jest.requireActual` para preservar o `fs` real que `express.static` usa internamente:
   ```js
   jest.mock('fs', () => ({
     ...jest.requireActual('fs'),
@@ -229,6 +268,7 @@ A build falha automaticamente se a cobertura cair abaixo desses limites.
 |---|---|
 | `server-config.json` | Change HTTP port, bind address, or Python executable name |
 | `public/websocket-config.json` | Change WebSocket port seen by the browser |
+| `public/favicon.svg` | SVG favicon — ícone dos quadradinhos accent |
 | `configs/views.json` | Add or rename dashboard views |
 | `configs/layout.config-{view}.json` | Per-view layout (auto-created on first save) |
 | `cards/cards-list.json` | Master card registry — add new cards here |
