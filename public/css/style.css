@@ -385,6 +385,128 @@ body {
 }
 
 /* ------------------------------
+    Modal de Gerenciamento de Visões
+------------------------------- */
+.mv-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.mv-slug-preview {
+  margin: 0;
+  font-size: 0.75rem;
+  font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+  color: var(--text-muted);
+  min-height: 1em;
+}
+
+.mv-list-label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.mv-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 220px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.mv-list::-webkit-scrollbar {
+  width: 3px;
+}
+
+.mv-list::-webkit-scrollbar-thumb {
+  background: var(--border-mid);
+  border-radius: 2px;
+}
+
+.mv-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 8px;
+  border-radius: var(--radius-sm);
+  transition: background-color 0.15s var(--ease-std);
+}
+
+.mv-row:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.mv-title {
+  flex: 1;
+  font-size: 0.88rem;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mv-slug {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+  white-space: nowrap;
+}
+
+.mv-delete-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 3px 5px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  transition: color 0.15s var(--ease-std), background-color 0.15s var(--ease-std);
+  flex-shrink: 0;
+}
+
+.mv-delete-btn:hover {
+  color: #f58a8a;
+  background: rgba(192, 57, 43, 0.15);
+}
+
+.mv-feedback {
+  font-size: 0.82rem;
+  min-height: 1.2em;
+  border-radius: var(--radius-sm);
+  padding: 0;
+  transition: all 0.15s ease;
+}
+
+.mv-feedback--success {
+  color: #6ee78e;
+  padding: 6px 10px;
+  background: rgba(45, 99, 51, 0.2);
+  border: 1px solid rgba(110, 231, 142, 0.15);
+}
+
+.mv-feedback--error {
+  color: #f58a8a;
+  padding: 6px 10px;
+  background: rgba(192, 57, 43, 0.15);
+  border: 1px solid rgba(192, 57, 43, 0.25);
+}
+
+.mv-loading,
+.mv-empty {
+  margin: 0;
+  padding: 10px 4px;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+/* ------------------------------
     Resize handles
 ------------------------------- */
 .resize-handle {

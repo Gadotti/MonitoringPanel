@@ -27,7 +27,8 @@ painel/
 │   ├── api.layout.save.test.js        # POST /api/layout/:viewName
 │   ├── api.meta.test.js               # GET /api/views, /api/cards, /version
 │   ├── api.csv.test.js                # GET /api/partial-csv
-│   └── api.chartdata.test.js          # POST /api/chart-data
+│   ├── api.chartdata.test.js          # POST /api/chart-data
+│   └── api.views.manage.test.js       # POST /api/views, DELETE /api/views/:viewName
 │
 ├── public/                            # Static assets served to the browser
 │   ├── index.html                     # Single-page app shell
@@ -52,7 +53,8 @@ painel/
 │       ├── addcards.js                # Add-card modal (abertura imediata + fetches paralelos)
 │       ├── socketListeners.js         # WebSocket connection and update handling
 │       ├── helpers.js                 # CSV parsing utilities
-│       └── view-selector.js           # Dropdown customizado de seleção de visão (sincronizado ao <select> oculto)
+│       ├── view-selector.js           # Dropdown customizado de seleção de visão (sincronizado ao <select> oculto)
+│       └── manageviews.js             # Modal de criar/excluir visões (chama POST e DELETE /api/views)
 │
 ├── cards/
 │   ├── cards-list.json                # Master registry of all available cards
@@ -119,7 +121,7 @@ painel/
 
 - The app is a single HTML page. JavaScript files are loaded in a strict dependency order via `<script>` tags in `index.html`. There is no bundler.
 - **Ordem de carregamento dos scripts** (deve ser respeitada):
-  `consts.js` → `drawer.js` → `cardsettings.js` → `carddrag.js` → `resizecards.js` → `addcards.js` → `helpers.js` → `script.js` → `eventListeners.js` → `socketListeners.js` → `view-selector.js`
+  `consts.js` → `drawer.js` → `cardsettings.js` → `carddrag.js` → `resizecards.js` → `addcards.js` → `helpers.js` → `script.js` → `eventListeners.js` → `socketListeners.js` → `view-selector.js` → `manageviews.js`
 - **State is minimal and explicit**: `consts.js` holds all shared DOM references and mutable globals (`currentCard`, `draggedItem`, `resizing`, `selectedView`, `chartInstances`).
 - Cards are rendered from two merged sources: the layout config (order, spans, title, zoom) merged over the card definition (type, data, source paths).
 - Card content loading is **type-dispatched** in `loadCardsContent()` → one function per `cardType` (`chart`, `list`, `uptime`, `cve-assets`, `frame`).
@@ -132,6 +134,14 @@ painel/
 - `drawer.js` gerencia o toggle, o overlay mobile e carrega a versão via `GET /version` para exibir no rodapé do drawer.
 - A seleção de visão usa um dropdown completamente customizado (`.view-selector-custom`). O `<select id="view-selector">` permanece no DOM como fonte de verdade — todo o código existente que referencia `viewSelector` continua funcionando sem alteração. `view-selector.js` sincroniza o dropdown customizado ao select oculto via `MutationObserver` e despacha eventos `change` nativos.
 - O ícone principal do drawer (quatro quadradinhos) usa a cor accent `#cc785c` e é também o `favicon.svg` do projeto.
+
+### Gerenciar Visões — comportamento
+
+- O modal de "Gerenciar Visões" é controlado por `manageviews.js` e aberto pelo botão homônimo no drawer.
+- **Criar visão:** o campo de nome gera um preview em tempo real do slug (`layout.config-{slug}.json`) enquanto o usuário digita. Ao confirmar, o frontend chama `POST /api/views` com `{ title }`. O backend gera o slug com `slugify()`, valida duplicatas (409) e cria simultaneamente a entrada em `views.json` e o arquivo `layout.config-{slug}.json` vazio.
+- **Excluir visão:** cada visão listada tem um botão de lixeira. Ao clicar, um `confirm()` nativo solicita confirmação antes de chamar `DELETE /api/views/:viewName`. O backend remove a entrada de `views.json` e deleta o arquivo de layout correspondente se ele existir.
+- Após criar ou excluir, `manageviews.js` chama `loadViewOptions()` para atualizar o dropdown de seleção de visão sem recarregar a página.
+- **Regra de slugify:** título → remove diacríticos → lowercase → espaços para hífens → remove caracteres especiais → remove hífens nas bordas. A mesma função existe no backend (`app.js`) e no frontend (`manageviews.js`) para garantir consistência.
 
 ### Add Card — comportamento
 
@@ -242,6 +252,8 @@ A build falha automaticamente se a cobertura cair abaixo desses limites.
 | `api.meta.test.js` | `GET /api/views`, `/api/cards`, `/version` | leitura OK → 200; erro → 500; JSON inválido → 500 |
 | `api.csv.test.js` | `GET /api/partial-csv` | sem `file` → 400; arquivo inexistente → 404; header sempre incluso; respeita `limit`; erro de stream → 500 |
 | `api.chartdata.test.js` | `POST /api/chart-data` | sem `scriptPath` → 400; exit 0 → 200 com stdout; exit != 0 → 500 com stderr; executável configurável; output trimado |
+| `api.views.manage.test.js` | `POST /api/views` | title ausente/vazio → 400; slug duplicado → 409; erro de leitura → 500; erro de escrita → 500; cria visão + layout vazio → 201; slug gerado corretamente (acentos, espaços) |
+| `api.views.manage.test.js` | `DELETE /api/views/:viewName` | visão inexistente → 404; erro de leitura → 500; erro de escrita → 500; remove entrada correta; chama `unlink` quando arquivo existe; não chama `unlink` quando não existe → 200 |
 | `app.smoke.test.js` | — | `createApp` retorna app Express válido; SPA fallback captura rotas desconhecidas |
 
 ### Regras de mock
@@ -254,6 +266,7 @@ A build falha automaticamente se a cobertura cair abaixo desses limites.
     existsSync: jest.fn(),
     readFile:   jest.fn(),
     writeFile:  jest.fn(),
+    unlink:     jest.fn(),
     createReadStream: jest.fn(),
   }));
   ```
@@ -283,6 +296,8 @@ A build falha automaticamente se a cobertura cair abaixo desses limites.
 | Method | Path | Description |
 |---|---|---|
 | `GET` | `/api/views` | Returns `configs/views.json` |
+| `POST` | `/api/views` | Cria nova visão: salva em `views.json` e cria `layout.config-{slug}.json` vazio |
+| `DELETE` | `/api/views/:viewName` | Remove visão de `views.json` e deleta o arquivo de layout correspondente |
 | `GET` | `/api/cards` | Returns `cards/cards-list.json` |
 | `GET` | `/api/layout/:viewName` | Returns layout config for a view (empty array if not found) |
 | `POST` | `/api/layout/:viewName` | Saves full layout config for a view |

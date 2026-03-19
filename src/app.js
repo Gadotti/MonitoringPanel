@@ -35,6 +35,22 @@ function createApp(config = {}) {
     return path.join(CONFIGS_PATH, `layout.config-${viewName}.json`);
   }
 
+  /**
+   * Converte um título livre num slug seguro para nome de arquivo.
+   * Ex: "Minha Visão"  →  "minha-visao"
+   */
+  function slugify(str) {
+    return str
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')   // remove diacríticos
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9\s-]/g, '')      // remove caracteres especiais
+      .replace(/\s+/g, '-')              // espaços → hífens
+      .replace(/-+/g, '-')              // hífens múltiplos → um
+      .replace(/^-+|-+$/g, '');          // remove hífens nas bordas
+  }
+
   // ------------------------------------------------------------------ GET /api/layout/:viewName
   app.get('/api/layout/:viewName', (req, res) => {
     const viewPath = layoutPath(req.params.viewName);
@@ -78,6 +94,94 @@ function createApp(config = {}) {
       } catch {
         res.status(500).json({ error: 'Erro ao interpretar visões' });
       }
+    });
+  });
+
+  // ------------------------------------------------------------------ POST /api/views
+  app.post('/api/views', (req, res) => {
+    const { title } = req.body;
+
+    if (!title || !title.trim()) {
+      return res.status(400).json({ error: 'O campo "title" é obrigatório.' });
+    }
+
+    const value = slugify(title.trim());
+
+    if (!value) {
+      return res.status(400).json({ error: 'Título inválido: não gerou um identificador válido.' });
+    }
+
+    fs.readFile(VIEWS_PATH, 'utf8', (err, data) => {
+      if (err) {
+        return res.status(500).json({ error: 'Erro ao ler visões' });
+      }
+
+      let views;
+      try {
+        views = JSON.parse(data);
+      } catch {
+        return res.status(500).json({ error: 'Erro ao interpretar visões' });
+      }
+
+      if (views.some(v => v.value === value)) {
+        return res.status(409).json({ error: `Já existe uma visão com o identificador "${value}".` });
+      }
+
+      const newView = { value, title: title.trim() };
+      views.push(newView);
+
+      fs.writeFile(VIEWS_PATH, JSON.stringify(views, null, 2), 'utf8', (writeErr) => {
+        if (writeErr) {
+          return res.status(500).json({ error: 'Erro ao salvar visões' });
+        }
+
+        // Cria o arquivo de layout vazio para a nova visão
+        const lPath = layoutPath(value);
+        fs.writeFile(lPath, '[]', 'utf8', (layoutErr) => {
+          if (layoutErr) {
+            return res.status(500).json({ error: 'Visão criada, mas erro ao inicializar o layout.' });
+          }
+          res.status(201).json(newView);
+        });
+      });
+    });
+  });
+
+  // ------------------------------------------------------------------ DELETE /api/views/:viewName
+  app.delete('/api/views/:viewName', (req, res) => {
+    const { viewName } = req.params;
+
+    fs.readFile(VIEWS_PATH, 'utf8', (err, data) => {
+      if (err) {
+        return res.status(500).json({ error: 'Erro ao ler visões' });
+      }
+
+      let views;
+      try {
+        views = JSON.parse(data);
+      } catch {
+        return res.status(500).json({ error: 'Erro ao interpretar visões' });
+      }
+
+      if (!views.some(v => v.value === viewName)) {
+        return res.status(404).json({ error: `Visão "${viewName}" não encontrada.` });
+      }
+
+      const updated = views.filter(v => v.value !== viewName);
+
+      fs.writeFile(VIEWS_PATH, JSON.stringify(updated, null, 2), 'utf8', (writeErr) => {
+        if (writeErr) {
+          return res.status(500).json({ error: 'Erro ao salvar visões' });
+        }
+
+        // Remove o arquivo de layout se existir (falha silenciosa — não impede o sucesso)
+        const lPath = layoutPath(viewName);
+        if (fs.existsSync(lPath)) {
+          fs.unlink(lPath, () => {});
+        }
+
+        res.sendStatus(200);
+      });
     });
   });
 

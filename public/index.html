@@ -97,6 +97,21 @@
           </div>
         </div>
 
+        <!-- Gerenciar Visões -->
+        <div class="drawer-item add-card-item" title="Gerenciar Visões">
+          <div class="drawer-item-icon add-card-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 20h9"/>
+              <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+            </svg>
+          </div>
+          <div class="add-card-custom">
+            <button class="add-card-trigger" id="btn-manage-views" type="button">
+              <span class="add-card-label">Gerenciar Visões</span>
+            </button>
+          </div>
+        </div>
+
       </nav>
 
       <!-- Rodapé com versão -->
@@ -123,6 +138,38 @@
 
     <!-- 🔥 Grid dos cards -->
     <div class="grid"></div>
+
+    <!-- 🔥 Modal de gerenciamento de visões -->
+    <div id="manage-views-modal" class="modal">
+      <div class="modal-content">
+        <h2>Gerenciar Visões</h2>
+
+        <!-- Criar nova visão -->
+        <div class="mv-section">
+          <div class="modal-row">
+            <label for="new-view-title">Nome da nova visão</label>
+            <input type="text" id="new-view-title" placeholder="Ex: Financeiro" autocomplete="off">
+          </div>
+          <p class="mv-slug-preview" id="new-view-slug-preview"></p>
+          <div style="display:flex; justify-content:flex-end;">
+            <button class="btn-apply" id="btn-create-view">Criar Visão</button>
+          </div>
+        </div>
+
+        <!-- Feedback -->
+        <div class="mv-feedback" id="manage-views-feedback"></div>
+
+        <!-- Lista de visões existentes -->
+        <div class="mv-section">
+          <div class="mv-list-label">Visões existentes</div>
+          <div id="manage-views-list" class="mv-list"></div>
+        </div>
+
+        <div class="add-card-actions">
+          <button class="btn-close" id="close-manage-views-modal">Fechar</button>
+        </div>
+      </div>
+    </div>
 
     <!-- 🔥 Modal de seleção de cards -->
     <div id="add-card-modal" class="modal">
@@ -176,5 +223,6 @@
     <script src="js/eventListeners.js"></script>
     <script src="js/socketListeners.js"></script>
     <script src="js/view-selector.js"></script>
+    <script src="js/manageviews.js"></script>
   </body>
 </html>
