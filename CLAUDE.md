@@ -1,8 +1,8 @@
-# CLAUDE.md — Painel 42
+# CLAUDE.md — Painel de Monitoramento
 
 ## Project Overview
 
-**Painel 42** is a self-hosted, real-time security and infrastructure monitoring dashboard. It renders configurable card-based layouts with charts, event lists, uptime monitors, CVE asset reports, and embedded iframes. The dashboard supports multiple named "views", each with its own independently saved layout, and updates cards in real time via WebSocket when their source data files change on disk.
+**Painel de Monitoramento** is a self-hosted, real-time security and infrastructure monitoring dashboard. It renders configurable card-based layouts with charts, event lists, uptime monitors, CVE asset reports, and embedded iframes. The dashboard supports multiple named "views", each with its own independently saved layout, and updates cards in real time via WebSocket when their source data files change on disk.
 
 The project is designed to be lightweight and local-first: data is produced externally by Python scripts (e.g., uptime checkers, CVE scanners, breach feed consumers) and written to JSON/CSV files that the server watches and broadcasts changes from.
 
@@ -28,7 +28,8 @@ painel/
 │   ├── api.meta.test.js               # GET /api/views, /api/cards, /version
 │   ├── api.csv.test.js                # GET /api/partial-csv
 │   ├── api.chartdata.test.js          # POST /api/chart-data
-│   └── api.views.manage.test.js       # POST /api/views, DELETE /api/views/:viewName
+│   ├── api.views.manage.test.js       # POST /api/views, DELETE /api/views/:viewName
+│   └── api.logs.test.js               # GET /api/logs, GET /api/logs/:filename
 │
 ├── public/                            # Static assets served to the browser
 │   ├── index.html                     # Single-page app shell
@@ -54,7 +55,8 @@ painel/
 │       ├── socketListeners.js         # WebSocket connection and update handling
 │       ├── helpers.js                 # CSV parsing utilities
 │       ├── view-selector.js           # Dropdown customizado de seleção de visão (sincronizado ao <select> oculto)
-│       └── manageviews.js             # Modal de criar/excluir visões (chama POST e DELETE /api/views)
+│       ├── manageviews.js             # Modal de criar/excluir visões (chama POST e DELETE /api/views)
+│       └── logviewer.js               # Modal de visualização de logs de scripts (scripts/logs/*.log)
 │
 ├── cards/
 │   ├── cards-list.json                # Master registry of all available cards
@@ -121,7 +123,7 @@ painel/
 
 - The app is a single HTML page. JavaScript files are loaded in a strict dependency order via `<script>` tags in `index.html`. There is no bundler.
 - **Ordem de carregamento dos scripts** (deve ser respeitada):
-  `consts.js` → `drawer.js` → `cardsettings.js` → `carddrag.js` → `resizecards.js` → `addcards.js` → `helpers.js` → `script.js` → `eventListeners.js` → `socketListeners.js` → `view-selector.js` → `manageviews.js`
+  `consts.js` → `drawer.js` → `cardsettings.js` → `carddrag.js` → `resizecards.js` → `addcards.js` → `helpers.js` → `script.js` → `eventListeners.js` → `socketListeners.js` → `view-selector.js` → `manageviews.js` → `logviewer.js`
 - **State is minimal and explicit**: `consts.js` holds all shared DOM references and mutable globals (`currentCard`, `draggedItem`, `resizing`, `selectedView`, `chartInstances`).
 - Cards are rendered from two merged sources: the layout config (order, spans, title, zoom) merged over the card definition (type, data, source paths).
 - Card content loading is **type-dispatched** in `loadCardsContent()` → one function per `cardType` (`chart`, `list`, `uptime`, `cve-assets`, `frame`).
@@ -134,6 +136,16 @@ painel/
 - `drawer.js` gerencia o toggle, o overlay mobile e carrega a versão via `GET /version` para exibir no rodapé do drawer.
 - A seleção de visão usa um dropdown completamente customizado (`.view-selector-custom`). O `<select id="view-selector">` permanece no DOM como fonte de verdade — todo o código existente que referencia `viewSelector` continua funcionando sem alteração. `view-selector.js` sincroniza o dropdown customizado ao select oculto via `MutationObserver` e despacha eventos `change` nativos.
 - O ícone principal do drawer (quatro quadradinhos) usa a cor accent `#cc785c` e é também o `favicon.svg` do projeto.
+
+### Log Viewer — comportamento
+
+- O modal de "Visualizar Logs" é controlado por `logviewer.js` e aberto pelo botão homônimo no drawer.
+- Ao abrir, chama `GET /api/logs` para listar os arquivos disponíveis e monta o dropdown. **Nenhum arquivo é pré-selecionado** — o usuário deve escolher explicitamente.
+- O dropdown usa o mesmo padrão visual do view selector do drawer (trigger com chevron, painel animado, check icon no item ativo).
+- Ao selecionar um arquivo, chama `GET /api/logs/:filename` e exibe o conteúdo num `<pre>` com scroll automático para o final (logs mais recentes).
+- Os arquivos são lidos de `scripts/logs/`. Apenas arquivos com extensão `.log` são listados; outros arquivos na pasta são ignorados.
+- O backend (`app.js`) bloqueia path traversal (`..`, `/`) e valida extensão `.log` antes de servir qualquer arquivo.
+- `Escape` fecha o dropdown se aberto, ou o modal se o dropdown estiver fechado.
 
 ### Gerenciar Visões — comportamento
 
@@ -254,6 +266,8 @@ A build falha automaticamente se a cobertura cair abaixo desses limites.
 | `api.chartdata.test.js` | `POST /api/chart-data` | sem `scriptPath` → 400; exit 0 → 200 com stdout; exit != 0 → 500 com stderr; executável configurável; output trimado |
 | `api.views.manage.test.js` | `POST /api/views` | title ausente/vazio → 400; slug duplicado → 409; erro de leitura → 500; erro de escrita → 500; cria visão + layout vazio → 201; slug gerado corretamente (acentos, espaços) |
 | `api.views.manage.test.js` | `DELETE /api/views/:viewName` | visão inexistente → 404; erro de leitura → 500; erro de escrita → 500; remove entrada correta; chama `unlink` quando arquivo existe; não chama `unlink` quando não existe → 200 |
+| `api.logs.test.js` | `GET /api/logs` | pasta inexistente → `[]`; pasta vazia → `[]`; filtra somente `.log`; ordena alfabeticamente; readdir com falha → 500 |
+| `api.logs.test.js` | `GET /api/logs/:filename` | conteúdo como text/plain; 404 para arquivo inexistente; 400 por path traversal; 400 por extensão inválida; readFile com falha → 500; caminho correto (`scripts/logs/`) |
 | `app.smoke.test.js` | — | `createApp` retorna app Express válido; SPA fallback captura rotas desconhecidas |
 
 ### Regras de mock
@@ -265,6 +279,7 @@ A build falha automaticamente se a cobertura cair abaixo desses limites.
     ...jest.requireActual('fs'),
     existsSync: jest.fn(),
     readFile:   jest.fn(),
+    readdir:    jest.fn(),
     writeFile:  jest.fn(),
     unlink:     jest.fn(),
     createReadStream: jest.fn(),
@@ -302,6 +317,8 @@ A build falha automaticamente se a cobertura cair abaixo desses limites.
 | `GET` | `/api/layout/:viewName` | Returns layout config for a view (empty array if not found) |
 | `POST` | `/api/layout/:viewName` | Saves full layout config for a view |
 | `GET` | `/api/partial-csv?file=...&limit=N` | Streams last N lines of a CSV file |
+| `GET` | `/api/logs` | Lista arquivos `.log` em `scripts/logs/` (outros arquivos ignorados) |
+| `GET` | `/api/logs/:filename` | Retorna conteúdo de um arquivo `.log` como `text/plain`; valida extensão e bloqueia path traversal |
 | `POST` | `/api/chart-data` | Spawns a Python script and returns its JSON stdout |
 | `GET` | `/version` | Returns `version.json` |
 | `GET` | `/:view?` | Serves `public/index.html` for all other routes (SPA fallback) |

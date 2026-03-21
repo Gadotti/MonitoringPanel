@@ -282,6 +282,49 @@ function createApp(config = {}) {
     });
   });
 
+  // ------------------------------------------------------------------ GET /api/logs
+  app.get('/api/logs', (req, res) => {
+    const logsDir = path.join(rootDir, 'scripts', 'logs');
+
+    if (!fs.existsSync(logsDir)) {
+      return res.json([]);
+    }
+
+    fs.readdir(logsDir, (err, files) => {
+      if (err) {
+        return res.status(500).json({ error: 'Erro ao listar logs' });
+      }
+      const logs = files
+        .filter(f => f.endsWith('.log'))
+        .sort();
+      res.json(logs);
+    });
+  });
+
+  // ------------------------------------------------------------------ GET /api/logs/:filename
+  app.get('/api/logs/:filename', (req, res) => {
+    const { filename } = req.params;
+
+    // Bloqueia traversal e garante somente .log
+    if (filename.includes('..') || filename.includes('/') || !filename.endsWith('.log')) {
+      return res.status(400).json({ error: 'Nome de arquivo inválido.' });
+    }
+
+    const filePath = path.join(rootDir, 'scripts', 'logs', filename);
+
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).json({ error: 'Arquivo não encontrado.' });
+    }
+
+    fs.readFile(filePath, 'utf8', (err, data) => {
+      if (err) {
+        return res.status(500).json({ error: 'Erro ao ler arquivo de log.' });
+      }
+      res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+      res.send(data);
+    });
+  });
+
   // ------------------------------------------------------------------ SPA fallback
   app.get('/:view?', (req, res) => {
     res.sendFile(path.join(rootDir, 'public', 'index.html'));
