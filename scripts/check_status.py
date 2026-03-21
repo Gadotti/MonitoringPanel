@@ -4,6 +4,32 @@ import json
 import argparse
 from urllib.parse import quote
 from datetime import datetime, UTC
+from pathlib import Path
+
+# ---- Constantes de log ----
+_SCRIPT_DIR  = Path(__file__).parent
+_SCRIPT_NAME = Path(__file__).stem   # "check_status"
+_MAX_LOG_SIZE = 500 * 1024           # 500 KB
+
+
+def _write_log(message: str, log_dir: Path) -> None:
+    """Grava uma linha de log no arquivo, rotacionando quando exceder 500 KB.
+
+    Formato: YYYY-MM-DD HH:MM:SS: <mensagem>
+    """
+    log_dir.mkdir(parents=True, exist_ok=True)
+
+    log_file = log_dir / f"{_SCRIPT_NAME}.log"
+
+    # Rotaciona se o arquivo já existe e ultrapassou o tamanho máximo
+    if log_file.exists() and log_file.stat().st_size >= _MAX_LOG_SIZE:
+        old_file = log_dir / f"{_SCRIPT_NAME}_old.old"
+        log_file.rename(old_file)
+
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    with open(log_file, "a", encoding="utf-8") as f:
+        f.write(f"{timestamp}: {message}\n")
+
 
 async def check_service_status(session, url, expectedHttpRespose, timeout):
     try:
@@ -21,7 +47,7 @@ async def check_service_status(session, url, expectedHttpRespose, timeout):
         print(f"Erro ao verificar {url}: {type(e).__name__} - {e}")
         return "offline"
 
-async def update_services_status(filepath, timeout=5):
+async def update_services_status(filepath, timeout=5, log_dir: Path = None):
     # Lê o conteúdo atual do JSON
     with open(filepath, 'r', encoding='utf-8') as f:
         data = json.load(f)
@@ -45,7 +71,7 @@ async def update_services_status(filepath, timeout=5):
     # Atualiza cada serviço com os resultados
     for service, status in zip(services, statuses):
         service['status'] = status
-        await send_notification(data['notificationHook'], service)
+        await send_notification(data['notificationHook'], service, log_dir=log_dir)
 
         if status == "online":
             service['lastStatusOnline'] = now_utc
@@ -61,7 +87,7 @@ async def update_services_status(filepath, timeout=5):
 
     print(f"Status atualizado com sucesso em: {filepath}")
 
-async def send_notification(notificationHook, service):
+async def send_notification(notificationHook, service, log_dir: Path = None):
     """
     Envia notificação para endpoint local conforme o modo configurado em 'notificationHookMode'.
 
@@ -115,7 +141,10 @@ async def send_notification(notificationHook, service):
             return
 
     else:
-        print(f"notificationHookMode desconhecido: '{mode}'. Notificação ignorada para {name}.")
+        msg = f"notificationHookMode desconhecido: '{mode}'. Notificação ignorada para {name}."
+        print(msg)
+        if log_dir is not None:
+            _write_log(msg, log_dir)
         return
 
     notify_url = (
@@ -130,19 +159,38 @@ async def send_notification(notificationHook, service):
         async with aiohttp.ClientSession() as session:
             async with session.get(notify_url) as response:
                 if response.status < 400:
-                    print(f"🔔 Notificação enviada com sucesso para {name} ({url})")
+                    msg = f"🔔 Notificação enviada com sucesso para {name} ({url})"
+                    print(msg)
+                    if log_dir is not None:
+                        _write_log(msg, log_dir)
                 else:
-                    print(f"⚠️ Falha ao enviar notificação ({response.status}) para {name}")
+                    msg = f"⚠️ Falha ao enviar notificação ({response.status}) para {name}"
+                    print(msg)
+                    if log_dir is not None:
+                        _write_log(msg, log_dir)
     except Exception as e:
-        print(f"Erro ao enviar notificação para {name} ({url}): {type(e).__name__} - {e}")
+        msg = f"Erro ao enviar notificação para {name} ({url}): {type(e).__name__} - {e}"
+        print(msg)
+        if log_dir is not None:
+            _write_log(msg, log_dir)
 
 def main():
     parser = argparse.ArgumentParser(description="Verifica múltiplos serviços HTTP definidos em um JSON")
     parser.add_argument('json_file', help='Caminho para o arquivo JSON com as URLs a verificar')
     parser.add_argument('--timeout', type=int, default=5, help='Tempo limite das requisições (padrão: 5s)')
+    parser.add_argument(
+        '--log-dir',
+        default=None,
+        help=(
+            'Pasta onde o arquivo de log será gravado. '
+            'Padrão: subpasta "logs/" no mesmo diretório do script.'
+        ),
+    )
     args = parser.parse_args()
 
-    asyncio.run(update_services_status(args.json_file, timeout=args.timeout))
+    log_dir = Path(args.log_dir) if args.log_dir else _SCRIPT_DIR / "logs"
+
+    asyncio.run(update_services_status(args.json_file, timeout=args.timeout, log_dir=log_dir))
 
 if __name__ == "__main__":
     main()
