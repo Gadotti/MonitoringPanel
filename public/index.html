@@ -216,6 +216,71 @@
       </div>
     </div>
 
+    <!-- 🔥 Modal de edição de monitoramento uptime -->
+    <div id="uptime-editor-modal" class="modal">
+      <div class="modal-content ue-modal-content">
+        <h2>Editar Monitoramento</h2>
+
+        <!-- Webhook global -->
+        <div class="modal-row">
+          <label for="ue-notification-hook">Webhook de Notificação (global)</label>
+          <input type="text" id="ue-notification-hook" placeholder="https://…" autocomplete="off">
+        </div>
+
+        <!-- Lista de serviços -->
+        <div class="ue-services-label">Serviços monitorados</div>
+        <div id="ue-services-list" class="ue-services-list"></div>
+
+        <!-- Adicionar novo serviço -->
+        <div class="ue-add-section">
+          <button class="ue-add-toggle" id="ue-add-toggle" type="button">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            Adicionar serviço
+          </button>
+          <div class="ue-add-form" id="ue-add-form" style="display:none;">
+            <div class="ue-add-grid">
+              <div class="modal-row">
+                <label>Nome</label>
+                <input type="text" id="ue-new-name" placeholder="Meu serviço">
+              </div>
+              <div class="modal-row">
+                <label>URL</label>
+                <input type="text" id="ue-new-url" placeholder="https://exemplo.com">
+              </div>
+              <div class="modal-row">
+                <label>Resposta HTTP esperada</label>
+                <input type="text" id="ue-new-http" placeholder="200 ou 200-299">
+              </div>
+              <div class="modal-row">
+                <label>Modo de notificação</label>
+                <select id="ue-new-mode" class="ue-select">
+                  <option value="when-offline">Quando offline</option>
+                  <option value="when-online">Quando online</option>
+                  <option value="off">Desativado</option>
+                </select>
+              </div>
+            </div>
+            <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:4px;">
+              <button class="btn-close" id="ue-cancel-add-btn" type="button">Cancelar</button>
+              <button class="btn-apply" id="ue-add-btn" type="button">Confirmar Adição</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Feedback -->
+        <div class="mv-feedback" id="ue-feedback"></div>
+
+        <div class="modal-actions">
+          <div class="right-actions">
+            <button class="btn-close" id="close-uptime-editor-modal">Fechar</button>
+            <button class="btn-apply" id="ue-save-btn">Salvar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- 🔥 Modal de seleção de cards -->
     <div id="add-card-modal" class="modal">
       <div class="modal-content">
@@ -270,5 +335,6 @@
     <script src="js/view-selector.js"></script>
     <script src="js/manageviews.js"></script>
     <script src="js/logviewer.js"></script>
+    <script src="js/uptimeeditor.js"></script>
   </body>
 </html>

@@ -14,13 +14,13 @@ window.addEventListener('resize', adjustCardColSpans);
 
 viewSelector.addEventListener('change', (e) => {
   const view = e.target.value; 
-  selectedView = view
+  selectedView = view;
   loadLayoutConfig();
   adjustCardColSpans();
 });
 
 document.addEventListener('DOMContentLoaded', () => {
-  const path = window.location.pathname.replace(/^\/+|\/+$/g, ''); // remove barras
+  const path = window.location.pathname.replace(/^\/+|\/+$/g, '');
 
   if (path) {
     selectedView = path;
@@ -145,6 +145,17 @@ function initializeCardEvents(card) {
         if (card.dataset.view && card.dataset.view !== '') {
           window.open(card.dataset.view, '_blank');
         }        
+      }
+    });
+  }
+
+  // ── Botão de edição de monitoramento (cards do tipo uptime) ──
+  const uptimeEditButton = card.querySelector('.uptime-edit-button');
+  if (uptimeEditButton) {
+    uptimeEditButton.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (typeof openUptimeEditor === 'function') {
+        openUptimeEditor(card);
       }
     });
   }

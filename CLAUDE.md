@@ -29,7 +29,8 @@ painel/
 │   ├── api.csv.test.js                # GET /api/partial-csv
 │   ├── api.chartdata.test.js          # POST /api/chart-data
 │   ├── api.views.manage.test.js       # POST /api/views, DELETE /api/views/:viewName
-│   └── api.logs.test.js               # GET /api/logs, GET /api/logs/:filename
+│   ├── api.logs.test.js               # GET /api/logs, GET /api/logs/:filename
+│   └── api.uptime.test.js             # GET /api/uptime-config, POST /api/uptime-config
 │
 ├── public/                            # Static assets served to the browser
 │   ├── index.html                     # Single-page app shell
@@ -56,7 +57,8 @@ painel/
 │       ├── helpers.js                 # CSV parsing utilities
 │       ├── view-selector.js           # Dropdown customizado de seleção de visão (sincronizado ao <select> oculto)
 │       ├── manageviews.js             # Modal de criar/excluir visões (chama POST e DELETE /api/views)
-│       └── logviewer.js               # Modal de visualização de logs de scripts (scripts/logs/*.log)
+│       ├── logviewer.js               # Modal de visualização de logs de scripts (scripts/logs/*.log)
+│       └── uptimeeditor.js            # Modal de edição de configuração de monitoramento uptime
 │
 ├── cards/
 │   ├── cards-list.json                # Master registry of all available cards
@@ -123,7 +125,7 @@ painel/
 
 - The app is a single HTML page. JavaScript files are loaded in a strict dependency order via `<script>` tags in `index.html`. There is no bundler.
 - **Ordem de carregamento dos scripts** (deve ser respeitada):
-  `consts.js` → `drawer.js` → `cardsettings.js` → `carddrag.js` → `resizecards.js` → `addcards.js` → `helpers.js` → `script.js` → `eventListeners.js` → `socketListeners.js` → `view-selector.js` → `manageviews.js` → `logviewer.js`
+  `consts.js` → `drawer.js` → `cardsettings.js` → `carddrag.js` → `resizecards.js` → `addcards.js` → `helpers.js` → `script.js` → `eventListeners.js` → `socketListeners.js` → `view-selector.js` → `manageviews.js` → `logviewer.js` → `uptimeeditor.js`
 - **State is minimal and explicit**: `consts.js` holds all shared DOM references and mutable globals (`currentCard`, `draggedItem`, `resizing`, `selectedView`, `chartInstances`).
 - Cards are rendered from two merged sources: the layout config (order, spans, title, zoom) merged over the card definition (type, data, source paths).
 - Card content loading is **type-dispatched** in `loadCardsContent()` → one function per `cardType` (`chart`, `list`, `uptime`, `cve-assets`, `frame`).
@@ -155,6 +157,18 @@ painel/
 - Após criar ou excluir, `manageviews.js` chama `loadViewOptions()` para atualizar o dropdown de seleção de visão sem recarregar a página.
 - **Regra de slugify:** título → remove diacríticos → lowercase → espaços para hífens → remove caracteres especiais → remove hífens nas bordas. A mesma função existe no backend (`app.js`) e no frontend (`manageviews.js`) para garantir consistência.
 
+### Uptime Editor — comportamento
+
+- Cards do tipo `uptime` exibem um botão de lápis (`.uptime-edit-button`) no `card-controls`, à esquerda do botão de configurações.
+- Ao clicar no lápis, `initializeCardEvents` (em `eventListeners.js`) chama `window.openUptimeEditor(card)`, passando o elemento DOM do card.
+- `openUptimeEditor` lê `card.dataset.externalSourceMonitor` para obter o caminho do arquivo JSON de configuração, depois chama `GET /api/uptime-config?file=...` para carregar os dados.
+- O modal exibe: campo de **webhook global**, **lista editável de serviços** (nome, URL, HTTP esperado, modo de notificação) e um botão **"+ Adicionar serviço"** que abre um formulário inline.
+- Cada serviço existente é renderizado em linha e pode ser editado diretamente nos campos. Um botão de lixeira remove o serviço do array em memória imediatamente (sem salvar ainda).
+- O formulário de adição abre/fecha com um botão toggle. Ao confirmar a adição, o serviço é inserido no array em memória e o formulário é fechado e limpo.
+- Ao clicar em **Salvar**, o modal faz `POST /api/uptime-config?file=...`. O backend realiza **merge inteligente**: preserva os campos gerenciados pelo script (`status`, `lastStatusOnline`, `lastStatusOffline`) para serviços que já existem (identificados por URL), substituindo apenas os campos editáveis. Novos serviços recebem defaults (`status: 'offline'`, timestamps vazios).
+- Após salvar com sucesso, o card correspondente é recarregado via `loadCardsContent(cardId)` sem fechar o modal.
+- `uptimeeditor.js` usa o padrão **lazy DOM resolution**: todos os `getElementById` são chamados dentro das funções que os usam, nunca no topo do IIFE. O único elemento verificado no topo é o `#uptime-editor-modal` — se ausente, o script retorna imediatamente sem registrar nenhum listener. `window.openUptimeEditor` é definida logo após esse guard, garantindo que o botão do card sempre encontra a função disponível.
+
 ### Add Card — comportamento
 
 - `addcards.js`: ao clicar em "Adicionar Card", o modal abre **imediatamente** com mensagem de carregamento.
@@ -175,13 +189,13 @@ External script (Python)
 
 ## Card Types
 
-| `cardType` | Renderer | Data source |
-|---|---|---|
-| `chart` | Chart.js canvas | Inline JSON data, or Python script via `/api/chart-data` |
-| `list` | `<ul>` event list | CSV file via `/api/partial-csv` |
-| `uptime` | Uptime status list | JSON file (direct fetch from `public/`) |
-| `cve-assets` | Collapsible asset table | JSON file (direct fetch from `public/`) |
-| `frame` | `<iframe>` with zoom | Any URL or local HTML page |
+| `cardType` | Renderer | Data source | Edição inline |
+|---|---|---|---|
+| `chart` | Chart.js canvas | Inline JSON data, or Python script via `/api/chart-data` | — |
+| `list` | `<ul>` event list | CSV file via `/api/partial-csv` | — |
+| `uptime` | Uptime status list | JSON file (direct fetch from `public/`) | ✓ botão lápis → modal |
+| `cve-assets` | Collapsible asset table | JSON file (direct fetch from `public/`) | — |
+| `frame` | `<iframe>` with zoom | Any URL or local HTML page | — |
 
 A card definition lives in `cards/cards-list.json`. Its structure is documented in `cards/card.schema.json`.
 
@@ -192,11 +206,12 @@ A card definition lives in `cards/cards-list.json`. Its structure is documented 
 ### JavaScript
 
 - **No framework, no build step.** Plain ES6+ with `async/await`. Files are loaded via `<script src="...">` tags.
-- **DOM queries at top of file** — all `getElementById`/`querySelector` calls are centralized in `consts.js`, not scattered across modules.
+- **DOM queries at top of file** — all `getElementById`/`querySelector` calls são centralizados em `consts.js`. Exceção: IIFEs de features opcionais (como `uptimeeditor.js`) devem usar **lazy DOM resolution** — ver item abaixo.
+- **Lazy DOM resolution em IIFEs opcionais** — quando um script implementa uma feature cuja presença no DOM não é garantida (ex: modal que pode estar ausente em versões antigas do `index.html`), todos os `getElementById` devem ser chamados dentro das funções que os usam, nunca no topo do IIFE. Isso evita `TypeError: can't access property "addEventListener", X is null` quando elementos não existem. O único elemento verificado no topo deve ser o "âncora" da feature (ex: o modal raiz). Se ele for `null`, retornar imediatamente com `if (!modal) return`.
 - **Functions are globally scoped** — since there is no module system, all public functions must be on `window` (implicit). Avoid naming collisions.
 - **Card creation is pure** — `createCardElement(config)` returns a DOM node without side effects. Content loading is a separate step via `loadCardsContent()`.
 - **Layout save is fire-and-forget** — `saveLayoutConfig()` always POSTs the full current DOM state. Never patch individual fields.
-- **CSS class toggles for expand/collapse** — use `.expanded` class + CSS `max-height` transitions; avoid inline style toggling for animations.
+- **CSS class toggles for expand/collapse** — use `.expanded` class + CSS `max-height` transitions; avoid inline style toggling for animations. Exceção: elementos que usam `display: none/block` controlado diretamente por JS (como o formulário de adição do uptime editor) — nesse caso `overflow: hidden` no container pai deve ser evitado para não cortar o conteúdo.
 - **Injeção de dependência para módulos de sistema** — dependências como `child_process.spawn` devem ser passadas como parâmetro para funções/factories (`createApp({ spawn })`), não importadas com desestruturação no topo do módulo. Desestruturação captura a referência no momento do `require`, tornando-a invisível para mocks de teste.
 
 ### Python
@@ -230,7 +245,7 @@ A card definition lives in `cards/cards-list.json`. Its structure is documented 
 - **Fonte base:** `'Segoe UI', system-ui, -apple-system, sans-serif` (não usar `Arial`).
 - **Scrollbars:** largura `3px`, thumb `rgba(255,255,255,0.12)`, border-radius `2px` — padrão em todos os componentes.
 - **Colapsáveis:** o padding de espaçamento **nunca** deve estar no elemento com `max-height: 0` — colocar nos filhos internos para evitar que o padding vaze visualmente quando recolhido.
-- Use CSS `max-height` + `overflow: hidden` transitions for smooth expand/collapse, not `display: none` toggling.
+- **`overflow: hidden` em containers expansíveis** — nunca colocar `overflow: hidden` em um elemento pai que tenha filhos revelados via `display: block`. Isso corta o conteúdo visualmente mesmo com `display: block`. Usar apenas em containers com `max-height` transition.
 
 ---
 
@@ -268,6 +283,8 @@ A build falha automaticamente se a cobertura cair abaixo desses limites.
 | `api.views.manage.test.js` | `DELETE /api/views/:viewName` | visão inexistente → 404; erro de leitura → 500; erro de escrita → 500; remove entrada correta; chama `unlink` quando arquivo existe; não chama `unlink` quando não existe → 200 |
 | `api.logs.test.js` | `GET /api/logs` | pasta inexistente → `[]`; pasta vazia → `[]`; filtra somente `.log`; ordena alfabeticamente; readdir com falha → 500 |
 | `api.logs.test.js` | `GET /api/logs/:filename` | conteúdo como text/plain; 404 para arquivo inexistente; 400 por path traversal; 400 por extensão inválida; readFile com falha → 500; caminho correto (`scripts/logs/`) |
+| `api.uptime.test.js` | `GET /api/uptime-config` | sem `file` → 400; path traversal → 400; arquivo inexistente → 404; JSON válido → 200; erro de leitura → 500; JSON malformado → 500 |
+| `api.uptime.test.js` | `POST /api/uptime-config` | sem `file` → 400; path traversal → 400; `servicesStatus` não-array → 400; salva com sucesso → 200; preserva status/timestamps de serviços existentes por URL; novos serviços recebem defaults; preserva `lastChecked` e campos extras; funciona sem arquivo pré-existente; erro de escrita → 500; atualiza `notificationHook` global |
 | `app.smoke.test.js` | — | `createApp` retorna app Express válido; SPA fallback captura rotas desconhecidas |
 
 ### Regras de mock
@@ -301,7 +318,7 @@ A build falha automaticamente se a cobertura cair abaixo desses limites.
 | `configs/layout.config-{view}.json` | Per-view layout (auto-created on first save) |
 | `cards/cards-list.json` | Master card registry — add new cards here |
 | `public/local-events/cve-report.json` | Output path expected by the `cve-check` card |
-| `public/local-data-uptimes/uptime-results.json` | Output path expected by the `uptime-results` card |
+| `public/local-data-uptimes/uptime-results.json` | Output path expected by the `uptime-results` card; editável via modal do uptime editor |
 | `public/local-events/ransomlook/breachs_posts.csv` | Breach event feed for list and chart cards |
 
 ---
@@ -319,6 +336,8 @@ A build falha automaticamente se a cobertura cair abaixo desses limites.
 | `GET` | `/api/partial-csv?file=...&limit=N` | Streams last N lines of a CSV file |
 | `GET` | `/api/logs` | Lista arquivos `.log` em `scripts/logs/` (outros arquivos ignorados) |
 | `GET` | `/api/logs/:filename` | Retorna conteúdo de um arquivo `.log` como `text/plain`; valida extensão e bloqueia path traversal |
+| `GET` | `/api/uptime-config?file=...` | Lê o JSON de configuração de um arquivo de uptime; valida path traversal |
+| `POST` | `/api/uptime-config?file=...` | Salva configuração de uptime com merge inteligente: preserva campos de monitoramento (`status`, `lastStatusOnline`, `lastStatusOffline`) de serviços existentes (match por URL) |
 | `POST` | `/api/chart-data` | Spawns a Python script and returns its JSON stdout |
 | `GET` | `/version` | Returns `version.json` |
 | `GET` | `/:view?` | Serves `public/index.html` for all other routes (SPA fallback) |

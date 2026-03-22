@@ -325,6 +325,87 @@ function createApp(config = {}) {
     });
   });
 
+  // ------------------------------------------------------------------ GET /api/uptime-config
+  app.get('/api/uptime-config', (req, res) => {
+    const filePath = req.query.file;
+    if (!filePath) {
+      return res.status(400).json({ error: 'Parâmetro "file" é obrigatório.' });
+    }
+
+    const resolved = path.resolve(rootDir, filePath);
+    if (!resolved.startsWith(rootDir)) {
+      return res.status(400).json({ error: 'Caminho inválido.' });
+    }
+
+    if (!fs.existsSync(resolved)) {
+      return res.status(404).json({ error: 'Arquivo não encontrado.' });
+    }
+
+    fs.readFile(resolved, 'utf8', (err, data) => {
+      if (err) return res.status(500).json({ error: 'Erro ao ler arquivo.' });
+      try {
+        res.json(JSON.parse(data));
+      } catch {
+        res.status(500).json({ error: 'Arquivo JSON inválido.' });
+      }
+    });
+  });
+
+  // ------------------------------------------------------------------ POST /api/uptime-config
+  app.post('/api/uptime-config', (req, res) => {
+    const filePath = req.query.file;
+    if (!filePath) {
+      return res.status(400).json({ error: 'Parâmetro "file" é obrigatório.' });
+    }
+
+    const resolved = path.resolve(rootDir, filePath);
+    if (!resolved.startsWith(rootDir)) {
+      return res.status(400).json({ error: 'Caminho inválido.' });
+    }
+
+    const { servicesStatus, notificationHook } = req.body;
+    if (!Array.isArray(servicesStatus)) {
+      return res.status(400).json({ error: 'Campo "servicesStatus" deve ser um array.' });
+    }
+
+    // Preserva campos de sistema do arquivo atual (status, lastStatusOn/Offline, lastChecked)
+    fs.readFile(resolved, 'utf8', (err, data) => {
+      let current = {};
+      if (!err) {
+        try { current = JSON.parse(data); } catch { /* arquivo corrompido — sobrescreve */ }
+      }
+
+      const currentServices = current.servicesStatus || [];
+
+      // Mescla: mantém campos de monitoramento existentes; substitui campos editáveis
+      const merged = servicesStatus.map(incoming => {
+        const existing = currentServices.find(s => s.url === incoming.url) || {};
+        return {
+          url:                 incoming.url,
+          name:                incoming.name,
+          expectedHttpRespose: incoming.expectedHttpRespose,
+          notificationHookMode: incoming.notificationHookMode || 'when-offline',
+          // campos gerenciados pelo script — preservados se existirem
+          status:              existing.status              || 'offline',
+          lastStatusOnline:    existing.lastStatusOnline   || '',
+          lastStatusOffline:   existing.lastStatusOffline  || '',
+        };
+      });
+
+      const updated = {
+        ...current,
+        notificationHook: notificationHook ?? (current.notificationHook || ''),
+        lastChecked:      current.lastChecked || '',
+        servicesStatus:   merged,
+      };
+
+      fs.writeFile(resolved, JSON.stringify(updated, null, 2), 'utf8', (writeErr) => {
+        if (writeErr) return res.status(500).json({ error: 'Erro ao salvar arquivo.' });
+        res.sendStatus(200);
+      });
+    });
+  });
+
   // ------------------------------------------------------------------ SPA fallback
   app.get('/:view?', (req, res) => {
     res.sendFile(path.join(rootDir, 'public', 'index.html'));

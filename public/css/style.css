@@ -692,6 +692,195 @@ body {
 .logs-placeholder--error { color: #f58a8a; }
 
 /* ------------------------------
+    Uptime Editor Modal
+------------------------------- */
+.ue-modal-content {
+  width: 680px;
+  max-width: 96%;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  overflow-y: auto;
+}
+
+.ue-modal-content::-webkit-scrollbar { width: 3px; }
+.ue-modal-content::-webkit-scrollbar-thumb {
+  background: var(--border-mid);
+  border-radius: 2px;
+}
+
+.ue-services-label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+/* Lista de serviços */
+.ue-services-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 340px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.ue-services-list::-webkit-scrollbar { width: 3px; }
+.ue-services-list::-webkit-scrollbar-thumb {
+  background: var(--border-mid);
+  border-radius: 2px;
+}
+
+/* Linha de serviço */
+.ue-service-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  padding: 10px 10px 10px 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  transition: border-color 0.15s ease;
+}
+
+.ue-service-row:hover {
+  border-color: var(--border-mid);
+}
+
+/* Grid de campos dentro de cada serviço */
+.ue-service-fields {
+  display: grid;
+  grid-template-columns: 1fr 2fr 0.8fr 1fr;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+
+.ue-field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.ue-field-label {
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+.ue-input,
+.ue-select {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-mid);
+  border-radius: var(--radius-sm);
+  color: var(--text-bright);
+  padding: 5px 8px;
+  font-size: 0.82rem;
+  font-family: inherit;
+  outline: none;
+  width: 100%;
+  box-sizing: border-box;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.ue-input:focus,
+.ue-select:focus {
+  border-color: var(--accent);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.ue-select option {
+  background: #1c1c28;
+  color: var(--text-bright);
+}
+
+/* Botão de edição no card-header (uptime) */
+.uptime-edit-button {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 2px 3px;
+  transition: color 0.18s var(--ease-std);
+}
+
+.uptime-edit-button:hover {
+  color: var(--accent);
+}
+
+/* Seção de adição */
+.ue-add-section {
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+}
+
+/* Botão de toggle para abrir o formulário de adição */
+.ue-add-toggle {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  width: 100%;
+  background: none;
+  border: none;
+  padding: 9px 12px;
+  font-size: 0.83rem;
+  font-family: inherit;
+  color: var(--text-muted);
+  cursor: pointer;
+  text-align: left;
+  border-radius: var(--radius-md);
+  transition: color 0.15s ease, background 0.15s ease;
+}
+
+.ue-add-toggle:hover {
+  color: var(--accent);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.ue-add-toggle--open {
+  color: var(--accent);
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+/* Formulário de adição (mostrado via JS com display:block) */
+.ue-add-form {
+  padding: 14px 12px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  background: rgba(0, 0, 0, 0.15);
+  border-bottom-left-radius: var(--radius-md);
+  border-bottom-right-radius: var(--radius-md);
+}
+
+/* Grid 2x2 para os campos do formulário de adição */
+.ue-add-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+/* Botão de remoção reutiliza .mv-delete-btn do style.css */
+.ue-delete-btn {
+  flex-shrink: 0;
+  align-self: center;
+}
+
+/* ------------------------------
     Resize handles
 ------------------------------- */
 .resize-handle {
