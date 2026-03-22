@@ -333,7 +333,8 @@ function createApp(config = {}) {
     }
 
     const resolved = path.resolve(rootDir, filePath);
-    if (!resolved.startsWith(rootDir)) {
+    const relative = path.relative(path.resolve(rootDir), resolved);
+    if (!relative || relative.startsWith('..') || path.isAbsolute(relative)) {
       return res.status(400).json({ error: 'Caminho inválido.' });
     }
 
@@ -359,7 +360,8 @@ function createApp(config = {}) {
     }
 
     const resolved = path.resolve(rootDir, filePath);
-    if (!resolved.startsWith(rootDir)) {
+    const relative = path.relative(path.resolve(rootDir), resolved);
+    if (!relative || relative.startsWith('..') || path.isAbsolute(relative)) {
       return res.status(400).json({ error: 'Caminho inválido.' });
     }
 
