@@ -95,7 +95,7 @@ function loadLayoutConfig() {
   Promise.all([fetchLayout(selectedView), fetchAvailableCards()])
     .then(([layout, allCards]) => {
       const grid = document.querySelector('.grid');
-      grid.innerHTML = ''; // Limpa a grid antes de carregar
+      grid.innerHTML = '';
 
       const cardPromises = layout.map(async layoutItem => {
         const fullCardConfig = allCards.find(card => card.id === layoutItem.id);
@@ -103,7 +103,7 @@ function loadLayoutConfig() {
 
         const mergedConfig = {
           ...fullCardConfig,
-          ...layoutItem // sobrescreve colunas, linhas e título
+          ...layoutItem
         };
 
         const cardElement = createCardElement(mergedConfig);
@@ -116,7 +116,6 @@ function loadLayoutConfig() {
       return Promise.all(cardPromises);
     })
   .then(() => {
-    // Só executa isso depois que todos os cards foram adicionados corretamente
     renderCardsInOrder(grid, cardElementsList);
     loadCardsContent();
     adjustCardColSpans();
@@ -128,12 +127,10 @@ function loadLayoutConfig() {
 }
 
 function renderCardsInOrder(container, cardElementsList) {
-  // Ordena os elementos com base no dataset.order (convertido para número)
   const sortedCards = cardElementsList.sort((a, b) => {
     return Number(a.dataset.order) - Number(b.dataset.order);
   });
 
-  // Faz o appendChild de cada card ordenadamente no grid
   sortedCards.forEach(card => {
     container.appendChild(card);
   });
@@ -185,7 +182,7 @@ function createCardElement(config) {
           <button class="zoom-out-button" title="Reduzir zoom">➖</button>
           <span class="zoom-percentage">(100%)</span>
         </div>
-      `
+      `;
       contentHtml = `
         <div class="frame-wrapper" data-url="${config.frame.url}" title="Clique para abrir em nova aba">
           <iframe src="${config.frame.url}" frameborder="0"></iframe>
@@ -195,7 +192,7 @@ function createCardElement(config) {
       break;
   }
 
-  card.dataset.externalSourceMonitor = externalSourceMonitor
+  card.dataset.externalSourceMonitor = externalSourceMonitor;
 
   card.innerHTML = `          
     <div class="card-header">
@@ -226,7 +223,6 @@ function createCardElement(config) {
 function getFrameFromCardElement(cardElement) {
   const wrapper = cardElement.querySelector('.frame-wrapper');
   const iframe = wrapper?.querySelector('iframe');
-
   return iframe;
 }
 
@@ -261,7 +257,6 @@ async function fetchAvailableCards() {
   try {
     const response = await fetch('/api/cards');
     if (!response.ok) throw new Error('Erro ao carregar os cards');
-
     const cards = await response.json();
     return cards;
   } catch (err) {
@@ -319,7 +314,6 @@ function loadCardsContent(cardId = '') {
 function reloadCardFrame(card) {
   const iframeElement = document.getElementById(card.id)?.querySelector('iframe');
   if (!iframeElement) return;
-
   iframeElement.src = card.frame.url;
 }
 
@@ -327,99 +321,92 @@ async function loadCardContentChart(card) {
   const chartElementId = `chart-${card.id}`;
   const chartElement = document.getElementById(chartElementId);
 
-  if (chartElement && 
-    card.cardType === 'chart' && 
-    card.chart) {
+  if (chartElement && card.cardType === 'chart' && card.chart) {
 
-      // Se houver script para gerar os dados
-      if (card.chart.data.datasets[0]?.script) {     
-        
-        try {
-          const response = await fetch('/api/chart-data', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              scriptPath: card.chart.data.datasets[0].script,
-              sourceFile: card.sourceItems
-              // args: ['', '', '']
-            })
-          });
+    if (card.chart.data.datasets[0]?.script) {     
+      try {
+        const response = await fetch('/api/chart-data', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            scriptPath: card.chart.data.datasets[0].script,
+            sourceFile: card.sourceItems
+          })
+        });
 
-          if (!response.ok) throw new Error(`Erro ao processar dados para gráfico: ${response.status}`);
+        if (!response.ok) throw new Error(`Erro ao processar dados para gráfico: ${response.status}`);
 
-          const responseData = await response.json();
-          const outputJson = JSON.parse(responseData.output);
-          card.chart.data.datasets[0].data = outputJson.data;
+        const responseData = await response.json();
+        const outputJson = JSON.parse(responseData.output);
+        card.chart.data.datasets[0].data = outputJson.data;
 
-          if (outputJson.labels) {
-            card.chart.data.labels = outputJson.labels;
-          }
-
-        } catch (error) {
-          console.error('Erro ao carregar eventos:', error);
+        if (outputJson.labels) {
+          card.chart.data.labels = outputJson.labels;
         }
+
+      } catch (error) {
+        console.error('Erro ao carregar eventos:', error);
       }
+    }
 
-      // Destrói gráfico anterior se existir
-      if (chartInstances[card.id]) {
-        chartInstances[card.id].destroy();
-        delete chartInstances[card.id];
-      }
+    if (chartInstances[card.id]) {
+      chartInstances[card.id].destroy();
+      delete chartInstances[card.id];
+    }
 
-      // Cria novo gráfico
-      const newChart = new Chart(chartElement, {
-        type: card.chart.type,
-        data: card.chart.data,
-        options: card.chart.options || { responsive: true, maintainAspectRatio: false }
-      });
+    const newChart = new Chart(chartElement, {
+      type: card.chart.type,
+      data: card.chart.data,
+      options: card.chart.options || { responsive: true, maintainAspectRatio: false }
+    });
 
-      // Salva a instância
-      chartInstances[card.id] = newChart;
+    chartInstances[card.id] = newChart;
   }
 }
 
 async function loadCardContentList(card) {
-    const cardElement = document.getElementById(card.id);
-    if (!cardElement) return;
+  const cardElement = document.getElementById(card.id);
+  if (!cardElement) return;
 
-    let sourceItems = card.list?.sourceItems;
-    if (!sourceItems) return;
+  let sourceItems = card.list?.sourceItems;
+  if (!sourceItems) return;
 
-    const sourceItemsData = await fetchSourceItems(sourceItems, card.list.limit);    
+  const sourceItemsData = await fetchSourceItems(sourceItems, card.list.limit);    
 
-    const sortedItems = [...sourceItemsData].sort((a, b) => {
-      const valA = new Date(a[card.list.orderBy]);
-      const valB = new Date(b[card.list.orderBy]);
-      return card.list.order === 'asc' ? valA - valB : valB - valA;
-    });
+  const sortedItems = [...sourceItemsData].sort((a, b) => {
+    const valA = new Date(a[card.list.orderBy]);
+    const valB = new Date(b[card.list.orderBy]);
+    return card.list.order === 'asc' ? valA - valB : valB - valA;
+  });
 
-    const limitedItems = sortedItems.slice(0, card.list.limit);
+  const limitedItems = sortedItems.slice(0, card.list.limit);
 
-    const contentHtml = `
-      <ul class="event-list">      
-        ${limitedItems.map(item => {
-          const pad = n => n.toString().padStart(2, '0');
-          const date = new Date(item.timestamp);
-          const formattedDate = `${pad(date.getDate())}-${pad(date.getMonth() + 1)}-${date.getFullYear()} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
-          
-          return `
-            <li class="event-item">
-              <span class="event-date">${formattedDate}</span>
-              <span class="event-name">${item.event}</span>
-              <a href="${item.detailsUrl}" target="_blank" class="event-link">Ver detalhes</a>
-            </li>
-          `;
-        }).join('')}
-      </ul>
-    `;
-    
-    const eventList = cardElement?.querySelector('ul.event-list');
-    if (eventList) {
-      eventList.innerHTML = '';
-      eventList.insertAdjacentHTML('beforeend', contentHtml);
-    } 
+  const contentHtml = `
+    <ul class="event-list">      
+      ${limitedItems.map(item => {
+        const pad = n => n.toString().padStart(2, '0');
+        const date = new Date(item.timestamp);
+        const formattedDate = `${pad(date.getDate())}-${pad(date.getMonth() + 1)}-${date.getFullYear()} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+        
+        return `
+          <li class="event-item">
+            <span class="event-date">${formattedDate}</span>
+            <span class="event-name">${item.event}</span>
+            <a href="${item.detailsUrl}" target="_blank" class="event-link">Ver detalhes</a>
+          </li>
+        `;
+      }).join('')}
+    </ul>
+  `;
+  
+  const eventList = cardElement?.querySelector('ul.event-list');
+  if (eventList) {
+    eventList.innerHTML = '';
+    eventList.insertAdjacentHTML('beforeend', contentHtml);
+  } 
 }
 
+// ------------------------------------------------------------------ CVE Assets (novo layout)
 async function loadCardContentCveAssets(card) {
   const cardElement = document.getElementById(card.id);
   if (!cardElement || !card.sourceItems) return;
@@ -429,78 +416,90 @@ async function loadCardContentCveAssets(card) {
   try {
     const filePath = card.sourceItems.replace(/^public\//, '').trim();
     const response = await fetch(filePath);
-      if (!response.ok) {
-        throw new Error(`Erro ao carregar status de uptime: ${response.status}`);
-      }
+    if (!response.ok) {
+      throw new Error(`Erro ao carregar CVE report: ${response.status}`);
+    }
 
     const data = await response.json();
-    const lastChecked = data?.last_checked;
-    const reportItens = data?.report_itens || [];
+
+    // Novo layout: last_scan, report_items (sem typo)
+    const lastScan    = data?.last_scan;
+    const reportItems = data?.report_items || [];
 
     let cveReportBlocksHtml = '';
 
-    reportItens.forEach(report => {
-      const url = report.url;
-      const name = report.nome;
-      const currentVersion = report.versao_atual;
-      const recommendedVersion = report.versao_recomendada;
-      const risk = report.risco;
-      const upToDate = !report.desatualizada;
-      const currentExploits = report.exploits_ativos;
-      const alert = report.alerta;
-      const upToDateDesc = upToDate ? "Atualizado" : "Desatualizado";
-      const upToDateCss = upToDate ? "status-ok" : "status-outdated";
+    reportItems.forEach(report => {
+      const url            = report.url;
+      const name           = report.name;
+      const currentVersion = report.current_version;
+      const risk           = report.risk  || '';
+      const alert          = report.alert || '—';
+      const pubEndDate     = report.pubEndDate_checked || '—';
 
-      const cvesList = report.cves || []
-      let cveItensListBlockHtml = ''
+      const cvesList = report.cves || [];
 
+      // Risco em inglês: High / Medium / Low
       let riskCss = '';
-      switch (risk.toLowerCase()) {
-        case 'alto':
-          riskCss = 'risco-alto';          
-          break;
-        case 'médio':
-          riskCss = 'risco-medio';
-          break;
-        case 'baixo':
-          riskCss = 'risco-baixo';
-          break;      
-        default:
-          riskCss = 'risco-nao';
-          break;
+      switch ((risk || '').toLowerCase()) {
+        case 'high':   riskCss = 'risco-alto';  break;
+        case 'medium': riskCss = 'risco-medio'; break;
+        case 'low':    riskCss = 'risco-baixo'; break;
+        default:       riskCss = 'risco-nao';   break;
       }
 
+      // Contadores por severidade para o resumo no painel expandido
+      const counts = { critical: 0, high: 0, medium: 0, low: 0, unknown: 0 };
       cvesList.forEach(cve => {
-        cveItensListBlockHtml += `
+        const s = (cve.severity || '').toLowerCase();
+        if (counts[s] !== undefined) counts[s]++;
+        else counts.unknown++;
+      });
+
+      const totalCves = cvesList.length;
+
+      // Linhas de CVE
+      const cveItemsHtml = cvesList.map(cve => {
+        const sev     = (cve.severity || 'UNKNOWN').toLowerCase();
+        const aiNote  = cve.claude_ai_assessment || '';
+        const pubDate = cve.published_date || '';
+        return `
           <div class="cve-item">
             <div class="cve-id">${cve.cve_id}</div>
-            <div class="cve-desc">${cve.descricao}</div>
-            <div class="cve-severity ${cve.severity.toLowerCase()}">${cve.severity}</div>
+            <div class="cve-body">
+              <div class="cve-desc">${cve.description || ''}</div>
+              ${pubDate ? `<div class="cve-meta"><span class="cve-meta-label">Publicado:</span> ${pubDate}</div>` : ''}
+              ${aiNote  ? `<div class="cve-meta cve-ai-note"><span class="cve-meta-label">IA:</span> ${aiNote}</div>` : ''}
+            </div>
+            <div class="cve-severity ${sev}">${cve.severity || 'UNKNOWN'}</div>
           </div>
         `;
-      });
+      }).join('');
 
       cveReportBlocksHtml += `
         <div class="asset-row" onclick="toggleCveAssetsDetails(this)">
-          <div class="col url" target="_blank" href="${url}">
+          <div class="col url">
             <span class="asset-toggle-icon">▶</span>
-            ${url}
+            <a href="${url}" target="_blank" class="asset-url-link" onclick="event.stopPropagation()">${url}</a>
           </div>
           <div class="col ativo">${name}</div>
           <div class="col versao">${currentVersion}</div>
-          <div class="col status"><span class="${upToDateCss}">${upToDateDesc}</span></div>
+          <div class="col cves-count">${totalCves}</div>
           <div class="col risco"><span class="${riskCss}">${risk}</span></div>
         </div>
         <div class="asset-details asset-collapsible">
           <div class="details-content">
-            <p><strong>Versão recomendada:</strong> ${recommendedVersion}</p>
-            <p><strong>Exploits ativos:</strong> ${currentExploits}</p>
-            <p><strong>Alerta:</strong> ${alert}</p>
-            
-            <h4>CVEs Identificados:</h4>
-            <div class="cve-list">
-              ${cveItensListBlockHtml}
+            <div class="details-meta-grid">
+              <div><span class="details-label">Alerta:</span> ${alert}</div>
+              <div><span class="details-label">Verificado em:</span> ${pubEndDate}</div>
+              ${counts.critical ? `<div><span class="cve-severity critical">CRITICAL</span> ${counts.critical}</div>` : ''}
+              ${counts.high     ? `<div><span class="cve-severity high">HIGH</span> ${counts.high}</div>` : ''}
+              ${counts.medium   ? `<div><span class="cve-severity medium">MEDIUM</span> ${counts.medium}</div>` : ''}
+              ${counts.low      ? `<div><span class="cve-severity low">LOW</span> ${counts.low}</div>` : ''}
             </div>
+            ${totalCves ? `
+              <div class="cve-list-header">CVEs Identificados (${totalCves})</div>
+              <div class="cve-list">${cveItemsHtml}</div>
+            ` : '<p style="color:var(--text-muted);font-size:0.82rem;">Nenhum CVE registrado.</p>'}
           </div>
         </div>
       `;
@@ -508,28 +507,26 @@ async function loadCardContentCveAssets(card) {
 
     wrapper.innerHTML = `
       <div class="asset-card-content">
-    
         <div class="asset-header">
-          <div class="col url">Url</div>
-          <div class="col ativo">Ativo</div>
+          <div class="col url">URL / Ativo</div>
+          <div class="col ativo">Nome</div>
           <div class="col versao">Versão</div>
-          <div class="col status">Status</div>
+          <div class="col cves-count">CVEs</div>
           <div class="col risco">Risco</div>
         </div>
-
         <div class="asset-list">
-          ${cveReportBlocksHtml}
+          ${cveReportBlocksHtml || '<p style="padding:12px;color:var(--text-muted);">Nenhum item no relatório.</p>'}
         </div>
-
         <div class="asset-footer">
-          Última verificação: ${lastChecked}
+          Última varredura: ${lastScan || '—'}
         </div>
       </div>
     `;
 
     const contentArea = cardElement.querySelector('.card-content');
     contentArea.innerHTML = '';
-    contentArea.appendChild(wrapper);    
+    contentArea.appendChild(wrapper);
+
   } catch (err) {
     console.error(`Erro ao carregar dados de cve assets para ${card.id}:`, err);
   }
@@ -553,9 +550,9 @@ async function loadCardContentUptime(card) {
   try {
     const filePath = card.sourceItems.replace(/^public\//, '').trim();
     const response = await fetch(filePath);
-      if (!response.ok) {
-        throw new Error(`Erro ao carregar status de uptime: ${response.status}`);
-      }
+    if (!response.ok) {
+      throw new Error(`Erro ao carregar status de uptime: ${response.status}`);
+    }
 
     const data = await response.json();
     const item = Array.isArray(data) ? data[0] : data;
@@ -567,7 +564,7 @@ async function loadCardContentUptime(card) {
     servicesStatus.forEach(service => {
       const url = service.url;
       const name = service.name ?? service.url;
-      const status = service.status.toLowerCase(); // "online" ou "offline"
+      const status = service.status.toLowerCase();
       const statusText = status === 'online' ? 'Online' : 'Offline';
 
       let lastOnline = '-';
@@ -645,7 +642,7 @@ async function fetchSourceItems(sourceItems, limit) {
     }
 
     const csvText = await response.text();
-    return csvToJson(csvText); // Usa PapaParse ou método próprio
+    return csvToJson(csvText);
   } catch (error) {
     console.error('Erro ao carregar eventos:', error);
     return [];
@@ -656,15 +653,12 @@ function adjustCardColSpans() {
   const cards = grid.querySelectorAll('.card');
 
   const gridWidth = grid.clientWidth;
-  const colMinWidth = 280; // mesmo valor do minmax(280px, 1fr)
+  const colMinWidth = 280;
   const maxCols = Math.floor(gridWidth / colMinWidth);
 
   cards.forEach(card => {
     const requestedCols = parseInt(card.dataset.colSpan || '1', 10);
-
-    // Use o menor entre o solicitado e o possível
     const spanCols = Math.min(requestedCols, maxCols);
-
     card.style.gridColumn = `span ${spanCols}`;
   });
 }
@@ -675,8 +669,7 @@ function animateCardHighlight(cardId) {
 
   card.classList.add('highlight');
 
-  // Remove após a animação completar para poder reaplicar futuramente
   setTimeout(() => {
     card.classList.remove('highlight');
-  }, 1100); // ligeiramente maior que o tempo da animação
+  }, 1100);
 }
