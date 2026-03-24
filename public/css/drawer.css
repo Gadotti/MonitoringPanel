@@ -33,10 +33,12 @@
   overflow: hidden;
   transition: width var(--drawer-transition);
   will-change: width;
+  cursor: pointer; /* recolhido: indica que clicar na área vazia expande */
 }
 
 .side-drawer.expanded {
   width: var(--drawer-width-expanded);
+  cursor: default; /* expandido: cursor padrão; elementos internos definem o próprio cursor */
 }
 
 /* ── Botão de toggle ── */
@@ -386,7 +388,7 @@
 
 /* ── Adicionar Card ── */
 .add-card-item {
-  cursor: default; /* clique vai no trigger interno */
+  cursor: pointer; /* recolhido: clique no ícone dispara a ação; expandido: trigger interno */
 }
 
 .add-card-icon {
