@@ -124,17 +124,15 @@ painel/
 ### Frontend
 
 - The app is a single HTML page. JavaScript files are loaded in a strict dependency order via `<script>` tags in `index.html`. There is no bundler.
-- **Ordem de carregamento dos scripts** (deve ser respeitada):
-  `consts.js` → `drawer.js` → `cardsettings.js` → `carddrag.js` → `resizecards.js` → `addcards.js` → `helpers.js` → `script.js` → `eventListeners.js` → `socketListeners.js` → `view-selector.js` → `manageviews.js` → `logviewer.js` → `uptimeeditor.js`
-- **State is minimal and explicit**: `consts.js` holds all shared DOM references and mutable globals (`currentCard`, `draggedItem`, `resizing`, `selectedView`, `chartInstances`).
+- Ordem de carregamento dos scripts deve ser respeitada:  
 - Cards are rendered from two merged sources: the layout config (order, spans, title, zoom) merged over the card definition (type, data, source paths).
 - Card content loading is **type-dispatched** in `loadCardsContent()` → one function per `cardType` (`chart`, `list`, `uptime`, `cve-assets`, `frame`).
 - Real-time updates use a single WebSocket connection per page load. On reconnection (view change), `signSocketListeners()` re-registers all current cards.
 
 ### Navegação — Menu Gaveta Lateral
 
-- O `.top-bar` (header fixo) foi removido. A navegação é feita pelo `<aside class="side-drawer">`, um menu gaveta flutuante à esquerda.
-- O drawer possui dois estados: **recolhido** (`56px` — apenas ícones) e **expandido** (`240px` — ícones + labels). O estado é persistido em `localStorage` com a chave `drawer_expanded`.
+- A navegação é feita por um menu gaveta flutuante à esquerda.
+- O drawer possui dois estados: **recolhido** (apenas ícones) e **expandido** (ícones + labels). O estado é persistido em `localStorage` com a chave `drawer_expanded`.
 - `drawer.js` gerencia o toggle, o overlay mobile e carrega a versão via `GET /version` para exibir no rodapé do drawer.
 - A seleção de visão usa um dropdown completamente customizado (`.view-selector-custom`). O `<select id="view-selector">` permanece no DOM como fonte de verdade — todo o código existente que referencia `viewSelector` continua funcionando sem alteração. `view-selector.js` sincroniza o dropdown customizado ao select oculto via `MutationObserver` e despacha eventos `change` nativos.
 - O ícone principal do drawer (quatro quadradinhos) usa a cor accent `#cc785c` e é também o `favicon.svg` do projeto.
@@ -251,42 +249,6 @@ A card definition lives in `cards/cards-list.json`. Its structure is documented 
 
 ## Testing
 
-### Executar testes
-
-```bash
-npm test                # roda todos os testes
-npm run test:watch      # modo watch (reexecuta ao salvar)
-npm run test:coverage   # com relatório de cobertura HTML + lcov
-```
-
-### Cobertura mínima exigida (threshold)
-
-| Métrica | Mínimo |
-|---|---|
-| Linhas | 80% |
-| Funções | 80% |
-| Branches | 70% |
-| Statements | 80% |
-
-A build falha automaticamente se a cobertura cair abaixo desses limites.
-
-### Casos cobertos
-
-| Suíte | Endpoint | Casos |
-|---|---|---|
-| `api.layout.test.js` | `GET /api/layout/:viewName` | view inexistente → `[]`; JSON válido → layout; erro de leitura → 500; JSON inválido → 500 |
-| `api.layout.save.test.js` | `POST /api/layout/:viewName` | salva com sucesso → 200; erro de escrita → 500; path correto por view |
-| `api.meta.test.js` | `GET /api/views`, `/api/cards`, `/version` | leitura OK → 200; erro → 500; JSON inválido → 500 |
-| `api.csv.test.js` | `GET /api/partial-csv` | sem `file` → 400; arquivo inexistente → 404; header sempre incluso; respeita `limit`; erro de stream → 500 |
-| `api.chartdata.test.js` | `POST /api/chart-data` | sem `scriptPath` → 400; exit 0 → 200 com stdout; exit != 0 → 500 com stderr; executável configurável; output trimado |
-| `api.views.manage.test.js` | `POST /api/views` | title ausente/vazio → 400; slug duplicado → 409; erro de leitura → 500; erro de escrita → 500; cria visão + layout vazio → 201; slug gerado corretamente (acentos, espaços) |
-| `api.views.manage.test.js` | `DELETE /api/views/:viewName` | visão inexistente → 404; erro de leitura → 500; erro de escrita → 500; remove entrada correta; chama `unlink` quando arquivo existe; não chama `unlink` quando não existe → 200 |
-| `api.logs.test.js` | `GET /api/logs` | pasta inexistente → `[]`; pasta vazia → `[]`; filtra somente `.log`; ordena alfabeticamente; readdir com falha → 500 |
-| `api.logs.test.js` | `GET /api/logs/:filename` | conteúdo como text/plain; 404 para arquivo inexistente; 400 por path traversal; 400 por extensão inválida; readFile com falha → 500; caminho correto (`scripts/logs/`) |
-| `api.uptime.test.js` | `GET /api/uptime-config` | sem `file` → 400; path traversal → 400; arquivo inexistente → 404; JSON válido → 200; erro de leitura → 500; JSON malformado → 500 |
-| `api.uptime.test.js` | `POST /api/uptime-config` | sem `file` → 400; path traversal → 400; `servicesStatus` não-array → 400; salva com sucesso → 200; preserva status/timestamps de serviços existentes por URL; novos serviços recebem defaults; preserva `lastChecked` e campos extras; funciona sem arquivo pré-existente; erro de escrita → 500; atualiza `notificationHook` global |
-| `app.smoke.test.js` | — | `createApp` retorna app Express válido; SPA fallback captura rotas desconhecidas |
-
 ### Regras de mock
 
 - **`fs`** — nunca mockar o módulo inteiro (`jest.mock('fs')`).
@@ -341,36 +303,3 @@ A build falha automaticamente se a cobertura cair abaixo desses limites.
 | `POST` | `/api/chart-data` | Spawns a Python script and returns its JSON stdout |
 | `GET` | `/version` | Returns `version.json` |
 | `GET` | `/:view?` | Serves `public/index.html` for all other routes (SPA fallback) |
-
----
-
-## Release Workflow
-
-Releases are produced by `release.py`, which zips all tracked files (respecting `.gitignore`) into `_deploys/{version}.zip`.
-
-```bash
-# 1. Bump the version
-#    Edit version.json → { "version": "1.5" }
-
-# 2. Build the release zip
-python release.py
-
-# Output: _deploys/1.5.zip
-```
-
-The zip excludes: `.git`, `.gitignore`, `.gitattributes`, `release.py` itself, `node_modules/`, and all `public/local-*/`, `configs/`, and runtime-generated files listed in `.gitignore`.
-
-The zip **includes** everything a new deployment needs to get started: `server.js`, `src/`, `public/`, `cards/cards-examples.json`, `scripts/`, `package.json`, `server-config.json`, `public/websocket-config.json`, and `version.json`.
-
-### Deploying a Release
-
-```bash
-# On the target machine:
-unzip 1.5.zip -d painel/
-cd painel/
-npm install
-npm start
-# → http://localhost:3123
-```
-
-After first start, create `configs/views.json` and populate `cards/cards-list.json` and `public/local-*/` with instance-specific data.
