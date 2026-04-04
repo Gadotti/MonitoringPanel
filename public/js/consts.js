@@ -20,3 +20,7 @@ let currentCard = null;
 let resizing = null;
 let draggedItem = null;
 let selectedView = null;
+
+// Set de cardIds cujas atualizações via WebSocket devem ser suprimidas temporariamente
+// (ex.: após salvar um assessment de CVE para evitar reload desnecessário)
+const suppressedCardUpdates = new Set();

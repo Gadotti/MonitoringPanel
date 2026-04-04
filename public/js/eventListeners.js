@@ -7,6 +7,12 @@ window.addEventListener('keydown', function(e) {
     if (addCardModal.classList.contains('show')) {
       closeAddCard();
     }
+
+    // Fecha o painel flutuante de assessment de CVE se estiver aberto
+    const panel = document.getElementById('cve-assess-panel');
+    if (panel && panel.classList.contains('open')) {
+      closeCveAssessPanel();
+    }
   }
 });
 
@@ -107,8 +113,40 @@ function initializeCardEvents(card) {
 
   card.addEventListener('dragstart', (e) => {
     draggedItem = card;
+
+    // Usa um ghost leve no lugar do snapshot do card completo.
+    // Sem isso, o browser tira uma captura visual de todo o DOM do card no
+    // momento do dragstart — em cards com conteúdo pesado (ex.: cve-assets
+    // com centenas de itens) isso causa um freeze perceptível de vários segundos.
+    const title = card.querySelector('.card-header .title')?.innerText || '';
+    const ghost = document.createElement('div');
+    ghost.textContent = title;
+    ghost.style.cssText = [
+      'position:fixed',
+      'top:-200px',          // fora da área visível; necessário para setDragImage funcionar
+      'left:0',
+      'width:200px',
+      'padding:8px 14px',
+      'background:var(--card-bg,#2b2b3d)',
+      'border:1px solid var(--border-mid,rgba(255,255,255,0.11))',
+      'border-radius:8px',
+      'color:var(--text-bright,#f0f0f5)',
+      'font-size:0.83rem',
+      'font-family:Segoe UI,system-ui,sans-serif',
+      'font-weight:600',
+      'white-space:nowrap',
+      'overflow:hidden',
+      'text-overflow:ellipsis',
+      'pointer-events:none',
+      'z-index:-1',
+    ].join(';');
+    document.body.appendChild(ghost);
+
+    e.dataTransfer.setDragImage(ghost, 100, 22);
+
     setTimeout(() => {
       card.classList.add('dragging');
+      if (ghost.parentNode) ghost.parentNode.removeChild(ghost);
     }, 0);
   });
 
@@ -160,3 +198,17 @@ function initializeCardEvents(card) {
     });
   }
 }
+
+// ── Fecha o painel flutuante de assessment ao clicar fora dele ou do trigger ──
+document.addEventListener('click', (e) => {
+  const panel = document.getElementById('cve-assess-panel');
+  if (!panel || !panel.classList.contains('open')) return;
+
+  const activeTrigger = document.querySelector('.cve-assess-trigger.open');
+  const clickedInsidePanel   = panel.contains(e.target);
+  const clickedInsideTrigger = activeTrigger && activeTrigger.contains(e.target);
+
+  if (!clickedInsidePanel && !clickedInsideTrigger) {
+    closeCveAssessPanel();
+  }
+});

@@ -1,7 +1,15 @@
 [
   {
-    "id": "ransom-look-tag",
+    "id": "ransom-look",
     "order": 0,
+    "title": "Breaches - All",
+    "columns": 2,
+    "rows": 2,
+    "zoom": 1
+  },
+  {
+    "id": "ransom-look-tag",
+    "order": 1,
     "title": "Breaches - Tags",
     "columns": 2,
     "rows": 2,
@@ -9,7 +17,7 @@
   },
   {
     "id": "uptime-results",
-    "order": 1,
+    "order": 2,
     "title": "Site e Serviços",
     "columns": 1,
     "rows": 2,
@@ -17,18 +25,10 @@
   },
   {
     "id": "uptime-results-must-be-off",
-    "order": 2,
+    "order": 3,
     "title": "Site e Serviços (Off)",
     "columns": 1,
     "rows": 1,
-    "zoom": 1
-  },
-  {
-    "id": "ransom-look",
-    "order": 3,
-    "title": "Breaches - All",
-    "columns": 2,
-    "rows": 2,
     "zoom": 1
   },
   {
@@ -48,8 +48,16 @@
     "zoom": 0.62
   },
   {
-    "id": "pendencias-ti",
+    "id": "cve-check",
     "order": 6,
+    "title": "CVE's Board",
+    "columns": 3,
+    "rows": 1,
+    "zoom": 1
+  },
+  {
+    "id": "pendencias-ti",
+    "order": 7,
     "title": "Pendências de TI",
     "columns": 2,
     "rows": 1,
@@ -57,7 +65,7 @@
   },
   {
     "id": "ransom-look-chart",
-    "order": 7,
+    "order": 8,
     "title": "Chart: Breaches - All",
     "columns": 1,
     "rows": 1,
@@ -65,7 +73,7 @@
   },
   {
     "id": "trafego-mbps",
-    "order": 8,
+    "order": 9,
     "title": "Tráfego de Rede",
     "columns": 1,
     "rows": 1,
@@ -73,17 +81,9 @@
   },
   {
     "id": "detecoes-ameaças",
-    "order": 9,
+    "order": 10,
     "title": "Ameaças Detectadas",
     "columns": 1,
-    "rows": 1,
-    "zoom": 1
-  },
-  {
-    "id": "cve-check",
-    "order": 10,
-    "title": "CVE's Board",
-    "columns": 3,
     "rows": 1,
     "zoom": 1
   }

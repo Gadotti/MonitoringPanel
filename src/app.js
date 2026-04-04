@@ -408,6 +408,63 @@ function createApp(config = {}) {
     });
   });
 
+  // ------------------------------------------------------------------ POST /api/cve-assessment
+  app.post('/api/cve-assessment', (req, res) => {
+    const filePath = req.query.file;
+    if (!filePath) {
+      return res.status(400).json({ error: 'Parâmetro "file" é obrigatório.' });
+    }
+
+    const resolved = path.resolve(rootDir, filePath);
+    const relative = path.relative(path.resolve(rootDir), resolved);
+    if (!relative || relative.startsWith('..') || path.isAbsolute(relative)) {
+      return res.status(400).json({ error: 'Caminho inválido.' });
+    }
+
+    const { reportItemId, cveId, assessment } = req.body;
+
+    if (!reportItemId || !cveId) {
+      return res.status(400).json({ error: 'Campos "reportItemId" e "cveId" são obrigatórios.' });
+    }
+
+    const validAssessments = ['', 'Acknowledge/Mitigating', 'False Positive', 'Accepted Risk'];
+    if (assessment === undefined || !validAssessments.includes(assessment)) {
+      return res.status(400).json({ error: 'Valor de "assessment" inválido.' });
+    }
+
+    if (!fs.existsSync(resolved)) {
+      return res.status(404).json({ error: 'Arquivo não encontrado.' });
+    }
+
+    fs.readFile(resolved, 'utf8', (err, data) => {
+      if (err) return res.status(500).json({ error: 'Erro ao ler arquivo.' });
+
+      let report;
+      try {
+        report = JSON.parse(data);
+      } catch {
+        return res.status(500).json({ error: 'Arquivo JSON inválido.' });
+      }
+
+      const reportItem = (report.report_items || []).find(item => item.id === reportItemId);
+      if (!reportItem) {
+        return res.status(404).json({ error: `Item "${reportItemId}" não encontrado.` });
+      }
+
+      const cve = (reportItem.cves || []).find(c => c.cve_id === cveId);
+      if (!cve) {
+        return res.status(404).json({ error: `CVE "${cveId}" não encontrado.` });
+      }
+
+      cve.assessment = assessment;
+
+      fs.writeFile(resolved, JSON.stringify(report, null, 4), 'utf8', (writeErr) => {
+        if (writeErr) return res.status(500).json({ error: 'Erro ao salvar arquivo.' });
+        res.sendStatus(200);
+      });
+    });
+  });
+
   // ------------------------------------------------------------------ SPA fallback
   app.get('/:view?', (req, res) => {
     res.sendFile(path.join(rootDir, 'public', 'index.html'));

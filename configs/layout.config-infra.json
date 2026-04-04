@@ -1,16 +1,16 @@
 [
   {
-    "id": "logins-por-hora",
+    "id": "pendencias-ti",
     "order": 0,
-    "title": "Logins por Hora",
+    "title": "Pendências de TI",
     "columns": 1,
     "rows": 1,
     "zoom": 1
   },
   {
-    "id": "estado-maquinas",
+    "id": "falhas-diarias",
     "order": 1,
-    "title": "Estado das Máquinas",
+    "title": "Falhas Diárias",
     "columns": 1,
     "rows": 1,
     "zoom": 1
@@ -24,8 +24,24 @@
     "zoom": 1
   },
   {
-    "id": "detecoes-ameaças",
+    "id": "estado-maquinas",
     "order": 3,
+    "title": "Estado das Máquinas",
+    "columns": 1,
+    "rows": 1,
+    "zoom": 1
+  },
+  {
+    "id": "logins-por-hora",
+    "order": 4,
+    "title": "Logins por Hora",
+    "columns": 1,
+    "rows": 1,
+    "zoom": 1
+  },
+  {
+    "id": "detecoes-ameaças",
+    "order": 5,
     "title": "Detecções de Ameaças",
     "columns": 1,
     "rows": 1,
@@ -33,25 +49,9 @@
   },
   {
     "id": "uso-recursos",
-    "order": 4,
+    "order": 6,
     "title": "Uso de Recursos",
     "columns": 4,
-    "rows": 1,
-    "zoom": 1
-  },
-  {
-    "id": "pendencias-ti",
-    "order": 5,
-    "title": "Pendências de TI",
-    "columns": 1,
-    "rows": 1,
-    "zoom": 1
-  },
-  {
-    "id": "falhas-diarias",
-    "order": 6,
-    "title": "Falhas Diárias",
-    "columns": 1,
     "rows": 1,
     "zoom": 1
   },

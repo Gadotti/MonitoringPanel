@@ -43,9 +43,12 @@ function signSocketListeners() {
 
         if (msg.type === 'update') {
             const card = document.getElementById(msg.cardId);
-            
+
             if (card) {
-                loadCardsContent(card.id);                
+                // Suprime reload se o card estiver na lista de supressão
+                // (ex.: após salvar um assessment de CVE — evita refresh desnecessário)
+                if (suppressedCardUpdates.has(msg.cardId)) return;
+                loadCardsContent(card.id);
             }
         }
     });
