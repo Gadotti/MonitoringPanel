@@ -24,17 +24,17 @@
     "zoom": 1
   },
   {
-    "id": "estado-maquinas",
+    "id": "logins-por-hora",
     "order": 3,
-    "title": "Estado das Máquinas",
+    "title": "Logins por Hora",
     "columns": 1,
     "rows": 1,
     "zoom": 1
   },
   {
-    "id": "logins-por-hora",
+    "id": "estado-maquinas",
     "order": 4,
-    "title": "Logins por Hora",
+    "title": "Estado das Máquinas",
     "columns": 1,
     "rows": 1,
     "zoom": 1
@@ -59,8 +59,8 @@
     "id": "eventos-recentes",
     "order": 7,
     "title": "Eventos Recentes",
-    "columns": 2,
-    "rows": 1,
+    "columns": 3,
+    "rows": 2,
     "zoom": 1
   }
 ]

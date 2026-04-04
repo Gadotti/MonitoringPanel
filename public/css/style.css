@@ -165,6 +165,13 @@ body {
   transform: scale(0.98);
 }
 
+/* Oculta o conteúdo do card durante o drag.
+   Preserva o espaço do elemento mas elimina todo o custo de paint
+   da subárvore — essencial para cards com DOM pesado (ex.: cve-assets). */
+.card.dragging .card-content {
+  visibility: hidden;
+}
+
 /* ------------------------------
     Modal — backdrop
 ------------------------------- */
