@@ -28,7 +28,8 @@ Local-first architecture: data produced externally by Python scripts (uptime, CV
 │   ├── api.views.manage.test.js       # POST /api/views, DELETE /api/views
 │   ├── api.logs.test.js               # GET /api/logs, GET /api/logs/:filename
 │   ├── api.uptime.test.js             # GET/POST /api/uptime-config
-│   └── api.cve.assessment.test.js     # POST /api/cve-assessment
+│   ├── api.cve.assessment.test.js     # POST /api/cve-assessment
+│   └── api.cards.manage.test.js       # POST /api/cards, DELETE /api/cards/:cardId
 │
 ├── public/
 │   ├── index.html               # SPA shell — scripts loaded in strict order
@@ -54,6 +55,7 @@ Local-first architecture: data produced externally by Python scripts (uptime, CV
 │       ├── socketListeners.js   # WebSocket connection and file subscriptions
 │       ├── helpers.js           # CSV parsing (semicolon-delimited)
 │       ├── view-selector.js     # Custom dropdown synced to hidden <select>
+│       ├── cardeditor.js        # Card definitions editor modal (CRUD on cards-list.json)
 │       ├── manageviews.js       # Create/delete views modal
 │       ├── logviewer.js         # Log viewer modal
 │       └── uptimeeditor.js      # Uptime config editor modal
@@ -154,6 +156,8 @@ Card definitions live in `cards/cards-list.json`, schema in `card.schema.json`.
 | `POST` | `/api/views` | Create view (generates slug, creates empty layout) |
 | `DELETE` | `/api/views/:viewName` | Remove view and delete layout file |
 | `GET` | `/api/cards` | Card registry (`cards-list.json`) |
+| `POST` | `/api/cards` | Save full card registry (validates IDs and cardTypes) |
+| `DELETE` | `/api/cards/:cardId` | Remove a card by ID from the registry |
 | `GET` | `/api/layout/:viewName` | View layout (empty array if not found) |
 | `POST` | `/api/layout/:viewName` | Save full view layout |
 | `GET` | `/api/partial-csv?file=&limit=N` | Last N lines of CSV (preserves header) |

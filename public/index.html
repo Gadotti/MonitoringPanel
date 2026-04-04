@@ -81,6 +81,23 @@
         <!-- Seção Ações -->
         <div class="drawer-section-label">Ações</div>
 
+        <!-- Editar Cards -->
+        <div class="drawer-item add-card-item" title="Editar Cards">
+          <div class="drawer-item-icon add-card-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/>
+              <line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/>
+              <line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/>
+              <line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/>
+            </svg>
+          </div>
+          <div class="add-card-custom">
+            <button class="add-card-trigger" id="btn-card-editor" type="button">
+              <span class="add-card-label">Editar Cards</span>
+            </button>
+          </div>
+        </div>
+
         <!-- Adicionar Card -->
         <div class="drawer-item add-card-item" title="Adicionar Card">
           <div class="drawer-item-icon add-card-icon">
@@ -281,6 +298,77 @@
       </div>
     </div>
 
+    <!-- 🔥 Modal de edição de cards -->
+    <div id="card-editor-modal" class="modal">
+      <div class="modal-content ce-modal-content">
+        <h2>Editar Cards</h2>
+
+        <!-- Feedback -->
+        <div class="mv-feedback" id="ce-feedback"></div>
+
+        <!-- Lista de cards existentes -->
+        <div id="ce-list-section" class="mv-section">
+          <div class="mv-list-label">Cards cadastrados</div>
+          <div id="ce-cards-list" class="ce-cards-list"></div>
+          <div class="ce-form-section">
+            <button class="ue-add-toggle" id="ce-form-toggle" type="button">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+              Adicionar card
+            </button>
+          </div>
+        </div>
+
+        <!-- Formulário de edição / adição -->
+        <div id="ce-form" style="display:none;">
+          <div class="mv-list-label" id="ce-form-label">Adicionar card</div>
+          <div class="ce-form-grid">
+            <div class="modal-row">
+              <label for="ce-card-id">ID (slug único)</label>
+              <input type="text" id="ce-card-id" placeholder="meu-card" autocomplete="off">
+            </div>
+            <div class="modal-row">
+              <label for="ce-card-title">Título</label>
+              <input type="text" id="ce-card-title" placeholder="Título do Card" autocomplete="off">
+            </div>
+            <div class="modal-row">
+              <label>Tipo</label>
+              <div class="ce-type-wrapper" id="ce-type-wrapper">
+                <button class="ce-type-trigger" id="ce-type-trigger" type="button">
+                  <span class="ce-type-label" id="ce-type-label">chart</span>
+                  <svg class="ce-type-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="6 9 12 15 18 9"/>
+                  </svg>
+                </button>
+                <div class="ce-type-dropdown" id="ce-type-dropdown"></div>
+              </div>
+            </div>
+            <div class="modal-row">
+              <label for="ce-card-description">Descrição</label>
+              <input type="text" id="ce-card-description" placeholder="Breve descrição" autocomplete="off">
+            </div>
+            <div class="modal-row">
+              <label for="ce-card-source">sourceItems (caminho do arquivo de dados)</label>
+              <input type="text" id="ce-card-source" placeholder="public/local-data/file.json" autocomplete="off">
+            </div>
+            <div class="modal-row">
+              <label for="ce-card-json">JSON completo (avançado — sobrescreve campos acima)</label>
+              <textarea id="ce-card-json" rows="6" placeholder='{"id":"meu-card","title":"...","cardType":"chart",...}'></textarea>
+            </div>
+          </div>
+          <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:4px;">
+            <button class="btn-close" id="ce-cancel-btn" type="button">Voltar</button>
+            <button class="btn-apply" id="ce-confirm-btn" type="button">Confirmar</button>
+          </div>
+        </div>
+
+        <div class="add-card-actions">
+          <button class="btn-close" id="close-card-editor-modal">Fechar</button>
+        </div>
+      </div>
+    </div>
+
     <!-- 🔥 Modal de seleção de cards -->
     <div id="add-card-modal" class="modal">
       <div class="modal-content">
@@ -335,6 +423,7 @@
     <script src="js/view-selector.js"></script>
     <script src="js/manageviews.js"></script>
     <script src="js/logviewer.js"></script>
+    <script src="js/cardeditor.js"></script>
     <script src="js/uptimeeditor.js"></script>
   </body>
 </html>

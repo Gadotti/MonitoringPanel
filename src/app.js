@@ -199,6 +199,69 @@ function createApp(config = {}) {
     });
   });
 
+  // ------------------------------------------------------------------ POST /api/cards
+  app.post('/api/cards', (req, res) => {
+    const cards = req.body;
+
+    if (!Array.isArray(cards)) {
+      return res.status(400).json({ error: 'O body deve ser um array de cards.' });
+    }
+
+    const ids = cards.map(c => c.id).filter(Boolean);
+    const uniqueIds = new Set(ids);
+    if (ids.length !== uniqueIds.size) {
+      return res.status(400).json({ error: 'IDs de cards duplicados.' });
+    }
+
+    for (const card of cards) {
+      if (!card.id || !card.id.trim()) {
+        return res.status(400).json({ error: 'Todo card deve ter um "id".' });
+      }
+      if (!card.cardType || !card.cardType.trim()) {
+        return res.status(400).json({ error: `Card "${card.id}" deve ter um "cardType".` });
+      }
+    }
+
+    fs.writeFile(CARDS_PATH, JSON.stringify(cards, null, 2), 'utf8', (err) => {
+      if (err) {
+        return res.status(500).json({ error: 'Erro ao salvar os cards.' });
+      }
+      res.sendStatus(200);
+    });
+  });
+
+  // ------------------------------------------------------------------ DELETE /api/cards/:cardId
+  app.delete('/api/cards/:cardId', (req, res) => {
+    const cardId = req.params.cardId;
+
+    fs.readFile(CARDS_PATH, 'utf8', (err, data) => {
+      if (err) {
+        return res.status(500).json({ error: 'Erro ao ler os cards.' });
+      }
+
+      let cards;
+      try {
+        cards = JSON.parse(data);
+      } catch {
+        return res.status(500).json({ error: 'Erro ao interpretar os cards.' });
+      }
+
+      const index = cards.findIndex(c => c.id === cardId);
+      if (index === -1) {
+        return res.status(404).json({ error: `Card "${cardId}" não encontrado.` });
+      }
+
+      cards.splice(index, 1);
+
+      fs.writeFile(CARDS_PATH, JSON.stringify(cards, null, 2), 'utf8', (writeErr) => {
+        if (writeErr) {
+          return res.status(500).json({ error: 'Erro ao salvar os cards.' });
+        }
+        res.sendStatus(200);
+      });
+    });
+  });
+
   // ------------------------------------------------------------------ GET /version
   app.get('/version', (req, res) => {
     const versionPath = path.join(rootDir, 'version.json');

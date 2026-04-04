@@ -7,19 +7,40 @@
     "chart": {
       "type": "line",
       "data": {
-        "labels": ["00h", "06h", "12h", "18h", "24h"],
-        "datasets": [{
-          "label": "Logins",
-          "data": [4, 8, 12, 7, 5],
-          "borderColor": "#3498db",
-          "backgroundColor": "rgba(52,152,219,0.3)",
-          "tension": 0.4,
-          "fill": true
-        }]
+        "labels": [
+          "00h",
+          "06h",
+          "12h",
+          "18h",
+          "24h"
+        ],
+        "datasets": [
+          {
+            "label": "Logins",
+            "data": [
+              4,
+              8,
+              12,
+              7,
+              5
+            ],
+            "borderColor": "#3498db",
+            "backgroundColor": "rgba(52,152,219,0.3)",
+            "tension": 0.4,
+            "fill": true
+          }
+        ]
       },
-      "options": { "responsive": true, "maintainAspectRatio": false }
+      "options": {
+        "responsive": true,
+        "maintainAspectRatio": false
+      }
     },
-    "tags": ["login", "acesso", "linha"]
+    "tags": [
+      "login",
+      "acesso",
+      "linha"
+    ]
   },
   {
     "id": "estado-maquinas",
@@ -29,15 +50,36 @@
     "chart": {
       "type": "doughnut",
       "data": {
-        "labels": ["Operacionais", "Inativos", "Comprometidos"],
-        "datasets": [{
-          "data": [50, 8, 3],
-          "backgroundColor": ["#2ecc71", "#f1c40f", "#e74c3c"]
-        }]
+        "labels": [
+          "Operacionais",
+          "Inativos",
+          "Comprometidos"
+        ],
+        "datasets": [
+          {
+            "data": [
+              50,
+              8,
+              3
+            ],
+            "backgroundColor": [
+              "#2ecc71",
+              "#f1c40f",
+              "#e74c3c"
+            ]
+          }
+        ]
       },
-      "options": { "responsive": true, "maintainAspectRatio": false }
+      "options": {
+        "responsive": true,
+        "maintainAspectRatio": false
+      }
     },
-    "tags": ["infraestrutura", "status", "doughnut"]
+    "tags": [
+      "infraestrutura",
+      "status",
+      "doughnut"
+    ]
   },
   {
     "id": "trafego-mbps",
@@ -47,19 +89,40 @@
     "chart": {
       "type": "line",
       "data": {
-        "labels": ["00h", "06h", "12h", "18h", "24h"],
-        "datasets": [{
-          "label": "Mbps",
-          "data": [120, 190, 300, 200, 150],
-          "borderColor": "#9b59b6",
-          "backgroundColor": "rgba(155,89,182,0.2)",
-          "tension": 0.3,
-          "fill": true
-        }]
+        "labels": [
+          "00h",
+          "06h",
+          "12h",
+          "18h",
+          "24h"
+        ],
+        "datasets": [
+          {
+            "label": "Mbps",
+            "data": [
+              120,
+              190,
+              300,
+              200,
+              150
+            ],
+            "borderColor": "#9b59b6",
+            "backgroundColor": "rgba(155,89,182,0.2)",
+            "tension": 0.3,
+            "fill": true
+          }
+        ]
       },
-      "options": { "responsive": true, "maintainAspectRatio": false }
+      "options": {
+        "responsive": true,
+        "maintainAspectRatio": false
+      }
     },
-    "tags": ["rede", "tráfego", "linha"],
+    "tags": [
+      "rede",
+      "tráfego",
+      "linha"
+    ],
     "view": "infra"
   },
   {
@@ -70,16 +133,40 @@
     "chart": {
       "type": "bar",
       "data": {
-        "labels": ["Malware", "Phishing", "Ransomware", "Outros"],
-        "datasets": [{
-          "label": "Detecções",
-          "data": [10, 5, 3, 2],
-          "backgroundColor": ["#e74c3c", "#f1c40f", "#9b59b6", "#3498db"]
-        }]
+        "labels": [
+          "Malware",
+          "Phishing",
+          "Ransomware",
+          "Outros"
+        ],
+        "datasets": [
+          {
+            "label": "Detecções",
+            "data": [
+              10,
+              5,
+              3,
+              2
+            ],
+            "backgroundColor": [
+              "#e74c3c",
+              "#f1c40f",
+              "#9b59b6",
+              "#3498db"
+            ]
+          }
+        ]
       },
-      "options": { "responsive": true, "maintainAspectRatio": false }
+      "options": {
+        "responsive": true,
+        "maintainAspectRatio": false
+      }
     },
-    "tags": ["segurança", "ameaças", "barras"]
+    "tags": [
+      "segurança",
+      "ameaças",
+      "barras"
+    ]
   },
   {
     "id": "uso-recursos",
@@ -89,15 +176,36 @@
     "chart": {
       "type": "doughnut",
       "data": {
-        "labels": ["CPU", "Memória", "Disco"],
-        "datasets": [{
-          "data": [65, 50, 70],
-          "backgroundColor": ["#3498db", "#2ecc71", "#e67e22"]
-        }]
+        "labels": [
+          "CPU",
+          "Memória",
+          "Disco"
+        ],
+        "datasets": [
+          {
+            "data": [
+              65,
+              50,
+              70
+            ],
+            "backgroundColor": [
+              "#3498db",
+              "#2ecc71",
+              "#e67e22"
+            ]
+          }
+        ]
       },
-      "options": { "responsive": true, "maintainAspectRatio": false }
+      "options": {
+        "responsive": true,
+        "maintainAspectRatio": false
+      }
     },
-    "tags": ["infraestrutura", "uso", "recursos"]
+    "tags": [
+      "infraestrutura",
+      "uso",
+      "recursos"
+    ]
   },
   {
     "id": "pendencias-ti",
@@ -107,17 +215,38 @@
     "chart": {
       "type": "bar",
       "data": {
-        "labels": ["Servidores", "Estações", "Firewalls"],
-        "datasets": [{
-          "label": "Pendentes",
-          "data": [2, 8, 1],
-          "backgroundColor": ["#e67e22", "#f1c40f", "#e74c3c"]
-        }]
+        "labels": [
+          "Servidores",
+          "Estações",
+          "Firewalls"
+        ],
+        "datasets": [
+          {
+            "label": "Pendentes",
+            "data": [
+              2,
+              8,
+              1
+            ],
+            "backgroundColor": [
+              "#e67e22",
+              "#f1c40f",
+              "#e74c3c"
+            ]
+          }
+        ]
       },
-      "options": { "responsive": true, "maintainAspectRatio": false }
+      "options": {
+        "responsive": true,
+        "maintainAspectRatio": false
+      }
     },
-    "tags": ["ti", "pendências", "barras"]
-  },  
+    "tags": [
+      "ti",
+      "pendências",
+      "barras"
+    ]
+  },
   {
     "id": "falhas-diarias",
     "title": "Falhas Diárias",
@@ -126,19 +255,40 @@
     "chart": {
       "type": "line",
       "data": {
-        "labels": ["Seg", "Ter", "Qua", "Qui", "Sex"],
-        "datasets": [{
-          "label": "Falhas",
-          "data": [1, 0, 2, 1, 0],
-          "borderColor": "#e74c3c",
-          "backgroundColor": "rgba(231,76,60,0.3)",
-          "tension": 0.4,
-          "fill": true
-        }]
+        "labels": [
+          "Seg",
+          "Ter",
+          "Qua",
+          "Qui",
+          "Sex"
+        ],
+        "datasets": [
+          {
+            "label": "Falhas",
+            "data": [
+              1,
+              0,
+              2,
+              1,
+              0
+            ],
+            "borderColor": "#e74c3c",
+            "backgroundColor": "rgba(231,76,60,0.3)",
+            "tension": 0.4,
+            "fill": true
+          }
+        ]
       },
-      "options": { "responsive": true, "maintainAspectRatio": false }
+      "options": {
+        "responsive": true,
+        "maintainAspectRatio": false
+      }
     },
-    "tags": ["falhas", "monitoramento", "linha"]
+    "tags": [
+      "falhas",
+      "monitoramento",
+      "linha"
+    ]
   },
   {
     "id": "logs-sistema",
@@ -148,16 +298,37 @@
     "chart": {
       "type": "bar",
       "data": {
-        "labels": ["Críticos", "Avisos", "Informações"],
-        "datasets": [{
-          "label": "Logs",
-          "data": [5, 15, 30],
-          "backgroundColor": ["#e74c3c", "#f1c40f", "#2ecc71"]
-        }]
+        "labels": [
+          "Críticos",
+          "Avisos",
+          "Informações"
+        ],
+        "datasets": [
+          {
+            "label": "Logs",
+            "data": [
+              5,
+              15,
+              30
+            ],
+            "backgroundColor": [
+              "#e74c3c",
+              "#f1c40f",
+              "#2ecc71"
+            ]
+          }
+        ]
       },
-      "options": { "responsive": true, "maintainAspectRatio": false }
+      "options": {
+        "responsive": true,
+        "maintainAspectRatio": false
+      }
     },
-    "tags": ["logs", "sistema", "barras"]
+    "tags": [
+      "logs",
+      "sistema",
+      "barras"
+    ]
   },
   {
     "id": "eventos-recentes",
@@ -167,7 +338,7 @@
       "orderBy": "timestamp",
       "order": "desc",
       "limit": 15,
-      "sourceItems": "public/local-events/recent-events.csv"      
+      "sourceItems": "public/local-events/recent-events.csv"
     }
   },
   {
@@ -187,7 +358,7 @@
       "orderBy": "timestamp",
       "order": "desc",
       "limit": 50,
-      "sourceItems": "public/local-events/ransomlook/breachs_posts.csv"      
+      "sourceItems": "public/local-events/ransomlook/breachs_posts.csv"
     }
   },
   {
@@ -198,7 +369,7 @@
       "orderBy": "timestamp",
       "order": "desc",
       "limit": 50,
-      "sourceItems": "public/local-events/ransomlook/breachs_posts_tags.csv"      
+      "sourceItems": "public/local-events/ransomlook/breachs_posts_tags.csv"
     }
   },
   {
@@ -210,20 +381,37 @@
     "chart": {
       "type": "line",
       "data": {
-        "labels": ["Seg", "Ter", "Qua", "Qui", "Sex", "Sab", "Dom"],
-        "datasets": [{
-          "label": "Breaches",
-          "data": [],
-          "script": "scripts/count_events_by_weekday.py",
-          "borderColor": "#e74c3c",
-          "backgroundColor": "rgba(231,76,60,0.3)",
-          "tension": 0.4,
-          "fill": true
-        }]
+        "labels": [
+          "Seg",
+          "Ter",
+          "Qua",
+          "Qui",
+          "Sex",
+          "Sab",
+          "Dom"
+        ],
+        "datasets": [
+          {
+            "label": "Breaches",
+            "data": [],
+            "script": "scripts/count_events_by_weekday.py",
+            "borderColor": "#e74c3c",
+            "backgroundColor": "rgba(231,76,60,0.3)",
+            "tension": 0.4,
+            "fill": true
+          }
+        ]
       },
-      "options": { "responsive": true, "maintainAspectRatio": false }
+      "options": {
+        "responsive": true,
+        "maintainAspectRatio": false
+      }
     },
-    "tags": ["vazamentos", "monitoramento", "ransomlook"]
+    "tags": [
+      "vazamentos",
+      "monitoramento",
+      "ransomlook"
+    ]
   },
   {
     "id": "uptime-results",

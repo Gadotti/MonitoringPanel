@@ -514,6 +514,228 @@ body {
 }
 
 /* ------------------------------
+    Modal de Edição de Cards
+------------------------------- */
+.ce-modal-content {
+  width: 600px;
+  max-width: 96%;
+  max-height: 88vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.ce-cards-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 260px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.ce-cards-list::-webkit-scrollbar {
+  width: 3px;
+}
+
+.ce-cards-list::-webkit-scrollbar-thumb {
+  background: var(--border-mid);
+  border-radius: 2px;
+}
+
+.ce-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 8px;
+  border-radius: var(--radius-sm);
+  transition: background-color 0.15s var(--ease-std);
+}
+
+.ce-row:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.ce-row-title {
+  flex: 1;
+  font-size: 0.88rem;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ce-row-type {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+  white-space: nowrap;
+}
+
+.ce-edit-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 3px 5px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  transition: color 0.15s var(--ease-std), background-color 0.15s var(--ease-std);
+  flex-shrink: 0;
+}
+
+.ce-edit-btn:hover {
+  color: var(--accent);
+  background: rgba(204, 120, 92, 0.15);
+}
+
+.ce-form-section {
+  margin-top: 8px;
+}
+
+.ce-form-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 0;
+}
+
+.ce-form-grid textarea {
+  width: 100%;
+  background: var(--app-bg);
+  color: var(--text);
+  border: 1px solid var(--border-mid);
+  border-radius: var(--radius-sm);
+  padding: 8px 10px;
+  font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+  font-size: 0.82rem;
+  resize: vertical;
+  outline: none;
+  transition: border-color 0.15s var(--ease-std);
+}
+
+.ce-form-grid textarea:focus {
+  border-color: var(--accent);
+}
+
+/* ── Custom type dropdown — same pattern as .cve-assess-* ── */
+.ce-type-wrapper {
+  position: relative;
+}
+
+.ce-type-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: var(--radius-md);
+  color: var(--text);
+  font-size: 0.85rem;
+  font-family: inherit;
+  font-weight: 500;
+  padding: 7px 10px;
+  cursor: pointer;
+  text-align: left;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.ce-type-trigger:hover {
+  background: rgba(255, 255, 255, 0.09);
+  border-color: rgba(255, 255, 255, 0.16);
+}
+
+.ce-type-trigger.open {
+  background: rgba(255, 255, 255, 0.09);
+  border-color: rgba(204, 120, 92, 0.5);
+}
+
+.ce-type-label {
+  flex: 1;
+  font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+  font-size: 0.82rem;
+}
+
+.ce-type-chevron {
+  flex-shrink: 0;
+  color: var(--text-muted);
+  transition: transform 0.2s ease;
+}
+
+.ce-type-trigger.open .ce-type-chevron {
+  transform: rotate(180deg);
+}
+
+.ce-type-dropdown {
+  position: absolute;
+  z-index: 10;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: var(--surface-bg);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 2px 8px rgba(0, 0, 0, 0.3);
+  padding: 4px;
+  display: none;
+}
+
+.ce-type-dropdown.open {
+  display: block;
+  animation: dropdown-in 0.15s ease forwards;
+}
+
+.ce-type-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  background: none;
+  border: none;
+  border-radius: 7px;
+  color: var(--text);
+  font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+  font-size: 0.82rem;
+  font-weight: 400;
+  padding: 7px 8px;
+  cursor: pointer;
+  text-align: left;
+  transition: background-color 0.12s ease, color 0.12s ease;
+}
+
+.ce-type-option:hover {
+  background: rgba(255, 255, 255, 0.07);
+  color: var(--text-bright);
+}
+
+.ce-type-option.selected {
+  color: var(--text-bright);
+  font-weight: 500;
+}
+
+.ce-type-option-icon {
+  width: 14px;
+  height: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent);
+  flex-shrink: 0;
+  opacity: 0;
+  transition: opacity 0.12s ease;
+}
+
+.ce-type-option.selected .ce-type-option-icon {
+  opacity: 1;
+}
+
+.ce-type-option-label {
+  flex: 1;
+}
+
+/* ------------------------------
     Modal de Visualização de Logs
 ------------------------------- */
 .logs-modal-content {
