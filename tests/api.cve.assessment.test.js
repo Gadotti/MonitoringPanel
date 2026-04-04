@@ -303,7 +303,7 @@ describe('POST /api/cve-assessment', () => {
 
     await request(app)
       .post(`/api/cve-assessment?file=${FILE_PARAM}`)
-      .send({ reportItemId: 'FortiOS_7.6.0', cveId: 'CVE-2024-21762', assessment: 'Acknowledged/Mitigating' })
+      .send({ reportItemId: 'FortiOS_7.6.0', cveId: 'CVE-2024-21762', assessment: 'Acknowledge/Mitigating' })
       .set('Content-Type', 'application/json');
 
     expect(savedData.last_scan).toBe('2026-03-21 21:02:06');
