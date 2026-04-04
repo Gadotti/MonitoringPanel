@@ -2,88 +2,85 @@
 
 ## Project Overview
 
-**Painel de Monitoramento** is a self-hosted, real-time security and infrastructure monitoring dashboard. It renders configurable card-based layouts with charts, event lists, uptime monitors, CVE asset reports, and embedded iframes. The dashboard supports multiple named "views", each with its own independently saved layout, and updates cards in real time via WebSocket when their source data files change on disk.
+Self-hosted real-time security and infrastructure monitoring dashboard. Renders configurable card-based layouts (charts, event lists, uptime monitors, CVE reports, iframes) with multiple independent "views". Updates cards in real time via WebSocket when data files change on disk.
 
-The project is designed to be lightweight and local-first: data is produced externally by Python scripts (e.g., uptime checkers, CVE scanners, breach feed consumers) and written to JSON/CSV files that the server watches and broadcasts changes from.
+Local-first architecture: data produced externally by Python scripts (uptime, CVE, breach feeds) written to JSON/CSV files that the server watches and broadcasts.
 
 ---
 
 ## Repository Layout
 
 ```
-painel/
-├── server.js                          # Bootstrap only: app.listen + WebSocket server
-├── src/
-│   └── app.js                         # Express app factory — testável, sem side effects
-├── server-config.json                 # Server port, address, python command
-├── version.json                       # Current release version
-├── package.json
-├── jest.setup.js                      # Jest global setup (silencia logs durante testes)
-├── release.py                         # Builds a versioned .zip release artifact
+├── server.js                    # Bootstrap: app.listen + WebSocket server
+├── src/app.js                   # Express app factory (createApp) — all route logic lives here
+├── server-config.json           # HTTP port, address, python command
+├── version.json                 # Current version
+├── release.py                   # Versioned .zip build
+├── jest.setup.js                # Silences logs during tests
 │
 ├── tests/
-│   ├── app.smoke.test.js              # Smoke tests: criação do app e SPA fallback
+│   ├── app.smoke.test.js              # App creation and SPA fallback
 │   ├── api.layout.test.js             # GET /api/layout/:viewName
 │   ├── api.layout.save.test.js        # POST /api/layout/:viewName
 │   ├── api.meta.test.js               # GET /api/views, /api/cards, /version
 │   ├── api.csv.test.js                # GET /api/partial-csv
 │   ├── api.chartdata.test.js          # POST /api/chart-data
-│   ├── api.views.manage.test.js       # POST /api/views, DELETE /api/views/:viewName
+│   ├── api.views.manage.test.js       # POST /api/views, DELETE /api/views
 │   ├── api.logs.test.js               # GET /api/logs, GET /api/logs/:filename
-│   └── api.uptime.test.js             # GET /api/uptime-config, POST /api/uptime-config
+│   ├── api.uptime.test.js             # GET/POST /api/uptime-config
+│   └── api.cve.assessment.test.js     # POST /api/cve-assessment
 │
-├── public/                            # Static assets served to the browser
-│   ├── index.html                     # Single-page app shell
-│   ├── favicon.svg                    # SVG favicon — ícone dos quadradinhos (accent #cc785c)
-│   ├── websocket-config.json          # WebSocket host/port for the frontend
+├── public/
+│   ├── index.html               # SPA shell — scripts loaded in strict order
+│   ├── favicon.svg              # Four-square icon (accent #cc785c)
+│   ├── websocket-config.json    # WebSocket host/port for the frontend
 │   ├── css/
-│   │   ├── style.css                  # Global layout, grid, cards, modals + design tokens (:root)
-│   │   ├── drawer.css                 # Menu gaveta lateral flutuante + design tokens do drawer
-│   │   ├── event-list.css             # List card styles
-│   │   ├── frame-card.css             # iframe card + zoom controls
-│   │   ├── highlight.css              # Card update pulse animation
-│   │   ├── uptime-card.css            # Uptime card styles
-│   │   └── cve-assets.css             # CVE assets board styles
+│   │   ├── style.css            # Global layout, grid, cards, modals + design tokens (:root)
+│   │   ├── drawer.css           # Floating side drawer menu
+│   │   ├── event-list.css       # List card
+│   │   ├── frame-card.css       # iframe card + zoom
+│   │   ├── highlight.css        # Update pulse animation
+│   │   ├── uptime-card.css      # Uptime card
+│   │   └── cve-assets.css       # CVE assets board
 │   └── js/
-│       ├── consts.js                  # DOM references and shared state
-│       ├── drawer.js                  # Drawer toggle, estado persistido em localStorage, carga de versão
-│       ├── script.js                  # Core: layout load/save, card rendering, content loaders
-│       ├── eventListeners.js          # DOM event wiring, card interaction init
-│       ├── carddrag.js                # Drag-and-drop card reordering
-│       ├── resizecards.js             # Mouse-resize card spans
-│       ├── cardsettings.js            # Settings modal (title, cols, rows, remove)
-│       ├── addcards.js                # Add-card modal (abertura imediata + fetches paralelos)
-│       ├── socketListeners.js         # WebSocket connection and update handling
-│       ├── helpers.js                 # CSV parsing utilities
-│       ├── view-selector.js           # Dropdown customizado de seleção de visão (sincronizado ao <select> oculto)
-│       ├── manageviews.js             # Modal de criar/excluir visões (chama POST e DELETE /api/views)
-│       ├── logviewer.js               # Modal de visualização de logs de scripts (scripts/logs/*.log)
-│       └── uptimeeditor.js            # Modal de edição de configuração de monitoramento uptime
+│       ├── consts.js            # DOM references and shared state
+│       ├── drawer.js            # Drawer toggle, localStorage, version
+│       ├── script.js            # Core: layout, card rendering, content loaders by type
+│       ├── eventListeners.js    # DOM event wiring, interaction init
+│       ├── carddrag.js          # Drag-and-drop card reordering
+│       ├── resizecards.js       # Mouse-resize card spans
+│       ├── cardsettings.js      # Settings modal (title, cols, rows, removal)
+│       ├── addcards.js          # Add card modal
+│       ├── socketListeners.js   # WebSocket connection and file subscriptions
+│       ├── helpers.js           # CSV parsing (semicolon-delimited)
+│       ├── view-selector.js     # Custom dropdown synced to hidden <select>
+│       ├── manageviews.js       # Create/delete views modal
+│       ├── logviewer.js         # Log viewer modal
+│       └── uptimeeditor.js      # Uptime config editor modal
 │
 ├── cards/
-│   ├── cards-list.json                # Master registry of all available cards
-│   ├── cards-examples.json            # Example/reference card definitions
-│   └── card.schema.json               # JSON schema documenting card structure
+│   ├── cards-list.json          # Master card registry (gitignored, per-instance)
+│   ├── cards-examples.json      # Reference card definitions
+│   └── card.schema.json         # JSON Schema for card structure
 │
-├── configs/
-│   ├── views.json                     # List of named views (value + display title)
-│   ├── layout.config-default.json     # Saved layout for the "default" view
-│   ├── layout.config-infra.json       # Saved layout for the "infra" view
-│   └── layout.config-{view}.json      # Pattern: one file per view
+├── configs/                     # Gitignored — created per deployment
+│   ├── views.json               # List of views (value + title)
+│   └── layout.config-{view}.json  # One layout file per view
 │
 ├── scripts/
-│   ├── check_status.py                # Async HTTP uptime checker; writes uptime JSON
-│   ├── check-cve-assets.py            # NVD CVE lookup + risk scoring; writes CVE report JSON
-│   └── count_events_by_weekday.py     # Aggregates CSV events into weekday counts for charts
+│   ├── check_status.py          # Async uptime checker (asyncio/aiohttp)
+│   ├── count_events_by_weekday.py  # Aggregates CSV into weekday counts
+│   ├── cache/                   # External API cache (NVD, Vulners)
+│   └── logs/                    # Execution logs (.log)
 │
-└── public/local-*/                    # Runtime data directories (gitignored)
-    ├── local-events/                  # CSV event feeds and CVE report JSON
-    ├── local-data-uptimes/            # Uptime results JSON
-    ├── local-data-charts/             # Pre-computed chart data
-    └── local-pages/                   # Embedded local HTML pages (e.g. SSLabs reports)
+└── public/local-*/              # Runtime data (gitignored)
+    ├── local-events/            # Event CSVs and CVE report JSON
+    ├── local-data-uptimes/      # Uptime results
+    ├── local-data-charts/       # Pre-computed chart data
+    └── local-pages/             # Embedded HTML pages (e.g. SSLabs)
 ```
 
-> **Note:** `public/local-*/`, `configs/`, and `cards/cards-list.json` are gitignored because they contain instance-specific runtime data. The repository ships with `cards/cards-examples.json` as a reference and `configs/` must be created per deployment.
+> `public/local-*/`, `configs/`, and `cards/cards-list.json` are gitignored (instance-specific data).
 
 ---
 
@@ -95,107 +92,79 @@ painel/
 | HTTP server | Express 4.x |
 | Real-time | WebSocket (`ws` 8.x) |
 | File watching | Chokidar 4.x |
-| Frontend | Vanilla JS (ES6+), no framework |
+| Frontend | Vanilla JS (ES6+), no framework/bundler |
 | Charts | Chart.js (CDN) |
-| Data scripts | Python 3 (`asyncio`, `aiohttp`, `requests`, `beautifulsoup4`) |
-| Data formats | JSON (configs, uptime, CVE reports), CSV (event lists) |
-| Test runner | Jest 29.x |
-| HTTP test client | Supertest 7.x |
+| Data scripts | Python 3 (`asyncio`, `aiohttp`) |
+| Tests | Jest 29.x + Supertest 7.x |
 
 ---
 
-## Architecture Principles
+## Architecture
 
 ### Server
 
-- **`server.js` é apenas bootstrap** — lê configs, chama `createApp()` e sobe `app.listen` + WebSocket. Não contém lógica de rotas.
-- **`src/app.js` é o app factory** — exporta `createApp({ rootDir, PYTHON_CMD, spawn })`. Não chama `app.listen`. Toda a lógica de rotas vive aqui.
-- Essa separação permite que os testes importem o Express app sem subir servidor real ou porta de rede.
-- O WebSocket server roda em **porta separada** (padrão `8123`) do HTTP server (padrão `3123`). Clientes subscrevem file paths; o servidor faz broadcast de `{ type: "update", cardId }` quando um arquivo monitorado muda.
-- Python scripts são spawned on-demand via `child_process.spawn` para agregação de dados de chart. `spawn` é injetado como dependência em `createApp` para facilitar testes (ver Convenções).
-- Layout configs são stored como flat JSON arrays (`layout.config-{view}.json`), um por view. O frontend é autoritativo para mutações de layout; salvar sempre faz POST do layout completo atual.
+- **`server.js` is bootstrap only** — reads configs, calls `createApp()`, starts `app.listen` + WebSocket. Zero route logic.
+- **`src/app.js` is the app factory** — exports `createApp({ rootDir, PYTHON_CMD, spawn })`. Does not call `app.listen`. Tests import the app without a real server.
+- WebSocket runs on a **separate port** (default `8123`) from HTTP (default `3123`).
+- Layout configs are flat JSON arrays (`layout.config-{view}.json`). Frontend is authoritative; saving always POSTs the full layout.
 
-### WebSocket — detalhes de implementação
+### WebSocket
 
-- `watchedFiles`: `Map<sanitizedPath, Set<cardId>>` — usa `Set` para evitar cardIds duplicados.
-- `sanitizePath()` deve ser aplicado tanto ao receber a mensagem `watch` do cliente quanto ao processar o evento `change` do Chokidar — garante que a chave de inserção e a de lookup no Map sejam sempre idênticas.
-- Chokidar iniciado com `{ ignoreInitial: true }` — não dispara eventos para o estado atual dos arquivos ao iniciar, apenas para mudanças reais posteriores.
+- `watchedFiles`: `Map<sanitizedPath, Set<cardId>>` — `Set` prevents duplicates.
+- `sanitizePath()` must be applied both when receiving client `watch` messages and when processing Chokidar `change` events — ensures identical Map keys.
+- Chokidar started with `{ ignoreInitial: true }`.
 
 ### Frontend
 
-- The app is a single HTML page. JavaScript files are loaded in a strict dependency order via `<script>` tags in `index.html`. There is no bundler.
-- Ordem de carregamento dos scripts deve ser respeitada:  
-- Cards are rendered from two merged sources: the layout config (order, spans, title, zoom) merged over the card definition (type, data, source paths).
-- Card content loading is **type-dispatched** in `loadCardsContent()` → one function per `cardType` (`chart`, `list`, `uptime`, `cve-assets`, `frame`).
-- Real-time updates use a single WebSocket connection per page load. On reconnection (view change), `signSocketListeners()` re-registers all current cards.
-
-### Navegação — Menu Gaveta Lateral
-
-- A navegação é feita por um menu gaveta flutuante à esquerda.
-- O drawer possui dois estados: **recolhido** (apenas ícones) e **expandido** (ícones + labels). O estado é persistido em `localStorage` com a chave `drawer_expanded`.
-- `drawer.js` gerencia o toggle, o overlay mobile e carrega a versão via `GET /version` para exibir no rodapé do drawer.
-- A seleção de visão usa um dropdown completamente customizado (`.view-selector-custom`). O `<select id="view-selector">` permanece no DOM como fonte de verdade — todo o código existente que referencia `viewSelector` continua funcionando sem alteração. `view-selector.js` sincroniza o dropdown customizado ao select oculto via `MutationObserver` e despacha eventos `change` nativos.
-- O ícone principal do drawer (quatro quadradinhos) usa a cor accent `#cc785c` e é também o `favicon.svg` do projeto.
-
-### Log Viewer — comportamento
-
-- O modal de "Visualizar Logs" é controlado por `logviewer.js` e aberto pelo botão homônimo no drawer.
-- Ao abrir, chama `GET /api/logs` para listar os arquivos disponíveis e monta o dropdown. **Nenhum arquivo é pré-selecionado** — o usuário deve escolher explicitamente.
-- O dropdown usa o mesmo padrão visual do view selector do drawer (trigger com chevron, painel animado, check icon no item ativo).
-- Ao selecionar um arquivo, chama `GET /api/logs/:filename` e exibe o conteúdo num `<pre>` com scroll automático para o final (logs mais recentes).
-- Os arquivos são lidos de `scripts/logs/`. Apenas arquivos com extensão `.log` são listados; outros arquivos na pasta são ignorados.
-- O backend (`app.js`) bloqueia path traversal (`..`, `/`) e valida extensão `.log` antes de servir qualquer arquivo.
-- `Escape` fecha o dropdown se aberto, ou o modal se o dropdown estiver fechado.
-
-### Gerenciar Visões — comportamento
-
-- O modal de "Gerenciar Visões" é controlado por `manageviews.js` e aberto pelo botão homônimo no drawer.
-- **Criar visão:** o campo de nome gera um preview em tempo real do slug (`layout.config-{slug}.json`) enquanto o usuário digita. Ao confirmar, o frontend chama `POST /api/views` com `{ title }`. O backend gera o slug com `slugify()`, valida duplicatas (409) e cria simultaneamente a entrada em `views.json` e o arquivo `layout.config-{slug}.json` vazio.
-- **Excluir visão:** cada visão listada tem um botão de lixeira. Ao clicar, um `confirm()` nativo solicita confirmação antes de chamar `DELETE /api/views/:viewName`. O backend remove a entrada de `views.json` e deleta o arquivo de layout correspondente se ele existir.
-- Após criar ou excluir, `manageviews.js` chama `loadViewOptions()` para atualizar o dropdown de seleção de visão sem recarregar a página.
-- **Regra de slugify:** título → remove diacríticos → lowercase → espaços para hífens → remove caracteres especiais → remove hífens nas bordas. A mesma função existe no backend (`app.js`) e no frontend (`manageviews.js`) para garantir consistência.
-
-### Uptime Editor — comportamento
-
-- Cards do tipo `uptime` exibem um botão de lápis (`.uptime-edit-button`) no `card-controls`, à esquerda do botão de configurações.
-- Ao clicar no lápis, `initializeCardEvents` (em `eventListeners.js`) chama `window.openUptimeEditor(card)`, passando o elemento DOM do card.
-- `openUptimeEditor` lê `card.dataset.externalSourceMonitor` para obter o caminho do arquivo JSON de configuração, depois chama `GET /api/uptime-config?file=...` para carregar os dados.
-- O modal exibe: campo de **webhook global**, **lista editável de serviços** (nome, URL, HTTP esperado, modo de notificação) e um botão **"+ Adicionar serviço"** que abre um formulário inline.
-- Cada serviço existente é renderizado em linha e pode ser editado diretamente nos campos. Um botão de lixeira remove o serviço do array em memória imediatamente (sem salvar ainda).
-- O formulário de adição abre/fecha com um botão toggle. Ao confirmar a adição, o serviço é inserido no array em memória e o formulário é fechado e limpo.
-- Ao clicar em **Salvar**, o modal faz `POST /api/uptime-config?file=...`. O backend realiza **merge inteligente**: preserva os campos gerenciados pelo script (`status`, `lastStatusOnline`, `lastStatusOffline`) para serviços que já existem (identificados por URL), substituindo apenas os campos editáveis. Novos serviços recebem defaults (`status: 'offline'`, timestamps vazios).
-- Após salvar com sucesso, o card correspondente é recarregado via `loadCardsContent(cardId)` sem fechar o modal.
-- `uptimeeditor.js` usa o padrão **lazy DOM resolution**: todos os `getElementById` são chamados dentro das funções que os usam, nunca no topo do IIFE. O único elemento verificado no topo é o `#uptime-editor-modal` — se ausente, o script retorna imediatamente sem registrar nenhum listener. `window.openUptimeEditor` é definida logo após esse guard, garantindo que o botão do card sempre encontra a função disponível.
-
-### Add Card — comportamento
-
-- `addcards.js`: ao clicar em "Adicionar Card", o modal abre **imediatamente** com mensagem de carregamento.
-- Os dois fetches necessários (`fetchAvailableCards` e `fetchLayout`) são disparados em paralelo com `Promise.all`.
-- Se `availableCards` já estiver populado de um carregamento anterior, o fetch de cards é pulado (cache em memória).
+- Single HTML page SPA. Scripts loaded via `<script>` tags in strict dependency order.
+- Cards rendered from merge: layout config (order, spans, title, zoom) over card definition (type, data, source paths).
+- Content loading is **type-dispatched** in `loadCardsContent()` — one function per `cardType`.
+- View selector: `<select id="view-selector">` is the source of truth; `view-selector.js` syncs a custom dropdown via `MutationObserver`.
 
 ### Data Flow
 
 ```
-External script (Python)
-  └─▶ writes file  (CSV / JSON)
-        └─▶ Chokidar detects change
-              └─▶ WebSocket broadcast  { type: "update", cardId }
-                    └─▶ Browser reloads that card's content
+Python script → writes file (CSV/JSON)
+  → Chokidar detects change
+    → WebSocket broadcast { type: "update", cardId }
+      → Browser reloads card content
 ```
 
 ---
 
 ## Card Types
 
-| `cardType` | Renderer | Data source | Edição inline |
-|---|---|---|---|
-| `chart` | Chart.js canvas | Inline JSON data, or Python script via `/api/chart-data` | — |
-| `list` | `<ul>` event list | CSV file via `/api/partial-csv` | — |
-| `uptime` | Uptime status list | JSON file (direct fetch from `public/`) | ✓ botão lápis → modal |
-| `cve-assets` | Collapsible asset table | JSON file (direct fetch from `public/`) | — |
-| `frame` | `<iframe>` with zoom | Any URL or local HTML page | — |
+| `cardType` | Renderer | Data source |
+|---|---|---|
+| `chart` | Chart.js canvas | Inline JSON or Python via `/api/chart-data` |
+| `list` | `<ul>` event list | CSV via `/api/partial-csv` |
+| `uptime` | Status list | JSON (direct fetch from `public/`) |
+| `cve-assets` | Collapsible table | JSON (direct fetch from `public/`) |
+| `frame` | `<iframe>` with zoom | URL or local HTML |
 
-A card definition lives in `cards/cards-list.json`. Its structure is documented in `cards/card.schema.json`.
+Card definitions live in `cards/cards-list.json`, schema in `card.schema.json`.
+
+---
+
+## API Endpoints
+
+| Method | Path | Description |
+|---|---|---|
+| `GET` | `/api/views` | View list (`configs/views.json`) |
+| `POST` | `/api/views` | Create view (generates slug, creates empty layout) |
+| `DELETE` | `/api/views/:viewName` | Remove view and delete layout file |
+| `GET` | `/api/cards` | Card registry (`cards-list.json`) |
+| `GET` | `/api/layout/:viewName` | View layout (empty array if not found) |
+| `POST` | `/api/layout/:viewName` | Save full view layout |
+| `GET` | `/api/partial-csv?file=&limit=N` | Last N lines of CSV (preserves header) |
+| `GET` | `/api/logs` | List `.log` files in `scripts/logs/` |
+| `GET` | `/api/logs/:filename` | Log file content (validates path traversal) |
+| `GET` | `/api/uptime-config?file=` | Uptime config JSON (validates path traversal) |
+| `POST` | `/api/uptime-config?file=` | Save uptime config with **smart merge** (preserves `status`, `lastStatusOnline`, `lastStatusOffline` from existing services matched by URL) |
+| `POST` | `/api/cve-assessment?file=` | Update CVE assessment field (matches by reportItem + CVE ID) |
+| `POST` | `/api/chart-data` | Spawn Python script, return JSON stdout |
+| `GET` | `/version` | Returns `version.json` |
+| `GET` | `/:view?` | SPA fallback → `index.html` |
 
 ---
 
@@ -203,56 +172,54 @@ A card definition lives in `cards/cards-list.json`. Its structure is documented 
 
 ### JavaScript
 
-- **No framework, no build step.** Plain ES6+ with `async/await`. Files are loaded via `<script src="...">` tags.
-- **DOM queries at top of file** — all `getElementById`/`querySelector` calls são centralizados em `consts.js`. Exceção: IIFEs de features opcionais (como `uptimeeditor.js`) devem usar **lazy DOM resolution** — ver item abaixo.
-- **Lazy DOM resolution em IIFEs opcionais** — quando um script implementa uma feature cuja presença no DOM não é garantida (ex: modal que pode estar ausente em versões antigas do `index.html`), todos os `getElementById` devem ser chamados dentro das funções que os usam, nunca no topo do IIFE. Isso evita `TypeError: can't access property "addEventListener", X is null` quando elementos não existem. O único elemento verificado no topo deve ser o "âncora" da feature (ex: o modal raiz). Se ele for `null`, retornar imediatamente com `if (!modal) return`.
-- **Functions are globally scoped** — since there is no module system, all public functions must be on `window` (implicit). Avoid naming collisions.
-- **Card creation is pure** — `createCardElement(config)` returns a DOM node without side effects. Content loading is a separate step via `loadCardsContent()`.
-- **Layout save is fire-and-forget** — `saveLayoutConfig()` always POSTs the full current DOM state. Never patch individual fields.
-- **CSS class toggles for expand/collapse** — use `.expanded` class + CSS `max-height` transitions; avoid inline style toggling for animations. Exceção: elementos que usam `display: none/block` controlado diretamente por JS (como o formulário de adição do uptime editor) — nesse caso `overflow: hidden` no container pai deve ser evitado para não cortar o conteúdo.
-- **Injeção de dependência para módulos de sistema** — dependências como `child_process.spawn` devem ser passadas como parâmetro para funções/factories (`createApp({ spawn })`), não importadas com desestruturação no topo do módulo. Desestruturação captura a referência no momento do `require`, tornando-a invisível para mocks de teste.
+- **No framework, no build step.** ES6+ with `async/await`. Scripts via `<script>` tags.
+- **DOM queries centralized in `consts.js`**. Exception: optional IIFEs use **lazy DOM resolution** (see below).
+- **Lazy DOM resolution in IIFEs** — `getElementById` inside functions, never at the top. Only check at the top: the anchor element (e.g. root modal). If `null`, return immediately. Prevents `TypeError` when elements don't exist.
+- **Functions are globally scoped** — no module system. Avoid naming collisions.
+- **`createCardElement(config)` is pure** — returns a DOM node with no side effects. Content loading is separate via `loadCardsContent()`.
+- **`saveLayoutConfig()` is fire-and-forget** — always POSTs the full DOM state. Never patch individual fields.
+- **Expand/collapse via `.expanded` class** + CSS `max-height` transitions. Exception: elements using `display: none/block` directly via JS — in that case avoid `overflow: hidden` on the parent.
+- **Dependency injection** — `child_process.spawn` passed via `createApp({ spawn })`, not imported via destructuring at the top.
+- **Duplicate slugify** — the same function exists in `app.js` (backend) and `manageviews.js` (frontend). Keep them consistent.
 
 ### Python
 
-- Scripts are designed to be run stand-alone from the command line or spawned by the server.
-- Scripts that produce chart data must print a **single JSON object** to stdout: `{ "labels": [...], "data": [...] }`.
-- Use file-level caching (`cache/` directory) for expensive external API calls (NVD, Vulners).
-- Use `argparse` for CLI scripts. Defaults should be sensible for local development.
-- `check_status.py` uses `asyncio`/`aiohttp` for concurrent HTTP checks — do not convert to synchronous.
+- Scripts run standalone or spawned by the server. Chart scripts print JSON: `{ "labels": [...], "data": [...] }`.
+- `check_status.py` uses `asyncio`/`aiohttp` — do not convert to synchronous.
+- Cache in `scripts/cache/` for external APIs.
 
 ### CSS
 
-- **BEM-style class naming** for card component internals: `.asset-card`, `.asset-card-content`, `.asset-row`, `.asset-collapsible`.
+- **BEM-style** for card components: `.asset-card`, `.asset-row`, `.asset-collapsible`.
 - Each card type has its own CSS file under `public/css/`. Do not add cross-card styles to a card-specific file.
-- **Design tokens** — as cores e valores de espaçamento base estão definidos como custom properties em `:root` em `style.css`. Usar sempre as variáveis, nunca valores hexadecimais fixos em arquivos de componentes:
+- **Design tokens** in `:root` (`style.css`) — always use variables, never hardcoded hex:
 
-  | Token | Valor | Uso |
+  | Token | Value | Usage |
   |---|---|---|
-  | `--app-bg` | `#1c1c28` | Fundo da página |
-  | `--surface-bg` | `#252535` | Superfície de modais e dropdowns |
-  | `--card-bg` | `#2b2b3d` | Fundo dos cards |
-  | `--border-subtle` | `rgba(255,255,255,0.07)` | Bordas de cards e separadores |
-  | `--border-mid` | `rgba(255,255,255,0.11)` | Bordas de inputs e modais |
-  | `--text` | `#c8c8d4` | Texto padrão |
-  | `--text-muted` | `#6b6b80` | Labels, metadados |
-  | `--text-bright` | `#f0f0f5` | Títulos e texto em destaque |
-  | `--accent` | `#cc785c` | Cor de destaque (botão apply, check, ícone logo) |
-  | `--ease-std` | `cubic-bezier(0.4,0,0.2,1)` | Curva de easing padrão para transições |
-  | `--radius-sm/md/lg` | `6px / 8px / 12px` | Border-radius padronizados |
+  | `--app-bg` | `#1c1c28` | Page background |
+  | `--surface-bg` | `#252535` | Modals and dropdowns |
+  | `--card-bg` | `#2b2b3d` | Card background |
+  | `--border-subtle` | `rgba(255,255,255,0.07)` | Card borders |
+  | `--border-mid` | `rgba(255,255,255,0.11)` | Input/modal borders |
+  | `--text` | `#c8c8d4` | Default text |
+  | `--text-muted` | `#6b6b80` | Labels, metadata |
+  | `--text-bright` | `#f0f0f5` | Headings |
+  | `--accent` | `#cc785c` | Highlight (buttons, logo icon) |
+  | `--ease-std` | `cubic-bezier(0.4,0,0.2,1)` | Standard easing |
+  | `--radius-sm/md/lg` | `6px / 8px / 12px` | Border-radius |
 
-- **Fonte base:** `'Segoe UI', system-ui, -apple-system, sans-serif` (não usar `Arial`).
-- **Scrollbars:** largura `3px`, thumb `rgba(255,255,255,0.12)`, border-radius `2px` — padrão em todos os componentes.
-- **Colapsáveis:** o padding de espaçamento **nunca** deve estar no elemento com `max-height: 0` — colocar nos filhos internos para evitar que o padding vaze visualmente quando recolhido.
-- **`overflow: hidden` em containers expansíveis** — nunca colocar `overflow: hidden` em um elemento pai que tenha filhos revelados via `display: block`. Isso corta o conteúdo visualmente mesmo com `display: block`. Usar apenas em containers com `max-height` transition.
+- **Font:** `'Segoe UI', system-ui, -apple-system, sans-serif` (not `Arial`).
+- **Scrollbars:** `3px` width, thumb `rgba(255,255,255,0.12)`, radius `2px`.
+- **Collapsibles:** padding on inner children, never on the element with `max-height: 0`.
+- **`overflow: hidden`** only on containers with `max-height` transition, never on parents with children toggled via `display: block`.
 
 ---
 
 ## Testing
 
-### Regras de mock
+### Mock Rules
 
-- **`fs`** — nunca mockar o módulo inteiro (`jest.mock('fs')`).
-  Usar sempre a factory com `jest.requireActual` para preservar o `fs` real que `express.static` usa internamente:
+- **`fs`** — never mock the entire module. Use a factory with `jest.requireActual`:
   ```js
   jest.mock('fs', () => ({
     ...jest.requireActual('fs'),
@@ -264,42 +231,5 @@ A card definition lives in `cards/cards-list.json`. Its structure is documented 
     createReadStream: jest.fn(),
   }));
   ```
-- **`child_process.spawn`** — não mockar o módulo. Injetar o mock diretamente via `createApp({ spawn: jest.fn() })`.
-- **Processos Python falsos** — usar `EventEmitter` puro para `stdout`/`stderr`, nunca `Readable` streams. Usar sempre `mockImplementation(() => makeFakePython(...))`, nunca `mockReturnValue(makeFakePython(...))` — `mockReturnValue` executa a factory antes da requisição existir, agendando o `setImmediate` antes de os listeners serem anexados.
-
----
-
-## Important Paths
-
-| Path | Purpose |
-|---|---|
-| `server-config.json` | Change HTTP port, bind address, or Python executable name |
-| `public/websocket-config.json` | Change WebSocket port seen by the browser |
-| `public/favicon.svg` | SVG favicon — ícone dos quadradinhos accent |
-| `configs/views.json` | Add or rename dashboard views |
-| `configs/layout.config-{view}.json` | Per-view layout (auto-created on first save) |
-| `cards/cards-list.json` | Master card registry — add new cards here |
-| `public/local-events/cve-report.json` | Output path expected by the `cve-check` card |
-| `public/local-data-uptimes/uptime-results.json` | Output path expected by the `uptime-results` card; editável via modal do uptime editor |
-| `public/local-events/ransomlook/breachs_posts.csv` | Breach event feed for list and chart cards |
-
----
-
-## API Endpoints
-
-| Method | Path | Description |
-|---|---|---|
-| `GET` | `/api/views` | Returns `configs/views.json` |
-| `POST` | `/api/views` | Cria nova visão: salva em `views.json` e cria `layout.config-{slug}.json` vazio |
-| `DELETE` | `/api/views/:viewName` | Remove visão de `views.json` e deleta o arquivo de layout correspondente |
-| `GET` | `/api/cards` | Returns `cards/cards-list.json` |
-| `GET` | `/api/layout/:viewName` | Returns layout config for a view (empty array if not found) |
-| `POST` | `/api/layout/:viewName` | Saves full layout config for a view |
-| `GET` | `/api/partial-csv?file=...&limit=N` | Streams last N lines of a CSV file |
-| `GET` | `/api/logs` | Lista arquivos `.log` em `scripts/logs/` (outros arquivos ignorados) |
-| `GET` | `/api/logs/:filename` | Retorna conteúdo de um arquivo `.log` como `text/plain`; valida extensão e bloqueia path traversal |
-| `GET` | `/api/uptime-config?file=...` | Lê o JSON de configuração de um arquivo de uptime; valida path traversal |
-| `POST` | `/api/uptime-config?file=...` | Salva configuração de uptime com merge inteligente: preserva campos de monitoramento (`status`, `lastStatusOnline`, `lastStatusOffline`) de serviços existentes (match por URL) |
-| `POST` | `/api/chart-data` | Spawns a Python script and returns its JSON stdout |
-| `GET` | `/version` | Returns `version.json` |
-| `GET` | `/:view?` | Serves `public/index.html` for all other routes (SPA fallback) |
+- **`child_process.spawn`** — do not mock the module. Inject via `createApp({ spawn: jest.fn() })`.
+- **Fake Python processes** — use plain `EventEmitter` for `stdout`/`stderr`, never `Readable` streams. Use `mockImplementation(() => makeFakePython(...))`, never `mockReturnValue` (executes the factory before listeners are attached).
