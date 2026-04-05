@@ -1,0 +1,64 @@
+/* ------------------------------
+    Modal de Adicionar Cards
+------------------------------- */
+.add-card-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding-top: 4px;
+}
+
+/* Lista de seleção de cards */
+#card-selection-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 320px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+#card-selection-list::-webkit-scrollbar {
+  width: 3px;
+}
+
+#card-selection-list::-webkit-scrollbar-thumb {
+  background: var(--border-mid);
+  border-radius: 2px;
+}
+
+#card-selection-list div {
+  border-radius: var(--radius-sm);
+}
+
+#card-selection-list label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  cursor: pointer;
+  color: var(--text);
+  font-size: 0.88rem;
+  border-radius: var(--radius-sm);
+  transition: background-color 0.15s var(--ease-std), color 0.15s var(--ease-std);
+}
+
+#card-selection-list label:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-bright);
+}
+
+#card-selection-list input[type="checkbox"] {
+  accent-color: var(--accent);
+  width: 14px;
+  height: 14px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+#card-selection-list p {
+  margin: 0;
+  padding: 12px 4px;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}

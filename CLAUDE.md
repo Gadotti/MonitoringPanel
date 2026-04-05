@@ -36,13 +36,18 @@ Local-first architecture: data produced externally by Python scripts (uptime, CV
 │   ├── favicon.svg              # Four-square icon (accent #cc785c)
 │   ├── websocket-config.json    # WebSocket host/port for the frontend
 │   ├── css/
-│   │   ├── style.css            # Global layout, grid, cards, modals + design tokens (:root)
+│   │   ├── main.css             # Design tokens (:root), reset, grid, cards, modal base, buttons, resize
 │   │   ├── drawer.css           # Floating side drawer menu
 │   │   ├── event-list.css       # List card
 │   │   ├── frame-card.css       # iframe card + zoom
 │   │   ├── highlight.css        # Update pulse animation
 │   │   ├── uptime-card.css      # Uptime card
-│   │   └── cve-assets.css       # CVE assets board
+│   │   ├── cve-assets.css       # CVE assets board
+│   │   ├── modal-addcard.css    # Add card modal
+│   │   ├── modal-views.css      # Manage views modal
+│   │   ├── modal-cardeditor.css # Card editor modal
+│   │   ├── modal-logviewer.css  # Log viewer modal
+│   │   └── modal-uptime.css     # Uptime editor modal
 │   └── js/
 │       ├── consts.js            # DOM references and shared state
 │       ├── drawer.js            # Drawer toggle, localStorage, version
@@ -200,7 +205,7 @@ Card definitions live in `cards/cards-list.json`, schema in `card.schema.json`.
 
 - **BEM-style** for card components: `.asset-card`, `.asset-row`, `.asset-collapsible`.
 - Each card type has its own CSS file under `public/css/`. Do not add cross-card styles to a card-specific file.
-- **Design tokens** in `:root` (`style.css`) — always use variables, never hardcoded hex:
+- **Design tokens** in `:root` (`main.css`) — always use variables, never hardcoded hex:
 
   | Token | Value | Usage |
   |---|---|---|
