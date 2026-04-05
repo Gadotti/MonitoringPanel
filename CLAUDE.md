@@ -31,6 +31,7 @@ Local-first architecture: data produced externally by Python scripts (uptime, CV
 │   ├── api.cve.assessment.test.js     # POST /api/cve-assessment
 │   ├── api.cards.manage.test.js       # POST /api/cards, DELETE /api/cards/:cardId
 │   ├── api.health.test.js            # GET /api/health
+│   ├── api.backup.test.js            # GET /api/backup
 │   └── frontend/
 │       ├── load-script.js             # Helper: loads vanilla JS into Jest global scope
 │       ├── helpers.test.js            # csvToJson, parseCSVLine
@@ -76,7 +77,8 @@ Local-first architecture: data produced externally by Python scripts (uptime, CV
 │       ├── manageviews.js       # Create/delete views modal
 │       ├── logviewer.js         # Log viewer modal
 │       ├── uptimeeditor.js      # Uptime config editor modal
-│       └── healthcheck.js       # Health check modal (server, WebSocket, watchers)
+│       ├── healthcheck.js       # Health check modal (server, WebSocket, watchers)
+│       └── backup.js            # Backup download trigger
 │
 ├── cards/
 │   ├── cards-list.json          # Master card registry (gitignored, per-instance)
@@ -186,6 +188,7 @@ Card definitions live in `cards/cards-list.json`, schema in `card.schema.json`.
 | `POST` | `/api/cve-assessment?file=` | Update CVE assessment field (matches by reportItem + CVE ID) |
 | `POST` | `/api/chart-data` | Spawn Python script, return JSON stdout |
 | `GET` | `/api/health` | Server status, uptime, WebSocket info, active watchers |
+| `GET` | `/api/backup` | Generate and download zip with configs, cards-list, local-* data |
 | `GET` | `/version` | Returns `version.json` |
 | `GET` | `/:view?` | SPA fallback → `index.html` |
 

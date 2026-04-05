@@ -543,6 +543,48 @@ function createApp(config = {}) {
     });
   });
 
+  // ------------------------------------------------------------------ GET /api/backup
+  app.get('/api/backup', (req, res) => {
+    const archiver = require('archiver');
+
+    const BACKUP_DIRS = [
+      { fsPath: path.join(rootDir, 'configs'),                  zipPrefix: 'configs' },
+      { fsPath: path.join(rootDir, 'public', 'local-data-uptimes'), zipPrefix: 'public/local-data-uptimes' },
+      { fsPath: path.join(rootDir, 'public', 'local-data-charts'), zipPrefix: 'public/local-data-charts' },
+      { fsPath: path.join(rootDir, 'public', 'local-events'),    zipPrefix: 'public/local-events' },
+      { fsPath: path.join(rootDir, 'public', 'local-pages'),     zipPrefix: 'public/local-pages' },
+    ];
+
+    const backupPath = path.join(rootDir, 'backup.zip');
+
+    const output = fs.createWriteStream(backupPath);
+    const archive = archiver('zip', { zlib: { level: 9 } });
+
+    output.on('close', () => {
+      res.download(backupPath, 'backup.zip');
+    });
+
+    archive.on('error', (err) => {
+      res.status(500).json({ error: 'Erro ao gerar backup.' });
+    });
+
+    archive.pipe(output);
+
+    // cards-list.json
+    if (fs.existsSync(CARDS_PATH)) {
+      archive.file(CARDS_PATH, { name: 'cards/cards-list.json' });
+    }
+
+    // Directories
+    for (const dir of BACKUP_DIRS) {
+      if (fs.existsSync(dir.fsPath)) {
+        archive.directory(dir.fsPath, dir.zipPrefix);
+      }
+    }
+
+    archive.finalize();
+  });
+
   // ------------------------------------------------------------------ SPA fallback
   app.get('/:view?', (req, res) => {
     res.sendFile(path.join(rootDir, 'public', 'index.html'));
