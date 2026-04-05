@@ -46,7 +46,11 @@ Local-first architecture: data produced externally by Python scripts (uptime, CV
 │   └── js/
 │       ├── consts.js            # DOM references and shared state
 │       ├── drawer.js            # Drawer toggle, localStorage, version
-│       ├── script.js            # Core: layout, card rendering, content loaders by type
+│       ├── main.js              # Core: layout, card creation, view management, content dispatch
+│       ├── cardcontent-chart.js # Chart card content loader (Chart.js)
+│       ├── cardcontent-list.js  # List card content loader (CSV events)
+│       ├── cardcontent-uptime.js # Uptime card content loader
+│       ├── cardcontent-cve.js   # CVE assets content loader + assessment dropdown
 │       ├── eventListeners.js    # DOM event wiring, interaction init
 │       ├── carddrag.js          # Drag-and-drop card reordering
 │       ├── resizecards.js       # Mouse-resize card spans
