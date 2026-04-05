@@ -1,0 +1,186 @@
+/* ------------------------------
+    Modal de Health Check
+------------------------------- */
+.hc-modal-content {
+  width: 580px;
+  max-width: 96%;
+  max-height: 88vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.hc-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-height: 60vh;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.hc-grid::-webkit-scrollbar { width: 3px; }
+.hc-grid::-webkit-scrollbar-thumb {
+  background: var(--border-mid);
+  border-radius: 2px;
+}
+
+.hc-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.hc-section-title {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.hc-info-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.hc-info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+  min-width: 120px;
+  padding: 8px 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+}
+
+.hc-info-label {
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.hc-info-value {
+  font-size: 0.88rem;
+  color: var(--text-bright);
+  font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+}
+
+/* Status badge */
+.hc-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 2px 0;
+}
+
+.hc-status-badge::before {
+  content: '';
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+
+.hc-status--ok {
+  color: #6ee78e;
+}
+
+.hc-status--ok::before {
+  background: #6ee78e;
+  box-shadow: 0 0 6px rgba(110, 231, 142, 0.5);
+}
+
+.hc-status--error {
+  color: #f58a8a;
+}
+
+.hc-status--error::before {
+  background: #f58a8a;
+  box-shadow: 0 0 6px rgba(245, 138, 138, 0.5);
+}
+
+/* Watcher list */
+.hc-watcher-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 200px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.hc-watcher-list::-webkit-scrollbar { width: 3px; }
+.hc-watcher-list::-webkit-scrollbar-thumb {
+  background: var(--border-mid);
+  border-radius: 2px;
+}
+
+.hc-watcher-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 8px;
+  border-radius: var(--radius-sm);
+  transition: background-color 0.15s var(--ease-std);
+}
+
+.hc-watcher-row:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.hc-watcher-file {
+  flex: 1;
+  font-size: 0.78rem;
+  color: var(--text);
+  font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.hc-watcher-cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.hc-card-tag {
+  font-size: 0.7rem;
+  color: var(--accent);
+  background: rgba(204, 120, 92, 0.12);
+  border: 1px solid rgba(204, 120, 92, 0.25);
+  border-radius: 4px;
+  padding: 1px 6px;
+  font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+  white-space: nowrap;
+}
+
+.hc-placeholder {
+  margin: 0;
+  padding: 16px 0;
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.hc-placeholder--error {
+  color: #f58a8a;
+}
+
+.hc-empty {
+  margin: 0;
+  padding: 8px 4px;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}

@@ -262,6 +262,21 @@ function createApp(config = {}) {
     });
   });
 
+  // ------------------------------------------------------------------ GET /api/health
+  app.get('/api/health', (req, res) => {
+    const base = {
+      status: 'ok',
+      uptime: Math.floor(process.uptime()),
+      timestamp: new Date().toISOString(),
+    };
+
+    if (typeof config.getHealthInfo === 'function') {
+      Object.assign(base, config.getHealthInfo());
+    }
+
+    res.json(base);
+  });
+
   // ------------------------------------------------------------------ GET /version
   app.get('/version', (req, res) => {
     const versionPath = path.join(rootDir, 'version.json');

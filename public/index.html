@@ -16,7 +16,8 @@
     <link rel="stylesheet" href="css/modal-views.css">
     <link rel="stylesheet" href="css/modal-cardeditor.css">
     <link rel="stylesheet" href="css/modal-logviewer.css">
-    <link rel="stylesheet" href="css/modal-uptime.css">    
+    <link rel="stylesheet" href="css/modal-uptime.css">
+    <link rel="stylesheet" href="css/modal-health.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>      
   </head>
 
@@ -148,6 +149,20 @@
           <div class="add-card-custom">
             <button class="add-card-trigger" id="btn-view-logs" type="button">
               <span class="add-card-label">Visualizar Logs</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Health Check -->
+        <div class="drawer-item add-card-item" title="Health Check">
+          <div class="drawer-item-icon add-card-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+            </svg>
+          </div>
+          <div class="add-card-custom">
+            <button class="add-card-trigger" id="btn-health-check" type="button">
+              <span class="add-card-label">Health Check</span>
             </button>
           </div>
         </div>
@@ -374,6 +389,20 @@
       </div>
     </div>
 
+    <!-- 🔥 Modal de Health Check -->
+    <div id="health-modal" class="modal">
+      <div class="modal-content hc-modal-content">
+        <h2>Health Check</h2>
+        <div class="hc-grid" id="hc-grid">
+          <p class="hc-placeholder">Carregando…</p>
+        </div>
+        <div class="add-card-actions">
+          <button class="btn-close" id="btn-health-refresh" type="button">Atualizar</button>
+          <button class="btn-close" id="close-health-modal">Fechar</button>
+        </div>
+      </div>
+    </div>
+
     <!-- 🔥 Modal de seleção de cards -->
     <div id="add-card-modal" class="modal">
       <div class="modal-content">
@@ -434,5 +463,6 @@
     <script src="js/logviewer.js"></script>
     <script src="js/cardeditor.js"></script>
     <script src="js/uptimeeditor.js"></script>
+    <script src="js/healthcheck.js"></script>
   </body>
 </html>

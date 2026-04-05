@@ -34,13 +34,6 @@ const WSPORT     = wsConfig.port           || 8123;
 
 console.log('Configurações carregadas:', { PORT, ADDRESS, PYTHON_CMD, WSPORT });
 
-// ------------------------------------------------------------------ HTTP
-const app = createApp({ rootDir: __dirname, PYTHON_CMD });
-
-app.listen(PORT, ADDRESS, () => {
-  console.log(`Servidor rodando em http://${ADDRESS}:${PORT}`);
-});
-
 // ------------------------------------------------------------------ WebSocket
 const wss = new WebSocket.Server({ port: WSPORT });
 console.log(`WebSocket server escutando na porta ${WSPORT}`);
@@ -102,4 +95,32 @@ watcher.on('change', (changedPath) => {
   if (cardIds) {
     cardIds.forEach((cardId) => broadcast({ type: 'update', cardId }));
   }
+});
+
+// ------------------------------------------------------------------ HTTP
+const app = createApp({
+  rootDir: __dirname,
+  PYTHON_CMD,
+  getHealthInfo() {
+    const watched = {};
+    watchedFiles.forEach((cardIds, filePath) => {
+      watched[filePath] = Array.from(cardIds);
+    });
+
+    return {
+      websocket: {
+        status: wss.address() ? 'ok' : 'error',
+        port: WSPORT,
+        connectedClients: clients.size,
+      },
+      watchers: {
+        totalFiles: watchedFiles.size,
+        watched,
+      },
+    };
+  },
+});
+
+app.listen(PORT, ADDRESS, () => {
+  console.log(`Servidor rodando em http://${ADDRESS}:${PORT}`);
 });
