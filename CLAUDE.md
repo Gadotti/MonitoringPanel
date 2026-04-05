@@ -29,7 +29,12 @@ Local-first architecture: data produced externally by Python scripts (uptime, CV
 │   ├── api.logs.test.js               # GET /api/logs, GET /api/logs/:filename
 │   ├── api.uptime.test.js             # GET/POST /api/uptime-config
 │   ├── api.cve.assessment.test.js     # POST /api/cve-assessment
-│   └── api.cards.manage.test.js       # POST /api/cards, DELETE /api/cards/:cardId
+│   ├── api.cards.manage.test.js       # POST /api/cards, DELETE /api/cards/:cardId
+│   └── frontend/
+│       ├── load-script.js             # Helper: loads vanilla JS into Jest global scope
+│       ├── helpers.test.js            # csvToJson, parseCSVLine
+│       ├── main.test.js               # createCardElement, getLayoutConfig, adjustFrameZoom, etc.
+│       └── cardcontent-cve.test.js    # CVE assets toggle, assessment panel, dropdowns
 │
 ├── public/
 │   ├── index.html               # SPA shell — scripts loaded in strict order
@@ -246,3 +251,10 @@ Card definitions live in `cards/cards-list.json`, schema in `card.schema.json`.
   ```
 - **`child_process.spawn`** — do not mock the module. Inject via `createApp({ spawn: jest.fn() })`.
 - **Fake Python processes** — use plain `EventEmitter` for `stdout`/`stderr`, never `Readable` streams. Use `mockImplementation(() => makeFakePython(...))`, never `mockReturnValue` (executes the factory before listeners are attached).
+
+### Front-end Tests
+
+- Environment: `@jest-environment jsdom` docblock per file (backend tests stay `node`).
+- **Loading scripts**: use `tests/frontend/load-script.js` helper — reads a vanilla JS file, extracts `function` declarations, and assigns them to `globalThis`.
+- Set up globals from `consts.js` (e.g. `grid`, `viewSelector`, `chartInstances`) manually in `beforeAll`.
+- `jsdom` does not support `innerText` — use `textContent` in assertions.

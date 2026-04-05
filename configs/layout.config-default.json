@@ -24,8 +24,16 @@
     "zoom": 1
   },
   {
-    "id": "uptime-results-must-be-off",
+    "id": "ssllabs-sample",
     "order": 3,
+    "title": "SSLabs Scan",
+    "columns": 4,
+    "rows": 2,
+    "zoom": 0.62
+  },
+  {
+    "id": "uptime-results-must-be-off",
+    "order": 4,
     "title": "Site e Serviços (Off)",
     "columns": 1,
     "rows": 1,
@@ -33,26 +41,18 @@
   },
   {
     "id": "logs-sistema",
-    "order": 4,
+    "order": 5,
     "title": "Logs do Sistema",
     "columns": 1,
     "rows": 1,
     "zoom": 1
   },
   {
-    "id": "ssllabs-sample",
-    "order": 5,
-    "title": "SSLabs Scan",
-    "columns": 4,
-    "rows": 2,
-    "zoom": 0.62
-  },
-  {
     "id": "cve-check",
     "order": 6,
     "title": "CVE's Board",
     "columns": 3,
-    "rows": 1,
+    "rows": 2,
     "zoom": 1
   },
   {

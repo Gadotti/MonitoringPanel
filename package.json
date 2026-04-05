@@ -15,11 +15,14 @@
   },
   "devDependencies": {
     "jest": "^29.7.0",
+    "jest-environment-jsdom": "^30.3.0",
     "supertest": "^7.0.0"
   },
   "jest": {
     "testEnvironment": "node",
-    "setupFilesAfterEnv": ["./jest.setup.js"],
+    "setupFilesAfterEnv": [
+      "./jest.setup.js"
+    ],
     "testMatch": [
       "**/tests/**/*.test.js"
     ],
