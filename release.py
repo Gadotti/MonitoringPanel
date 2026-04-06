@@ -9,6 +9,17 @@ EXTRA_IGNORED_PATHS = {
     '.gitignore',
     '.gitattributes',
     'release.py',
+    '.claude',
+    'CLAUDE.md',
+    'tests',
+    'jest.setup.js',
+}
+
+# Files that should be renamed with -SAMPLE suffix in the zip
+# so production configs are not overwritten on deploy
+SAMPLE_FILES = {
+    'server-config.json',
+    'websocket-config.json',
 }
 
 def load_gitignore_patterns(gitignore_path):
@@ -65,7 +76,16 @@ def create_release_zip(base_dir):
             if is_ignored(path, patterns, base_dir):
                 continue
             rel_path = path.relative_to(base_dir)
-            zipf.write(path, rel_path)
+
+            # Rename config files to -SAMPLE so they don't overwrite production
+            if rel_path.name in SAMPLE_FILES:
+                stem = rel_path.stem
+                suffix = rel_path.suffix
+                arc_path = rel_path.with_name(f'{stem}-SAMPLE{suffix}')
+            else:
+                arc_path = rel_path
+
+            zipf.write(path, arc_path)
 
     print(f"Release criado com sucesso: {zip_path}")
 
