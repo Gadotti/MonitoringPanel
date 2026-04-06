@@ -555,7 +555,8 @@ function createApp(config = {}) {
       { fsPath: path.join(rootDir, 'public', 'local-pages'),     zipPrefix: 'public/local-pages' },
     ];
 
-    const backupPath = path.join(rootDir, 'backup.zip');
+    const backupDir  = path.join(rootDir, '_backup');
+    const backupPath = path.join(backupDir, 'backup.zip');
 
     const output = fs.createWriteStream(backupPath);
     const archive = archiver('zip', { zlib: { level: 9 } });

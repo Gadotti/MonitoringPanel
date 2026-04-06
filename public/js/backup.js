@@ -8,12 +8,7 @@
     const originalText = originalLabel.textContent;
     originalLabel.textContent = 'Gerando backup…';
 
-    const link = document.createElement('a');
-    link.href = '/api/backup';
-    link.download = 'backup.zip';
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
+    window.location.href = '/api/backup';
 
     setTimeout(() => {
       originalLabel.textContent = originalText;

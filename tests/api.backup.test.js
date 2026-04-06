@@ -60,8 +60,12 @@ describe('GET /api/backup', () => {
   test('configures archiver with cards-list.json and all directories', async () => {
     fs.existsSync.mockReturnValue(true);
 
-    // res.download will fail on fake path, but we can check archiver setup
     const res = await request(app).get('/api/backup');
+
+    // Backup file is created inside _backup/
+    expect(fs.createWriteStream).toHaveBeenCalledWith(
+      path.join(ROOT, '_backup', 'backup.zip')
+    );
 
     expect(mockArchive.pipe).toHaveBeenCalled();
     expect(mockArchive.file).toHaveBeenCalledWith(

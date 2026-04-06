@@ -131,7 +131,7 @@ dist
 
 # Custom
 _deploys/
-backup.zip
+_backup/*.zip
 public/local-data-uptimes/
 public/local-data-charts/
 public/local-events/
