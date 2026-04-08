@@ -219,3 +219,55 @@
 .ce-type-option-label {
   flex: 1;
 }
+
+/* ── Format config panel (dynamic-list) ── */
+.ce-format-btn {
+  font-size: 0.82rem;
+}
+
+.ce-fmt-row-pair {
+  display: flex;
+  gap: 12px;
+}
+
+.ce-fmt-row-pair .modal-row {
+  flex: 1;
+}
+
+.ce-fmt-field-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.ce-fmt-field-inputs {
+  display: flex;
+  flex: 1;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.ce-fmt-field-inputs input {
+  flex: 1;
+  min-width: 100px;
+}
+
+.ce-fmt-type-wrapper {
+  flex: 0 0 90px;
+}
+
+.ce-fmt-type-trigger {
+  padding: 6px 8px;
+  font-size: 0.8rem;
+}
+
+.ce-fmt-type-dropdown {
+  min-width: 110px;
+}
+
+.ce-fmt-remove-btn {
+  margin-top: 4px;
+  flex-shrink: 0;
+}

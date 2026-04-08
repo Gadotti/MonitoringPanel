@@ -432,5 +432,34 @@
     "title": "CVE's Board",
     "cardType": "cve-assets",
     "sourceItems": "public/local-events/cve-report.json"
+  },
+  {
+    "id": "dynamic-test",
+    "title": "CSV Dinâmico",
+    "cardType": "dynamic-list",
+    "description": "teste23",
+    "dynamicList": {
+      "sourceItems": "public/local-events/list-dynamic-test.csv",
+      "separator": ",",
+      "order": "desc",
+      "limit": 20,
+      "fields": [
+        {
+          "header": "event",
+          "label": "Evento",
+          "type": "text"
+        },
+        {
+          "header": "detailsUrl",
+          "label": "Teste",
+          "type": "text"
+        },
+        {
+          "header": "timestamp",
+          "label": "Data",
+          "type": "date"
+        }
+      ]
+    }
   }
 ]

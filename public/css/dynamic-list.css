@@ -1,0 +1,82 @@
+/* ================================================
+   DYNAMIC LIST — lista com campos configuráveis
+   ================================================ */
+
+.dynamic-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  font-size: 0.85rem;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  height: 100%;
+  overflow-y: auto;
+}
+
+.dynamic-list::-webkit-scrollbar {
+  width: 3px;
+}
+
+.dynamic-list::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+}
+
+.dynamic-list-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 8px;
+  border-bottom: 1px solid var(--border-subtle);
+  background-color: transparent;
+  transition: background-color 0.15s ease;
+}
+
+.dynamic-list-item:nth-child(even) {
+  background-color: rgba(255, 255, 255, 0.025);
+}
+
+.dynamic-list-item:hover {
+  background-color: rgba(255, 255, 255, 0.04);
+}
+
+/* ── Field types ── */
+
+.dl-field {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dl-field--text {
+  flex: 1;
+  color: var(--text);
+}
+
+.dl-field--date {
+  flex: 0 0 auto;
+  min-width: 110px;
+  color: var(--text-muted);
+  font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+  font-size: 0.75rem;
+}
+
+.dl-field--url {
+  flex: 0 0 auto;
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 0.78rem;
+  opacity: 0.8;
+  transition: opacity 0.15s ease;
+}
+
+.dl-field--url:hover {
+  opacity: 1;
+  text-decoration: underline;
+}
+
+.dynamic-list,
+.dynamic-list-item {
+  user-select: text;
+  -webkit-user-drag: none;
+}

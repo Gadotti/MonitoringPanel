@@ -51,6 +51,7 @@ Local-first architecture: data produced externally by Python scripts (uptime, CV
 │   │   ├── highlight.css        # Update pulse animation
 │   │   ├── uptime-card.css      # Uptime card
 │   │   ├── cve-assets.css       # CVE assets board
+│   │   ├── dynamic-list.css    # Dynamic list card
 │   │   ├── modal-addcard.css    # Add card modal
 │   │   ├── modal-views.css      # Manage views modal
 │   │   ├── modal-cardeditor.css # Card editor modal
@@ -65,6 +66,7 @@ Local-first architecture: data produced externally by Python scripts (uptime, CV
 │       ├── cardcontent-list.js  # List card content loader (CSV events)
 │       ├── cardcontent-uptime.js # Uptime card content loader
 │       ├── cardcontent-cve.js   # CVE assets content loader + assessment dropdown
+│       ├── cardcontent-dynamic-list.js # Dynamic list content loader (custom separator/fields)
 │       ├── eventListeners.js    # DOM event wiring, interaction init
 │       ├── carddrag.js          # Drag-and-drop card reordering
 │       ├── resizecards.js       # Mouse-resize card spans
@@ -162,6 +164,7 @@ Python script → writes file (CSV/JSON)
 | `list` | `<ul>` event list | CSV via `/api/partial-csv` |
 | `uptime` | Status list | JSON (direct fetch from `public/`) |
 | `cve-assets` | Collapsible table | JSON (direct fetch from `public/`) |
+| `dynamic-list` | Configurable `<ul>` list | CSV via `/api/partial-csv` (custom separator) |
 | `frame` | `<iframe>` with zoom | URL or local HTML |
 
 Card definitions live in `cards/cards-list.json`, schema in `card.schema.json`.

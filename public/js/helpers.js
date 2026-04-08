@@ -21,6 +21,31 @@ function csvToJson(csv) {
   });
 }
 
+function csvToJsonCustom(csv, separator) {
+  const sep = separator || ';';
+  const lines = csv.trim().split('\n');
+  const headers = parseCSVLineCustom(lines[0], sep);
+
+  return lines.slice(1).map(line => {
+    const values = parseCSVLineCustom(line, sep);
+    return headers.reduce((obj, header, idx) => {
+      obj[header] = values[idx] || '';
+      return obj;
+    }, {});
+  });
+}
+
+function parseCSVLineCustom(line, separator) {
+  const sep = (separator || ';').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const regex = new RegExp(`(?:"([^"]*(?:""[^"]*)*)")|([^${sep}]+)`, 'g');
+  const result = [];
+  let match;
+  while ((match = regex.exec(line)) !== null) {
+    result.push(match[1] ? match[1].replace(/""/g, '"') : match[2]);
+  }
+  return result;
+}
+
 function parseCSVLine(line) {
   //Regex para , como separador
   //const regex = /(?:\"([^\"]*(?:\"\"[^\"]*)*)\")|([^,]+)/g;

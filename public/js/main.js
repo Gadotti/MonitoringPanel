@@ -166,6 +166,10 @@ function createCardElement(config) {
       externalSourceMonitor = config.list?.sourceItems;
       contentHtml = '<ul class="event-list"></ul>';
       break;
+    case 'dynamic-list':
+      externalSourceMonitor = config.dynamicList?.sourceItems;
+      contentHtml = '<ul class="dynamic-list"></ul>';
+      break;
     case 'uptime':
       externalSourceMonitor = config.sourceItems;
       contentHtml = "<div class='uptime-card'></div>";
@@ -282,6 +286,10 @@ function loadCardsContent(cardId = '') {
           break;
         case 'list':
           loadCardContentList(card);
+          break;
+        case 'dynamic-list':
+          loadCardContentDynamicList(card);
+          break;
         case 'frame':
           if (cardId !== '') {
             reloadCardFrame(card);

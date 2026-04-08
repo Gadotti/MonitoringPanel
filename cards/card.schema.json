@@ -2,7 +2,7 @@
   "id": "exemplo-card",
   "title": "Título do Card",
   "description": "Breve descrição sobre o conteúdo deste card.",
-  "cardType": "chart | list | frame",
+  "cardType": "chart | list | dynamic-list | frame",
   "view": "infra",
 
   "chart": {
@@ -33,6 +33,19 @@
     "order": "desc",
     "limit": 5,
     "sourceItems": "/local-events/recent-events.csv" 
+  },
+
+  "dynamicList": {
+    "sourceItems": "public/local-events/custom-data.csv",
+    "separator": ";",
+    "orderBy": "timestamp",
+    "order": "desc",
+    "limit": 20,
+    "fields": [
+      { "header": "timestamp", "label": "Data", "type": "date" },
+      { "header": "name", "label": "Nome", "type": "text" },
+      { "header": "link", "label": "Link", "type": "url" }
+    ]
   },
 
   "frame": {

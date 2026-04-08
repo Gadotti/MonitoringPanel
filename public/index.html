@@ -14,6 +14,7 @@
     <link rel="stylesheet" href="css/cve-assets.css">
     <link rel="stylesheet" href="css/modal-addcard.css">
     <link rel="stylesheet" href="css/modal-views.css">
+    <link rel="stylesheet" href="css/dynamic-list.css">
     <link rel="stylesheet" href="css/modal-cardeditor.css">
     <link rel="stylesheet" href="css/modal-logviewer.css">
     <link rel="stylesheet" href="css/modal-uptime.css">
@@ -394,8 +395,55 @@
             </div>
           </div>
           <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:4px;">
+            <button class="btn-apply ce-format-btn" id="ce-format-btn" type="button" style="display:none;">Configurar formato</button>
             <button class="btn-close" id="ce-cancel-btn" type="button">Voltar</button>
             <button class="btn-apply" id="ce-confirm-btn" type="button">Confirmar</button>
+          </div>
+        </div>
+
+        <!-- Painel de configuração de formato (dynamic-list) -->
+        <div id="ce-format-panel" style="display:none;">
+          <div class="mv-list-label">Configurar formato da lista</div>
+          <div class="ce-form-grid">
+            <div class="ce-fmt-row-pair">
+              <div class="modal-row">
+                <label for="ce-format-separator">Caractere separador</label>
+                <input type="text" id="ce-format-separator" value=";" maxlength="1" autocomplete="off" style="width:60px;">
+              </div>
+              <div class="modal-row">
+                <label for="ce-format-limit">Limite de itens</label>
+                <input type="number" id="ce-format-limit" value="20" min="1" max="500" style="width:80px;">
+              </div>
+            </div>
+            <div class="ce-fmt-row-pair">
+              <div class="modal-row">
+                <label for="ce-format-orderby">Ordenar por (header)</label>
+                <input type="text" id="ce-format-orderby" placeholder="ex: timestamp" autocomplete="off">
+              </div>
+              <div class="modal-row">
+                <label>Ordenação</label>
+                <div class="ce-type-wrapper" id="ce-order-wrapper">
+                  <button class="ce-type-trigger" id="ce-order-trigger" type="button">
+                    <span class="ce-type-label" id="ce-order-label">Decrescente</span>
+                    <svg class="ce-type-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="6 9 12 15 18 9"/>
+                    </svg>
+                  </button>
+                  <div class="ce-type-dropdown" id="ce-order-dropdown"></div>
+                </div>
+              </div>
+            </div>
+            <div class="mv-list-label" style="margin-top:8px;">Campos (máx. 3)</div>
+            <div id="ce-format-fields"></div>
+            <button class="ue-add-toggle" id="ce-format-add-field" type="button">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+              Adicionar campo
+            </button>
+          </div>
+          <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:4px;">
+            <button class="btn-close" id="ce-format-back" type="button">Voltar ao formulário</button>
           </div>
         </div>
 
@@ -472,6 +520,7 @@
     <script src="js/cardcontent-list.js"></script>
     <script src="js/cardcontent-uptime.js"></script>
     <script src="js/cardcontent-cve.js"></script>
+    <script src="js/cardcontent-dynamic-list.js"></script>
     <script src="js/eventListeners.js"></script>
     <script src="js/socketListeners.js"></script>
     <script src="js/view-selector.js"></script>

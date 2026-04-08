@@ -18,7 +18,7 @@
   if (!modal || !openBtn) return;
 
   /* ── Custom type dropdown ── */
-  const CARD_TYPES    = ['chart', 'list', 'uptime', 'cve-assets', 'frame'];
+  const CARD_TYPES    = ['chart', 'list', 'dynamic-list', 'uptime', 'cve-assets', 'frame'];
   const typeWrapper   = document.getElementById('ce-type-wrapper');
   const typeTrigger   = document.getElementById('ce-type-trigger');
   const typeLabel     = document.getElementById('ce-type-label');
@@ -45,6 +45,7 @@
         typeLabel.textContent = selectedType;
         closeTypeDropdown();
         buildTypeDropdown();
+        clearJsonOverride();
       });
     });
   }
@@ -69,6 +70,230 @@
     if (!typeWrapper.contains(e.target)) closeTypeDropdown();
   });
 
+  /* ── Dynamic-list format config panel ── */
+  const formatBtn       = document.getElementById('ce-format-btn');
+  const formatPanel     = document.getElementById('ce-format-panel');
+  const formatBack      = document.getElementById('ce-format-back');
+  const formatSepInput  = document.getElementById('ce-format-separator');
+  const formatOrderBy   = document.getElementById('ce-format-orderby');
+  const formatLimit     = document.getElementById('ce-format-limit');
+  const FIELD_TYPES     = ['text', 'date', 'url'];
+  const MAX_FIELDS      = 3;
+
+  /* ── Custom order dropdown (same pattern as type dropdown) ── */
+  const ORDER_OPTIONS   = [
+    { value: 'desc', label: 'Decrescente' },
+    { value: 'asc',  label: 'Crescente' },
+  ];
+  const orderWrapper    = document.getElementById('ce-order-wrapper');
+  const orderTrigger    = document.getElementById('ce-order-trigger');
+  const orderLabel      = document.getElementById('ce-order-label');
+  const orderDropdown   = document.getElementById('ce-order-dropdown');
+  let selectedOrder     = 'desc';
+
+  function buildOrderDropdown() {
+    if (!orderDropdown) return;
+    orderDropdown.innerHTML = ORDER_OPTIONS.map(o => `
+      <button class="ce-type-option${o.value === selectedOrder ? ' selected' : ''}" type="button" data-value="${o.value}">
+        <span class="ce-type-option-icon">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+        </span>
+        <span class="ce-type-option-label">${o.label}</span>
+      </button>
+    `).join('');
+
+    orderDropdown.querySelectorAll('.ce-type-option').forEach(opt => {
+      opt.addEventListener('click', (e) => {
+        e.stopPropagation();
+        selectedOrder = opt.dataset.value;
+        orderLabel.textContent = ORDER_OPTIONS.find(o => o.value === selectedOrder).label;
+        closeOrderDropdown();
+        buildOrderDropdown();
+      });
+    });
+  }
+
+  function openOrderDropdown() {
+    buildOrderDropdown();
+    orderDropdown.classList.add('open');
+    orderTrigger.classList.add('open');
+  }
+
+  function closeOrderDropdown() {
+    if (!orderDropdown) return;
+    orderDropdown.classList.remove('open');
+    if (orderTrigger) orderTrigger.classList.remove('open');
+  }
+
+  if (orderTrigger) {
+    orderTrigger.addEventListener('click', (e) => {
+      e.stopPropagation();
+      orderDropdown.classList.contains('open') ? closeOrderDropdown() : openOrderDropdown();
+    });
+  }
+
+  document.addEventListener('click', (e) => {
+    if (orderWrapper && !orderWrapper.contains(e.target)) closeOrderDropdown();
+  });
+
+  let dynamicListFields = [];
+
+  function updateFormatBtnVisibility() {
+    if (formatBtn) {
+      formatBtn.style.display = selectedType === 'dynamic-list' ? '' : 'none';
+    }
+  }
+
+  // Extend type selection to toggle format button
+  const origBuildTypeDropdown = buildTypeDropdown;
+  buildTypeDropdown = function () {
+    origBuildTypeDropdown();
+    // re-attach click listeners that also update format visibility
+    typeDropdown.querySelectorAll('.ce-type-option').forEach(opt => {
+      opt.addEventListener('click', updateFormatBtnVisibility);
+    });
+  };
+
+  function openFormatPanel() {
+    form.style.display = 'none';
+    formatPanel.style.display = 'block';
+    renderFormatFields();
+  }
+
+  function closeFormatPanel() {
+    formatPanel.style.display = 'none';
+    form.style.display = 'block';
+    clearJsonOverride();
+  }
+
+  if (formatBtn) formatBtn.addEventListener('click', openFormatPanel);
+  if (formatBack) formatBack.addEventListener('click', closeFormatPanel);
+
+  function renderFormatFields() {
+    const container = document.getElementById('ce-format-fields');
+    if (!container) return;
+
+    container.innerHTML = dynamicListFields.map((f, idx) => `
+      <div class="ce-fmt-field-row" data-idx="${idx}">
+        <div class="ce-fmt-field-inputs">
+          <input type="text" class="ce-fmt-header" placeholder="Nome do campo (header CSV)" value="${f.header || ''}" autocomplete="off">
+          <input type="text" class="ce-fmt-label" placeholder="Rótulo de exibição" value="${f.label || ''}" autocomplete="off">
+          <div class="ce-type-wrapper ce-fmt-type-wrapper">
+            <button class="ce-type-trigger ce-fmt-type-trigger" type="button">
+              <span class="ce-type-label">${f.type || 'text'}</span>
+              <svg class="ce-type-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6 9 12 15 18 9"/>
+              </svg>
+            </button>
+            <div class="ce-type-dropdown ce-fmt-type-dropdown"></div>
+          </div>
+        </div>
+        <button class="mv-delete-btn ce-fmt-remove-btn" type="button" title="Remover campo">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+    `).join('');
+
+    // Bind field inputs
+    container.querySelectorAll('.ce-fmt-field-row').forEach(row => {
+      const idx = parseInt(row.dataset.idx, 10);
+
+      row.querySelector('.ce-fmt-header').addEventListener('input', (e) => {
+        dynamicListFields[idx].header = e.target.value.trim();
+      });
+      row.querySelector('.ce-fmt-label').addEventListener('input', (e) => {
+        dynamicListFields[idx].label = e.target.value.trim();
+      });
+      row.querySelector('.ce-fmt-remove-btn').addEventListener('click', () => {
+        dynamicListFields.splice(idx, 1);
+        renderFormatFields();
+      });
+
+      // Field type dropdown
+      const wrapper = row.querySelector('.ce-fmt-type-wrapper');
+      const trigger = row.querySelector('.ce-fmt-type-trigger');
+      const dropdown = row.querySelector('.ce-fmt-type-dropdown');
+      const label = trigger.querySelector('.ce-type-label');
+
+      trigger.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const wasOpen = dropdown.classList.contains('open');
+        // Close all other field type dropdowns
+        container.querySelectorAll('.ce-fmt-type-dropdown.open').forEach(d => {
+          d.classList.remove('open');
+          d.previousElementSibling?.classList.remove('open');
+        });
+        if (!wasOpen) {
+          buildFieldTypeDropdown(dropdown, idx, label);
+          dropdown.classList.add('open');
+          trigger.classList.add('open');
+        }
+      });
+    });
+
+    // Close field type dropdowns on outside click
+    document.addEventListener('click', closeAllFieldTypeDropdowns);
+
+    updateAddFieldBtnState();
+  }
+
+  function closeAllFieldTypeDropdowns() {
+    const container = document.getElementById('ce-format-fields');
+    if (!container) return;
+    container.querySelectorAll('.ce-fmt-type-dropdown.open').forEach(d => {
+      d.classList.remove('open');
+    });
+    container.querySelectorAll('.ce-fmt-type-trigger.open').forEach(t => {
+      t.classList.remove('open');
+    });
+  }
+
+  function buildFieldTypeDropdown(dropdown, fieldIdx, labelEl) {
+    const current = dynamicListFields[fieldIdx].type || 'text';
+    dropdown.innerHTML = FIELD_TYPES.map(t => `
+      <button class="ce-type-option${t === current ? ' selected' : ''}" type="button" data-value="${t}">
+        <span class="ce-type-option-icon">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+        </span>
+        <span class="ce-type-option-label">${t === 'text' ? 'Texto' : t === 'date' ? 'Data' : 'URL'}</span>
+      </button>
+    `).join('');
+
+    dropdown.querySelectorAll('.ce-type-option').forEach(opt => {
+      opt.addEventListener('click', (e) => {
+        e.stopPropagation();
+        dynamicListFields[fieldIdx].type = opt.dataset.value;
+        labelEl.textContent = opt.dataset.value;
+        dropdown.classList.remove('open');
+        dropdown.previousElementSibling?.classList.remove('open');
+      });
+    });
+  }
+
+  function updateAddFieldBtnState() {
+    const addBtn = document.getElementById('ce-format-add-field');
+    if (addBtn) {
+      addBtn.style.display = dynamicListFields.length >= MAX_FIELDS ? 'none' : '';
+    }
+  }
+
+  const addFieldBtn = document.getElementById('ce-format-add-field');
+  if (addFieldBtn) {
+    addFieldBtn.addEventListener('click', () => {
+      if (dynamicListFields.length >= MAX_FIELDS) return;
+      dynamicListFields.push({ header: '', label: '', type: 'text' });
+      renderFormatFields();
+    });
+  }
+
   let editingCardId = null;
 
   /* ── Open / Close modal ── */
@@ -87,6 +312,14 @@
     if (e.key === 'Escape' && modal.classList.contains('show')) {
       if (typeDropdown.classList.contains('open')) {
         closeTypeDropdown();
+        return;
+      }
+      if (orderDropdown && orderDropdown.classList.contains('open')) {
+        closeOrderDropdown();
+        return;
+      }
+      if (formatPanel && formatPanel.style.display !== 'none') {
+        closeFormatPanel();
         return;
       }
       if (form.style.display !== 'none') {
@@ -126,6 +359,15 @@
     getInput('json').value = '';
     selectedType = 'chart';
     typeLabel.textContent = 'chart';
+    // Reset dynamic-list format config
+    dynamicListFields = [];
+    if (formatSepInput) formatSepInput.value = ';';
+    if (formatOrderBy) formatOrderBy.value = '';
+    selectedOrder = 'desc';
+    if (orderLabel) orderLabel.textContent = 'Decrescente';
+    if (formatLimit) formatLimit.value = '20';
+    if (formatPanel) formatPanel.style.display = 'none';
+    updateFormatBtnVisibility();
   }
 
   formToggle.addEventListener('click', () => {
@@ -142,6 +384,17 @@
   function getInput(name) {
     return document.getElementById('ce-card-' + name);
   }
+
+  /* ── Clear JSON override when individual fields are edited ── */
+  function clearJsonOverride() {
+    const jsonField = getInput('json');
+    if (jsonField && jsonField.value) jsonField.value = '';
+  }
+
+  ['title', 'description', 'source'].forEach(name => {
+    const el = getInput(name);
+    if (el) el.addEventListener('input', clearJsonOverride);
+  });
 
   /* ── Render cards list ── */
   async function renderCardsList() {
@@ -205,11 +458,36 @@
     getInput('id').disabled = true;
     getInput('title').value = card.title || '';
     getInput('description').value = card.description || '';
-    getInput('source').value = card.sourceItems || '';
+
+    const sourceValue = card.cardType === 'dynamic-list'
+      ? (card.dynamicList?.sourceItems || '')
+      : (card.sourceItems || '');
+    getInput('source').value = sourceValue;
+
+    // Show full JSON for reference; cleared automatically when
+    // the user edits any individual field so it won't override.
     getInput('json').value = JSON.stringify(card, null, 2);
 
     selectedType = card.cardType || 'chart';
     typeLabel.textContent = selectedType;
+
+    // Populate dynamic-list format config
+    if (card.cardType === 'dynamic-list' && card.dynamicList) {
+      dynamicListFields = (card.dynamicList.fields || []).map(f => ({ ...f }));
+      if (formatSepInput) formatSepInput.value = card.dynamicList.separator || ';';
+      if (formatOrderBy) formatOrderBy.value = card.dynamicList.orderBy || '';
+      selectedOrder = card.dynamicList.order || 'desc';
+      if (orderLabel) orderLabel.textContent = ORDER_OPTIONS.find(o => o.value === selectedOrder)?.label || 'Decrescente';
+      if (formatLimit) formatLimit.value = card.dynamicList.limit || 20;
+    } else {
+      dynamicListFields = [];
+      if (formatSepInput) formatSepInput.value = ';';
+      if (formatOrderBy) formatOrderBy.value = '';
+      selectedOrder = 'desc';
+      if (orderLabel) orderLabel.textContent = 'Decrescente';
+      if (formatLimit) formatLimit.value = '20';
+    }
+    updateFormatBtnVisibility();
 
     clearFeedback();
     showForm('Editando: ' + (card.title || card.id));
@@ -242,7 +520,25 @@
       if (description) cardObj.description = description;
 
       const source = getInput('source').value.trim();
-      if (source) cardObj.sourceItems = source;
+
+      if (selectedType === 'dynamic-list') {
+        const validFields = dynamicListFields.filter(f => f.header);
+        if (!validFields.length) {
+          showFeedback('Configure ao menos um campo no formato.', 'error');
+          return;
+        }
+        cardObj.dynamicList = {
+          sourceItems: source,
+          separator: (formatSepInput && formatSepInput.value) || ';',
+          orderBy: (formatOrderBy && formatOrderBy.value.trim()) || '',
+          order: selectedOrder || 'desc',
+          limit: parseInt((formatLimit && formatLimit.value) || '20', 10) || 20,
+          fields: validFields,
+        };
+        if (!cardObj.dynamicList.orderBy) delete cardObj.dynamicList.orderBy;
+      } else if (source) {
+        cardObj.sourceItems = source;
+      }
     }
 
     if (!cardObj.id || !cardObj.cardType) {
