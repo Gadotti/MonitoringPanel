@@ -1,10 +1,10 @@
 [
   {
-    "id": "ransom-look",
+    "id": "metricas-gerais",
     "order": 0,
-    "title": "Breaches - All",
+    "title": "Dashboard",
     "columns": 2,
-    "rows": 2,
+    "rows": 1,
     "zoom": 1
   },
   {
@@ -12,31 +12,31 @@
     "order": 1,
     "title": "Breaches - Tags",
     "columns": 2,
-    "rows": 2,
+    "rows": 1,
     "zoom": 1
   },
   {
-    "id": "uptime-results",
+    "id": "ssllabs-sample",
     "order": 2,
+    "title": "SSLabs Scan",
+    "columns": 3,
+    "rows": 2,
+    "zoom": 0.62
+  },
+  {
+    "id": "uptime-results",
+    "order": 3,
     "title": "Site e Serviços",
     "columns": 1,
     "rows": 2,
     "zoom": 1
   },
   {
-    "id": "ssllabs-sample",
-    "order": 3,
-    "title": "SSLabs Scan",
-    "columns": 4,
-    "rows": 2,
-    "zoom": 0.62
-  },
-  {
     "id": "uptime-results-must-be-off",
     "order": 4,
     "title": "Site e Serviços (Off)",
     "columns": 1,
-    "rows": 1,
+    "rows": 2,
     "zoom": 1
   },
   {

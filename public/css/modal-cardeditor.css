@@ -271,3 +271,61 @@
   margin-top: 4px;
   flex-shrink: 0;
 }
+
+/* ── Metric config panel ── */
+.ce-metric-btn {
+  font-size: 0.82rem;
+}
+
+.ce-metric-section-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 2px 0;
+}
+
+.ce-metric-list {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.ce-metric-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 6px;
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.ce-metric-card-title {
+  flex: 1;
+  font-size: 0.85rem;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ce-metric-add-btn {
+  padding: 3px 10px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.ce-metric-filter-wrapper {
+  flex: 0 0 100px;
+}
+
+.ce-metric-filter-trigger {
+  padding: 5px 8px;
+  font-size: 0.8rem;
+}
+
+.ce-metric-filter-dropdown {
+  min-width: 110px;
+}

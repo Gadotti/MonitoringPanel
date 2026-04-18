@@ -18,7 +18,7 @@
   if (!modal || !openBtn) return;
 
   /* ── Custom type dropdown ── */
-  const CARD_TYPES    = ['chart', 'list', 'dynamic-list', 'uptime', 'cve-assets', 'frame'];
+  const CARD_TYPES    = ['metric', 'chart', 'list', 'dynamic-list', 'uptime', 'cve-assets', 'frame'];
   const typeWrapper   = document.getElementById('ce-type-wrapper');
   const typeTrigger   = document.getElementById('ce-type-trigger');
   const typeLabel     = document.getElementById('ce-type-label');
@@ -147,13 +147,21 @@
     }
   }
 
-  // Extend type selection to toggle format button
+  function updateSourceRowVisibility() {
+    const row = document.getElementById('ce-source-row');
+    if (row) row.style.display = selectedType === 'metric' ? 'none' : '';
+  }
+
+  // Extend type selection to toggle panel buttons (format + metric) and source row
   const origBuildTypeDropdown = buildTypeDropdown;
   buildTypeDropdown = function () {
     origBuildTypeDropdown();
-    // re-attach click listeners that also update format visibility
     typeDropdown.querySelectorAll('.ce-type-option').forEach(opt => {
-      opt.addEventListener('click', updateFormatBtnVisibility);
+      opt.addEventListener('click', () => {
+        updateFormatBtnVisibility();
+        updateMetricBtnVisibility();
+        updateSourceRowVisibility();
+      });
     });
   };
 
@@ -294,6 +302,220 @@
     });
   }
 
+  /* ── Metric panel ── */
+  const metricBtn     = document.getElementById('ce-metric-btn');
+  const metricPanel   = document.getElementById('ce-metric-panel');
+  const metricBack    = document.getElementById('ce-metric-back');
+  const metricSaveBtn = document.getElementById('ce-metric-save');
+  const METRIC_COMPATIBLE_TYPES = ['list', 'dynamic-list', 'uptime', 'cve-assets'];
+  let metricSources = [];
+
+  function updateMetricBtnVisibility() {
+    if (metricBtn) metricBtn.style.display = selectedType === 'metric' ? '' : 'none';
+  }
+
+  function closeAllMetricFilterDropdowns() {
+    const c = document.getElementById('ce-metric-sources');
+    if (!c) return;
+    c.querySelectorAll('.ce-metric-filter-dropdown.open').forEach(d => d.classList.remove('open'));
+    c.querySelectorAll('.ce-metric-filter-trigger.open').forEach(t => t.classList.remove('open'));
+  }
+
+  async function openMetricPanel(directMode = false) {
+    form.style.display = 'none';
+    metricPanel.style.display = 'block';
+    if (metricBack)    metricBack.style.display    = directMode ? 'none' : '';
+    if (metricSaveBtn) metricSaveBtn.style.display = directMode ? ''     : 'none';
+    document.addEventListener('click', closeAllMetricFilterDropdowns);
+    await renderMetricPanel();
+  }
+
+  function closeMetricPanel() {
+    metricPanel.style.display = 'none';
+    form.style.display = 'block';
+    if (metricBack)    metricBack.style.display    = '';
+    if (metricSaveBtn) metricSaveBtn.style.display = 'none';
+    document.removeEventListener('click', closeAllMetricFilterDropdowns);
+    clearJsonOverride();
+  }
+
+  async function saveMetricDirect() {
+    if (!editingCardId) return;
+
+    if (!metricSources.length) {
+      showFeedback('Adicione ao menos uma fonte à métrica.', 'error');
+      return;
+    }
+
+    if (metricSaveBtn) metricSaveBtn.disabled = true;
+    clearFeedback();
+
+    try {
+      const res = await fetch('/api/cards');
+      if (!res.ok) throw new Error('Erro ao carregar cards');
+      let cards = await res.json();
+
+      const idx = cards.findIndex(c => c.id === editingCardId);
+      if (idx === -1) {
+        showFeedback(`Card "${editingCardId}" não encontrado.`, 'error');
+        return;
+      }
+
+      cards[idx] = { ...cards[idx], metric: { sources: metricSources } };
+
+      const saveRes = await fetch('/api/cards', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(cards),
+      });
+
+      if (!saveRes.ok) {
+        const data = await saveRes.json().catch(() => ({}));
+        showFeedback(data.error || 'Erro ao salvar.', 'error');
+        return;
+      }
+
+      invalidateCardsCache();
+      closeModal();
+
+      if (typeof loadCardsContent === 'function') {
+        loadCardsContent(editingCardId);
+      }
+
+    } catch (err) {
+      showFeedback('Erro de comunicação com o servidor.', 'error');
+      console.error(err);
+    } finally {
+      if (metricSaveBtn) metricSaveBtn.disabled = false;
+    }
+  }
+
+  if (metricBtn)     metricBtn.addEventListener('click', () => openMetricPanel(false));
+  if (metricBack)    metricBack.addEventListener('click', closeMetricPanel);
+  if (metricSaveBtn) metricSaveBtn.addEventListener('click', saveMetricDirect);
+
+  async function renderMetricPanel() {
+    const availableContainer = document.getElementById('ce-metric-available');
+    const sourcesContainer   = document.getElementById('ce-metric-sources');
+    if (!availableContainer || !sourcesContainer) return;
+
+    let allCards = [];
+    try {
+      const res = await fetch('/api/cards');
+      if (res.ok) allCards = await res.json();
+    } catch {}
+
+    const selectedIds = metricSources.map(s => s.cardId);
+    const available   = allCards.filter(c =>
+      METRIC_COMPATIBLE_TYPES.includes(c.cardType) && !selectedIds.includes(c.id)
+    );
+
+    availableContainer.innerHTML = available.length
+      ? available.map(c => `
+          <div class="ce-metric-row">
+            <span class="ce-metric-card-title">${c.title || c.id}</span>
+            <span class="ce-row-type">${c.cardType}</span>
+            <button class="btn-apply ce-metric-add-btn" type="button" data-id="${c.id}" data-type="${c.cardType}">+</button>
+          </div>
+        `).join('')
+      : '<p class="mv-empty" style="font-size:0.82rem;">Nenhum card compatível disponível.</p>';
+
+    availableContainer.querySelectorAll('.ce-metric-add-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const source = { cardId: btn.dataset.id };
+        if (btn.dataset.type === 'uptime') source.uptimeFilter = 'offline';
+        metricSources.push(source);
+        renderMetricPanel();
+      });
+    });
+
+    sourcesContainer.innerHTML = metricSources.length
+      ? metricSources.map((s, idx) => {
+          const sourceCard = allCards.find(c => c.id === s.cardId);
+          const label = sourceCard ? (sourceCard.title || sourceCard.id) : s.cardId;
+          const type  = sourceCard?.cardType || '';
+          const uptimeCtrl = type === 'uptime' ? `
+            <div class="ce-type-wrapper ce-metric-filter-wrapper">
+              <button class="ce-type-trigger ce-metric-filter-trigger" type="button">
+                <span class="ce-type-label">${s.uptimeFilter === 'online' ? 'Online' : 'Offline'}</span>
+                <svg class="ce-type-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="6 9 12 15 18 9"/>
+                </svg>
+              </button>
+              <div class="ce-type-dropdown ce-metric-filter-dropdown"></div>
+            </div>
+          ` : '';
+
+          return `
+            <div class="ce-metric-row" data-idx="${idx}">
+              <span class="ce-metric-card-title">${label}</span>
+              <span class="ce-row-type">${type}</span>
+              ${uptimeCtrl}
+              <button class="mv-delete-btn ce-metric-remove-btn" type="button" title="Remover fonte">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+              </button>
+            </div>
+          `;
+        }).join('')
+      : '<p class="mv-empty" style="font-size:0.82rem;">Nenhuma fonte selecionada.</p>';
+
+    sourcesContainer.querySelectorAll('.ce-metric-remove-btn').forEach(btn => {
+      const row = btn.closest('.ce-metric-row');
+      btn.addEventListener('click', () => {
+        metricSources.splice(parseInt(row.dataset.idx, 10), 1);
+        renderMetricPanel();
+      });
+    });
+
+    sourcesContainer.querySelectorAll('.ce-metric-row').forEach(row => {
+      const trigger  = row.querySelector('.ce-metric-filter-trigger');
+      const dropdown = row.querySelector('.ce-metric-filter-dropdown');
+      if (!trigger || !dropdown) return;
+
+      const idx   = parseInt(row.dataset.idx, 10);
+      const label = trigger.querySelector('.ce-type-label');
+
+      trigger.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const wasOpen = dropdown.classList.contains('open');
+        closeAllMetricFilterDropdowns();
+        if (!wasOpen) {
+          buildUptimeFilterDropdown(dropdown, idx, label);
+          dropdown.classList.add('open');
+          trigger.classList.add('open');
+        }
+      });
+    });
+  }
+
+  function buildUptimeFilterDropdown(dropdown, sourceIdx, labelEl) {
+    const current = metricSources[sourceIdx]?.uptimeFilter || 'offline';
+    const options = [{ value: 'offline', label: 'Offline' }, { value: 'online', label: 'Online' }];
+    dropdown.innerHTML = options.map(o => `
+      <button class="ce-type-option${o.value === current ? ' selected' : ''}" type="button" data-value="${o.value}">
+        <span class="ce-type-option-icon">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+        </span>
+        <span class="ce-type-option-label">${o.label}</span>
+      </button>
+    `).join('');
+
+    dropdown.querySelectorAll('.ce-type-option').forEach(opt => {
+      opt.addEventListener('click', (e) => {
+        e.stopPropagation();
+        metricSources[sourceIdx].uptimeFilter = opt.dataset.value;
+        labelEl.textContent = opt.dataset.value === 'online' ? 'Online' : 'Offline';
+        dropdown.classList.remove('open');
+        dropdown.previousElementSibling?.classList.remove('open');
+      });
+    });
+  }
+
   let editingCardId = null;
 
   /* ── Open / Close modal ── */
@@ -316,6 +538,10 @@
       }
       if (orderDropdown && orderDropdown.classList.contains('open')) {
         closeOrderDropdown();
+        return;
+      }
+      if (metricPanel && metricPanel.style.display !== 'none') {
+        closeMetricPanel();
         return;
       }
       if (formatPanel && formatPanel.style.display !== 'none') {
@@ -367,7 +593,11 @@
     if (orderLabel) orderLabel.textContent = 'Decrescente';
     if (formatLimit) formatLimit.value = '20';
     if (formatPanel) formatPanel.style.display = 'none';
+    metricSources = [];
+    if (metricPanel) metricPanel.style.display = 'none';
     updateFormatBtnVisibility();
+    updateMetricBtnVisibility();
+    updateSourceRowVisibility();
   }
 
   formToggle.addEventListener('click', () => {
@@ -489,6 +719,14 @@
     }
     updateFormatBtnVisibility();
 
+    if (card.cardType === 'metric' && card.metric) {
+      metricSources = (card.metric.sources || []).map(s => ({ ...s }));
+    } else {
+      metricSources = [];
+    }
+    updateMetricBtnVisibility();
+    updateSourceRowVisibility();
+
     clearFeedback();
     showForm('Editando: ' + (card.title || card.id));
   }
@@ -521,7 +759,13 @@
 
       const source = getInput('source').value.trim();
 
-      if (selectedType === 'dynamic-list') {
+      if (selectedType === 'metric') {
+        if (!metricSources.length) {
+          showFeedback('Adicione ao menos uma fonte à métrica.', 'error');
+          return;
+        }
+        cardObj.metric = { sources: metricSources };
+      } else if (selectedType === 'dynamic-list') {
         const validFields = dynamicListFields.filter(f => f.header);
         if (!validFields.length) {
           showFeedback('Configure ao menos um campo no formato.', 'error');
@@ -639,4 +883,20 @@
     feedback.textContent = '';
     feedback.className = 'mv-feedback';
   }
+
+  // ── API pública: abrir editor direto na aba de métrica ──
+  window.openMetricEditor = async function (cardElement) {
+    clearFeedback();
+    modal.classList.add('show');
+
+    let allCards = [];
+    try {
+      const res = await fetch('/api/cards');
+      if (res.ok) allCards = await res.json();
+    } catch {}
+
+    const cardId = cardElement.dataset?.id || cardElement.id;
+    startEdit(cardId, allCards);
+    await openMetricPanel(true);
+  };
 })();

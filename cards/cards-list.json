@@ -461,5 +461,28 @@
         }
       ]
     }
+  },
+  {
+    "id": "metricas-gerais",
+    "title": "Dashboard",
+    "cardType": "metric",
+    "metric": {
+      "sources": [
+        {
+          "cardId": "dynamic-test"
+        },
+        {
+          "cardId": "cve-check"
+        },
+        {
+          "cardId": "uptime-results-must-be-off",
+          "uptimeFilter": "online"
+        },
+        {
+          "cardId": "uptime-results",
+          "uptimeFilter": "offline"
+        }
+      ]
+    }
   }
 ]

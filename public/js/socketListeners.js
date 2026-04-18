@@ -17,15 +17,28 @@ async function loadWsConfig() {
 // chamada na inicialização da página
 loadWsConfig(); // garante que as variáveis fiquem preenchidas antes
 
+let _ws = null;
+const _pendingWsSubscriptions = [];
+
+function subscribeCardToFile(cardId, filePath) {
+  if (!filePath) return;
+  if (_ws && _ws.readyState === WebSocket.OPEN) {
+    _ws.send(JSON.stringify({ type: 'watch', cardId, filePath }));
+  } else {
+    _pendingWsSubscriptions.push({ cardId, filePath });
+  }
+}
+
 function signSocketListeners() {
     const socket = new WebSocket(`ws://${WS_HOST}:${WS_PORT}`);
-   
+    _ws = socket;
+
     socket.addEventListener('open', () => {
         console.log('WebSocket conectado.');
 
         // Para cada card com origem de dados, envia a solicitação de "watch"
         const cards = grid.querySelectorAll('.card');
-        cards.forEach(card => {   
+        cards.forEach(card => {
             if (!card.dataset.externalSourceMonitor || card.dataset.externalSourceMonitor === 'undefined') return
 
             const filePath = card.dataset.externalSourceMonitor;
@@ -35,6 +48,11 @@ function signSocketListeners() {
                 filePath,
                 cardId
             }));
+        });
+
+        // Envia assinaturas pendentes (ex.: metric cards que se registraram antes do socket abrir)
+        _pendingWsSubscriptions.splice(0).forEach(({ cardId, filePath }) => {
+            socket.send(JSON.stringify({ type: 'watch', cardId, filePath }));
         });
     });
 

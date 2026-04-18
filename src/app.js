@@ -292,6 +292,35 @@ function createApp(config = {}) {
     });
   });
 
+  // ------------------------------------------------------------------ GET /api/csv-count
+  app.get('/api/csv-count', async (req, res) => {
+    const filePath = req.query.file;
+
+    if (!filePath) {
+      return res.status(400).json({ error: 'Parâmetro "file" é obrigatório.' });
+    }
+
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).json({ error: 'Arquivo não encontrado' });
+    }
+
+    try {
+      let count = 0;
+      let isHeader = true;
+      const stream = fs.createReadStream(filePath, { encoding: 'utf8' });
+      const rl = readline.createInterface({ input: stream });
+
+      for await (const line of rl) {
+        if (isHeader) { isHeader = false; continue; }
+        if (line.trim()) count++;
+      }
+
+      res.json({ count });
+    } catch (err) {
+      res.status(500).json({ error: 'Erro ao processar CSV' });
+    }
+  });
+
   // ------------------------------------------------------------------ GET /api/partial-csv
   app.get('/api/partial-csv', async (req, res) => {
     const filePath = req.query.file;

@@ -197,6 +197,17 @@ function initializeCardEvents(card) {
       }
     });
   }
+
+  // ── Botão de edição de métrica (cards do tipo metric) ──
+  const metricEditButton = card.querySelector('.metric-edit-button');
+  if (metricEditButton) {
+    metricEditButton.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (typeof openMetricEditor === 'function') {
+        openMetricEditor(card);
+      }
+    });
+  }
 }
 
 // ── Fecha o painel flutuante de assessment ao clicar fora dele ou do trigger ──

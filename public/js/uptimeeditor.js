@@ -3,24 +3,86 @@
    ================================================ */
 
 (function () {
-  // Único elemento verificado no topo — se não existir, a feature não está na página
   const modal = document.getElementById('uptime-editor-modal');
   if (!modal) return;
 
-  // ── Estado interno ──
   let currentFilePath = null;
   let services = [];
 
-  // ── Accessors lazy (resolvidos no momento do uso, nunca no topo) ──
+  const NOTIFY_OPTIONS = [
+    { value: 'when-offline', label: 'Quando offline' },
+    { value: 'when-online',  label: 'Quando online'  },
+    { value: 'off',          label: 'Desativado'      },
+  ];
+
   function el(id) { return document.getElementById(id); }
+
+  // ── Custom dropdown: position fixed para escapar de containers overflow:auto ──
+  function openDropdown(trigger, dropdown) {
+    var rect = trigger.getBoundingClientRect();
+    dropdown.style.top   = (rect.bottom + 4) + 'px';
+    dropdown.style.left  = rect.left + 'px';
+    dropdown.style.width = rect.width + 'px';
+    dropdown.classList.add('open');
+    trigger.classList.add('open');
+  }
+
+  function closeDropdown(trigger, dropdown) {
+    if (dropdown) dropdown.classList.remove('open');
+    if (trigger)  trigger.classList.remove('open');
+  }
+
+  function closeAllDropdowns() {
+    var newModeDropdown = el('ue-new-mode-dropdown');
+    var newModeTrigger  = el('ue-new-mode-trigger');
+    if (newModeDropdown) closeDropdown(newModeTrigger, newModeDropdown);
+
+    document.querySelectorAll('.ue-mode-dropdown.open').forEach(function (d) { d.classList.remove('open'); });
+    document.querySelectorAll('.ue-mode-trigger.open').forEach(function (t)  { t.classList.remove('open'); });
+  }
+
+  // ── Dropdown do formulário de adição ──
+  let newModeSelected = 'when-offline';
+
+  function notifyLabel(val) {
+    var opt = NOTIFY_OPTIONS.find(function (o) { return o.value === val; });
+    return opt ? opt.label : 'Quando offline';
+  }
+
+  function buildNewModeDropdown() {
+    var dropdown = el('ue-new-mode-dropdown');
+    if (!dropdown) return;
+    dropdown.innerHTML = NOTIFY_OPTIONS.map(function (opt) {
+      return '<button class="ue-dd-option' + (opt.value === newModeSelected ? ' selected' : '') + '" type="button" data-value="' + opt.value + '">' +
+        '<span class="ue-dd-option-icon">' +
+          '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
+            '<polyline points="20 6 9 17 4 12"/>' +
+          '</svg>' +
+        '</span>' +
+        opt.label +
+      '</button>';
+    }).join('');
+
+    dropdown.querySelectorAll('.ue-dd-option').forEach(function (btn) {
+      btn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        newModeSelected = btn.dataset.value;
+        var label = el('ue-new-mode-label');
+        if (label) label.textContent = notifyLabel(newModeSelected);
+        closeDropdown(el('ue-new-mode-trigger'), dropdown);
+      });
+    });
+  }
 
   // ── Helpers do formulário de adição ──
   function clearAddForm() {
     el('ue-new-name').value = '';
     el('ue-new-url').value  = '';
     el('ue-new-http').value = '';
-    const mode = el('ue-new-mode');
-    if (mode) mode.value = 'when-offline';
+    newModeSelected = 'when-offline';
+    var label = el('ue-new-mode-label');
+    if (label) label.textContent = 'Quando offline';
+    closeDropdown(el('ue-new-mode-trigger'), el('ue-new-mode-dropdown'));
   }
 
   function openAddForm() {
@@ -41,51 +103,55 @@
     clearAddForm();
   }
 
-  // ── Wiring de eventos — executado em DOMContentLoaded para garantir que o DOM está pronto ──
+  // ── Wiring de eventos ──
   document.addEventListener('DOMContentLoaded', function () {
-    // Toggle de abertura do formulário de adição
-    const addToggle = el('ue-add-toggle');
+    var addToggle = el('ue-add-toggle');
     if (addToggle) {
       addToggle.addEventListener('click', function () {
-        const form = el('ue-add-form');
-        const isOpen = form && form.style.display !== 'none';
+        var form = el('ue-add-form');
+        var isOpen = form && form.style.display !== 'none';
         if (isOpen) closeAddForm(); else openAddForm();
       });
     }
 
-    // Cancelar adição
-    const cancelAddBtn = el('ue-cancel-add-btn');
-    if (cancelAddBtn) {
-      cancelAddBtn.addEventListener('click', closeAddForm);
-    }
+    var cancelAddBtn = el('ue-cancel-add-btn');
+    if (cancelAddBtn) cancelAddBtn.addEventListener('click', closeAddForm);
 
-    // Confirmar adição de novo serviço
-    const addBtn = el('ue-add-btn');
-    if (addBtn) {
-      addBtn.addEventListener('click', confirmAdd);
-    }
+    var addBtn = el('ue-add-btn');
+    if (addBtn) addBtn.addEventListener('click', confirmAdd);
 
-    // Fechar modal pelo botão
-    const closeBtn = el('close-uptime-editor-modal');
-    if (closeBtn) {
-      closeBtn.addEventListener('click', closeModal);
-    }
+    var closeBtn = el('close-uptime-editor-modal');
+    if (closeBtn) closeBtn.addEventListener('click', closeModal);
 
-    // Fechar modal clicando no backdrop
     modal.addEventListener('click', function (e) {
       if (e.target === modal) closeModal();
     });
 
-    // Fechar modal com Escape
     document.addEventListener('keydown', function (e) {
       if (e.key === 'Escape' && modal.classList.contains('show')) closeModal();
     });
 
-    // Salvar configuração
-    const saveBtn = el('ue-save-btn');
-    if (saveBtn) {
-      saveBtn.addEventListener('click', saveConfig);
+    var saveBtn = el('ue-save-btn');
+    if (saveBtn) saveBtn.addEventListener('click', saveConfig);
+
+    var newModeTrigger = el('ue-new-mode-trigger');
+    if (newModeTrigger) {
+      newModeTrigger.addEventListener('click', function (e) {
+        e.stopPropagation();
+        var dropdown = el('ue-new-mode-dropdown');
+        if (dropdown.classList.contains('open')) {
+          closeDropdown(newModeTrigger, dropdown);
+        } else {
+          closeAllDropdowns();
+          buildNewModeDropdown();
+          openDropdown(newModeTrigger, dropdown);
+        }
+      });
     }
+
+    document.addEventListener('click', function () {
+      closeAllDropdowns();
+    });
   });
 
   // ── API pública: chamada pelo eventListeners.js ao clicar no lápis ──
@@ -110,16 +176,15 @@
     loadConfig();
   };
 
-  // ── Fecha o modal ──
   function closeModal() {
     modal.classList.remove('show');
+    closeAllDropdowns();
     currentFilePath = null;
     services = [];
     closeAddForm();
     clearFeedback();
   }
 
-  // ── Carrega configuração atual do backend ──
   async function loadConfig() {
     const servicesList = el('ue-services-list');
     try {
@@ -139,7 +204,6 @@
     }
   }
 
-  // ── Renderiza a lista de serviços editável ──
   function renderServices() {
     const servicesList = el('ue-services-list');
     if (!servicesList) return;
@@ -149,7 +213,13 @@
       return;
     }
 
+    const chevronSvg =
+      '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">' +
+        '<polyline points="6 9 12 15 18 9"/>' +
+      '</svg>';
+
     servicesList.innerHTML = services.map(function (s, i) {
+      const modeVal = s.notificationHookMode || 'when-offline';
       return '<div class="ue-service-row" data-index="' + i + '">' +
         '<div class="ue-service-fields">' +
           '<div class="ue-field-group">' +
@@ -166,11 +236,13 @@
           '</div>' +
           '<div class="ue-field-group ue-field-mode">' +
             '<label class="ue-field-label">Notificação</label>' +
-            '<select class="ue-select" data-field="notificationHookMode">' +
-              '<option value="when-offline"' + (s.notificationHookMode === 'when-offline' ? ' selected' : '') + '>Quando offline</option>' +
-              '<option value="when-online"'  + (s.notificationHookMode === 'when-online'  ? ' selected' : '') + '>Quando online</option>' +
-              '<option value="off"'          + (s.notificationHookMode === 'off'          ? ' selected' : '') + '>Desativado</option>' +
-            '</select>' +
+            '<div class="ue-dd-wrapper">' +
+              '<button class="ue-dd-trigger ue-mode-trigger" type="button" data-index="' + i + '">' +
+                '<span class="ue-dd-label">' + escHtml(notifyLabel(modeVal)) + '</span>' +
+                '<span class="ue-dd-chevron">' + chevronSvg + '</span>' +
+              '</button>' +
+              '<div class="ue-dd-dropdown ue-mode-dropdown"></div>' +
+            '</div>' +
           '</div>' +
         '</div>' +
         '<button class="mv-delete-btn ue-delete-btn" data-index="' + i + '" title="Remover serviço">' +
@@ -184,8 +256,7 @@
       '</div>';
     }).join('');
 
-    // Sincroniza edições inline → array em memória
-    servicesList.querySelectorAll('.ue-input, .ue-select').forEach(function (input) {
+    servicesList.querySelectorAll('.ue-input').forEach(function (input) {
       input.addEventListener('input', function () {
         var row = input.closest('.ue-service-row');
         var idx = parseInt(row.dataset.index, 10);
@@ -195,7 +266,21 @@
       });
     });
 
-    // Botões de remoção
+    servicesList.querySelectorAll('.ue-mode-trigger').forEach(function (trigger) {
+      var dropdown = trigger.nextElementSibling;
+      var idx = parseInt(trigger.dataset.index, 10);
+
+      trigger.addEventListener('click', function (e) {
+        e.stopPropagation();
+        var isOpen = dropdown.classList.contains('open');
+        closeAllDropdowns();
+        if (!isOpen) {
+          buildServiceModeDropdown(dropdown, trigger, idx);
+          openDropdown(trigger, dropdown);
+        }
+      });
+    });
+
     servicesList.querySelectorAll('.ue-delete-btn').forEach(function (btn) {
       btn.addEventListener('click', function () {
         var idx = parseInt(btn.dataset.index, 10);
@@ -206,12 +291,37 @@
     });
   }
 
-  // ── Confirmar adição de novo serviço ──
+  function buildServiceModeDropdown(dropdown, trigger, idx) {
+    var currentVal = (services[idx] && services[idx].notificationHookMode) || 'when-offline';
+    dropdown.innerHTML = NOTIFY_OPTIONS.map(function (opt) {
+      return '<button class="ue-dd-option' + (opt.value === currentVal ? ' selected' : '') + '" type="button" data-value="' + opt.value + '">' +
+        '<span class="ue-dd-option-icon">' +
+          '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
+            '<polyline points="20 6 9 17 4 12"/>' +
+          '</svg>' +
+        '</span>' +
+        opt.label +
+      '</button>';
+    }).join('');
+
+    dropdown.querySelectorAll('.ue-dd-option').forEach(function (btn) {
+      btn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        if (services[idx] !== undefined) {
+          services[idx].notificationHookMode = btn.dataset.value;
+        }
+        var label = trigger.querySelector('.ue-dd-label');
+        if (label) label.textContent = notifyLabel(btn.dataset.value);
+        closeDropdown(trigger, dropdown);
+      });
+    });
+  }
+
   function confirmAdd() {
     var name = (el('ue-new-name').value || '').trim();
     var url  = (el('ue-new-url').value  || '').trim();
     var http = (el('ue-new-http').value || '').trim() || '200';
-    var mode = (el('ue-new-mode') ? el('ue-new-mode').value : 'when-offline');
+    var mode = newModeSelected;
 
     if (!url) {
       showFeedback('A URL do serviço é obrigatória.', 'error');
@@ -234,7 +344,6 @@
     renderServices();
   }
 
-  // ── Salva a configuração no backend ──
   async function saveConfig() {
     if (!currentFilePath) return;
 
@@ -242,11 +351,10 @@
     const saveBtn      = el('ue-save-btn');
     const hookInput    = el('ue-notification-hook');
 
-    // Sincroniza campos que podem não ter disparado 'input'
     if (servicesList) {
       servicesList.querySelectorAll('.ue-service-row').forEach(function (row) {
         var idx = parseInt(row.dataset.index, 10);
-        row.querySelectorAll('.ue-input, .ue-select').forEach(function (input) {
+        row.querySelectorAll('.ue-input').forEach(function (input) {
           if (services[idx] !== undefined) {
             services[idx][input.dataset.field] = input.value;
           }
@@ -281,13 +389,9 @@
 
       showFeedback('Configuração salva com sucesso!', 'success');
 
-      // Recarrega o card correspondente
-      var cardEl = document.querySelector('[data-external-source-monitor]');
-      // busca o card cujo monitor bate com o arquivo
+      var cardEl = null;
       document.querySelectorAll('[data-external-source-monitor]').forEach(function (c) {
-        if (c.dataset.externalSourceMonitor === currentFilePath) {
-          cardEl = c;
-        }
+        if (c.dataset.externalSourceMonitor === currentFilePath) cardEl = c;
       });
       if (cardEl && typeof loadCardsContent === 'function') {
         loadCardsContent(cardEl.id);
@@ -301,7 +405,6 @@
     }
   }
 
-  // ── Utilitários ──
   function showFeedback(msg, type) {
     var f = el('ue-feedback');
     if (!f) return;

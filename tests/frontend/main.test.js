@@ -153,6 +153,40 @@ describe('createCardElement', () => {
     expect(card.querySelector('.resize-handle.bottom')).not.toBeNull();
     expect(card.querySelector('.resize-handle.corner')).not.toBeNull();
   });
+
+  test('creates a metric card with .metric-card div', () => {
+    const card = createCardElement({
+      id: 'test-metric',
+      cardType: 'metric',
+      title: 'KPIs',
+      order: 0
+    });
+
+    expect(card.querySelector('.metric-card')).not.toBeNull();
+  });
+
+  test('metric card has a metric-edit-button but no uptime-edit-button', () => {
+    const card = createCardElement({
+      id: 'test-metric-btn',
+      cardType: 'metric',
+      title: 'KPIs',
+      order: 0
+    });
+
+    expect(card.querySelector('.metric-edit-button')).not.toBeNull();
+    expect(card.querySelector('.uptime-edit-button')).toBeNull();
+  });
+
+  test('non-metric card has no metric-edit-button', () => {
+    const card = createCardElement({
+      id: 'no-metric-btn',
+      cardType: 'chart',
+      title: 'Chart',
+      order: 0
+    });
+
+    expect(card.querySelector('.metric-edit-button')).toBeNull();
+  });
 });
 
 // ─── getFrameFromCardElement ───
@@ -381,5 +415,50 @@ describe('updateUrlForView', () => {
 
     expect(replaceStateSpy).toHaveBeenCalledWith({}, '', '/monitoring');
     replaceStateSpy.mockRestore();
+  });
+});
+
+// ─── loadCardsContent — metric dispatch ───
+
+describe('loadCardsContent — metric type dispatch', () => {
+  beforeAll(() => {
+    // Stub all content loaders that loadCardsContent may call
+    global.loadCardContentChart    = jest.fn();
+    global.loadCardContentList     = jest.fn();
+    global.loadCardContentDynamicList = jest.fn();
+    global.loadCardContentMetric   = jest.fn();
+    global.loadCardContentUptime   = jest.fn();
+    global.loadCardContentCveAssets = jest.fn();
+    global.animateCardHighlight    = jest.fn();
+  });
+
+  test('calls loadCardContentMetric for metric cards', async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve([
+        { id: 'kpi', cardType: 'metric', title: 'KPIs', metric: { sources: [] } }
+      ])
+    });
+
+    loadCardsContent();
+    await new Promise(r => setTimeout(r, 10));
+
+    expect(global.loadCardContentMetric).toHaveBeenCalledWith(
+      expect.objectContaining({ id: 'kpi', cardType: 'metric' })
+    );
+  });
+
+  test('does not call loadCardContentMetric for non-metric cards', async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve([
+        { id: 'ch', cardType: 'chart', title: 'Chart' }
+      ])
+    });
+
+    loadCardsContent();
+    await new Promise(r => setTimeout(r, 10));
+
+    expect(global.loadCardContentMetric).not.toHaveBeenCalled();
   });
 });

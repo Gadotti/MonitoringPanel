@@ -15,6 +15,7 @@
     <link rel="stylesheet" href="css/modal-addcard.css">
     <link rel="stylesheet" href="css/modal-views.css">
     <link rel="stylesheet" href="css/dynamic-list.css">
+    <link rel="stylesheet" href="css/metric-card.css">
     <link rel="stylesheet" href="css/modal-cardeditor.css">
     <link rel="stylesheet" href="css/modal-logviewer.css">
     <link rel="stylesheet" href="css/modal-uptime.css">
@@ -309,11 +310,17 @@
               </div>
               <div class="modal-row">
                 <label>Modo de notificação</label>
-                <select id="ue-new-mode" class="ue-select">
-                  <option value="when-offline">Quando offline</option>
-                  <option value="when-online">Quando online</option>
-                  <option value="off">Desativado</option>
-                </select>
+                <div class="ue-dd-wrapper">
+                  <button class="ue-dd-trigger" id="ue-new-mode-trigger" type="button">
+                    <span class="ue-dd-label" id="ue-new-mode-label">Quando offline</span>
+                    <span class="ue-dd-chevron">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="6 9 12 15 18 9"/>
+                      </svg>
+                    </span>
+                  </button>
+                  <div class="ue-dd-dropdown" id="ue-new-mode-dropdown"></div>
+                </div>
               </div>
             </div>
             <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:4px;">
@@ -326,11 +333,9 @@
         <!-- Feedback -->
         <div class="mv-feedback" id="ue-feedback"></div>
 
-        <div class="modal-actions">
-          <div class="right-actions">
-            <button class="btn-close" id="close-uptime-editor-modal">Fechar</button>
-            <button class="btn-apply" id="ue-save-btn">Salvar</button>
-          </div>
+        <div class="add-card-actions">
+          <button class="btn-close" id="close-uptime-editor-modal">Fechar</button>
+          <button class="btn-apply" id="ue-save-btn">Salvar</button>
         </div>
       </div>
     </div>
@@ -385,7 +390,7 @@
               <label for="ce-card-description">Descrição</label>
               <input type="text" id="ce-card-description" placeholder="Breve descrição" autocomplete="off">
             </div>
-            <div class="modal-row">
+            <div class="modal-row" id="ce-source-row">
               <label for="ce-card-source">sourceItems (caminho do arquivo de dados)</label>
               <input type="text" id="ce-card-source" placeholder="public/local-data/file.json" autocomplete="off">
             </div>
@@ -396,6 +401,7 @@
           </div>
           <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:4px;">
             <button class="btn-apply ce-format-btn" id="ce-format-btn" type="button" style="display:none;">Configurar formato</button>
+            <button class="btn-apply ce-metric-btn" id="ce-metric-btn" type="button" style="display:none;">Configurar métrica</button>
             <button class="btn-close" id="ce-cancel-btn" type="button">Voltar</button>
             <button class="btn-apply" id="ce-confirm-btn" type="button">Confirmar</button>
           </div>
@@ -447,8 +453,23 @@
           </div>
         </div>
 
+        <!-- Painel de configuração de métrica -->
+        <div id="ce-metric-panel" style="display:none;">
+          <div class="mv-list-label">Configurar fontes da métrica</div>
+          <div class="ce-form-grid">
+            <div class="ce-metric-section-label">Cards disponíveis</div>
+            <div id="ce-metric-available" class="ce-metric-list"></div>
+            <div class="ce-metric-section-label" style="margin-top:10px;">Fontes selecionadas</div>
+            <div id="ce-metric-sources" class="ce-metric-list"></div>
+          </div>
+          <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:4px;">
+            <button class="btn-close" id="ce-metric-back" type="button">Voltar ao formulário</button>
+          </div>
+        </div>
+
         <div class="add-card-actions">
           <button class="btn-close" id="close-card-editor-modal">Fechar</button>
+          <button class="btn-apply" id="ce-metric-save" type="button" style="display:none;">Salvar</button>
         </div>
       </div>
     </div>
@@ -521,6 +542,7 @@
     <script src="js/cardcontent-uptime.js"></script>
     <script src="js/cardcontent-cve.js"></script>
     <script src="js/cardcontent-dynamic-list.js"></script>
+    <script src="js/cardcontent-metric.js"></script>
     <script src="js/eventListeners.js"></script>
     <script src="js/socketListeners.js"></script>
     <script src="js/view-selector.js"></script>

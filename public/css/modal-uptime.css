@@ -186,3 +186,112 @@
   flex-shrink: 0;
   align-self: center;
 }
+
+/* Custom dropdown — notificação (padrão do sistema) */
+.ue-dd-wrapper {
+  position: relative;
+}
+
+.ue-dd-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-mid);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-size: 0.82rem;
+  font-family: inherit;
+  padding: 5px 8px;
+  cursor: pointer;
+  text-align: left;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.ue-dd-trigger:hover {
+  background: rgba(255, 255, 255, 0.09);
+  border-color: rgba(255, 255, 255, 0.16);
+}
+
+.ue-dd-trigger.open {
+  background: rgba(255, 255, 255, 0.09);
+  border-color: rgba(204, 120, 92, 0.5);
+}
+
+.ue-dd-label {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ue-dd-chevron {
+  flex-shrink: 0;
+  color: var(--text-muted);
+  display: flex;
+  transition: transform 0.2s ease;
+}
+
+.ue-dd-trigger.open .ue-dd-chevron {
+  transform: rotate(180deg);
+}
+
+.ue-dd-dropdown {
+  position: fixed;
+  z-index: 9999;
+  background: var(--surface-bg);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 2px 8px rgba(0, 0, 0, 0.3);
+  padding: 4px;
+  display: none;
+}
+
+.ue-dd-dropdown.open {
+  display: block;
+  animation: dropdown-in 0.15s ease forwards;
+}
+
+.ue-dd-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  background: none;
+  border: none;
+  border-radius: 7px;
+  color: var(--text);
+  font-size: 0.82rem;
+  font-family: inherit;
+  padding: 7px 8px;
+  cursor: pointer;
+  text-align: left;
+  transition: background-color 0.12s ease, color 0.12s ease;
+}
+
+.ue-dd-option:hover {
+  background: rgba(255, 255, 255, 0.07);
+  color: var(--text-bright);
+}
+
+.ue-dd-option.selected {
+  color: var(--text-bright);
+  font-weight: 500;
+}
+
+.ue-dd-option-icon {
+  width: 14px;
+  height: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  flex-shrink: 0;
+}
+
+.ue-dd-option.selected .ue-dd-option-icon {
+  opacity: 1;
+  color: var(--accent);
+}

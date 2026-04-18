@@ -23,7 +23,7 @@ Local-first architecture: data produced externally by Python scripts (uptime, CV
 │   ├── api.layout.test.js             # GET /api/layout/:viewName
 │   ├── api.layout.save.test.js        # POST /api/layout/:viewName
 │   ├── api.meta.test.js               # GET /api/views, /api/cards, /version
-│   ├── api.csv.test.js                # GET /api/partial-csv
+│   ├── api.csv.test.js                # GET /api/partial-csv, GET /api/csv-count
 │   ├── api.chartdata.test.js          # POST /api/chart-data
 │   ├── api.views.manage.test.js       # POST /api/views, DELETE /api/views
 │   ├── api.logs.test.js               # GET /api/logs, GET /api/logs/:filename
@@ -35,8 +35,11 @@ Local-first architecture: data produced externally by Python scripts (uptime, CV
 │   └── frontend/
 │       ├── load-script.js             # Helper: loads vanilla JS into Jest global scope
 │       ├── helpers.test.js            # csvToJson, parseCSVLine
-│       ├── main.test.js               # createCardElement, getLayoutConfig, adjustFrameZoom, etc.
+│       ├── main.test.js               # createCardElement, getLayoutConfig, adjustFrameZoom, loadCardsContent dispatch
 │       ├── cardcontent-cve.test.js    # CVE assets toggle, assessment panel, dropdowns
+│       ├── cardcontent-metric.test.js # loadCardContentMetric — all source types, subscriptions
+│       ├── cardeditor.test.js         # updateSourceRowVisibility, openMetricEditor
+│       ├── uptimeeditor.test.js       # custom dropdown (open/close/select), modal lifecycle
 │       └── healthcheck.test.js        # Health check modal open/close/render
 │
 ├── public/
@@ -52,6 +55,7 @@ Local-first architecture: data produced externally by Python scripts (uptime, CV
 │   │   ├── uptime-card.css      # Uptime card
 │   │   ├── cve-assets.css       # CVE assets board
 │   │   ├── dynamic-list.css    # Dynamic list card
+│   │   ├── metric-card.css     # Metric KPI card
 │   │   ├── modal-addcard.css    # Add card modal
 │   │   ├── modal-views.css      # Manage views modal
 │   │   ├── modal-cardeditor.css # Card editor modal
@@ -67,6 +71,7 @@ Local-first architecture: data produced externally by Python scripts (uptime, CV
 │       ├── cardcontent-uptime.js # Uptime card content loader
 │       ├── cardcontent-cve.js   # CVE assets content loader + assessment dropdown
 │       ├── cardcontent-dynamic-list.js # Dynamic list content loader (custom separator/fields)
+│       ├── cardcontent-metric.js # Metric card content loader (KPI aggregation)
 │       ├── eventListeners.js    # DOM event wiring, interaction init
 │       ├── carddrag.js          # Drag-and-drop card reordering
 │       ├── resizecards.js       # Mouse-resize card spans
@@ -165,6 +170,7 @@ Python script → writes file (CSV/JSON)
 | `uptime` | Status list | JSON (direct fetch from `public/`) |
 | `cve-assets` | Collapsible table | JSON (direct fetch from `public/`) |
 | `dynamic-list` | Configurable `<ul>` list | CSV via `/api/partial-csv` (custom separator) |
+| `metric` | KPI numeric counter | Aggregated from source card files |
 | `frame` | `<iframe>` with zoom | URL or local HTML |
 
 Card definitions live in `cards/cards-list.json`, schema in `card.schema.json`.
@@ -184,6 +190,7 @@ Card definitions live in `cards/cards-list.json`, schema in `card.schema.json`.
 | `GET` | `/api/layout/:viewName` | View layout (empty array if not found) |
 | `POST` | `/api/layout/:viewName` | Save full view layout |
 | `GET` | `/api/partial-csv?file=&limit=N` | Last N lines of CSV (preserves header) |
+| `GET` | `/api/csv-count?file=` | Total data row count in a CSV (excl. header and blank lines) |
 | `GET` | `/api/logs` | List `.log` files in `scripts/logs/` |
 | `GET` | `/api/logs/:filename` | Log file content (validates path traversal) |
 | `GET` | `/api/uptime-config?file=` | Uptime config JSON (validates path traversal) |
@@ -210,6 +217,11 @@ Card definitions live in `cards/cards-list.json`, schema in `card.schema.json`.
 - **Expand/collapse via `.expanded` class** + CSS `max-height` transitions. Exception: elements using `display: none/block` directly via JS — in that case avoid `overflow: hidden` on the parent.
 - **Dependency injection** — `child_process.spawn` passed via `createApp({ spawn })`, not imported via destructuring at the top.
 - **Duplicate slugify** — the same function exists in `app.js` (backend) and `manageviews.js` (frontend). Keep them consistent.
+
+#### Custom dropdown (combobox) pattern
+
+**Never use a native `<select>` element.** All dropdowns must follow the custom pattern for visual consistency.
+The `dropdown-in` keyframe is defined in `drawer.css` and is globally available.
 
 ### Python
 
