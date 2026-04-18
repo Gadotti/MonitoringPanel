@@ -20,7 +20,7 @@ async function loadCardContentUptime(card) {
 
     servicesStatus.forEach(service => {
       const url = service.url;
-      const name = service.name ?? service.url;
+      const name = service.name || service.url;
       const status = service.status.toLowerCase();
       const statusText = status === 'online' ? 'Online' : 'Offline';
 
