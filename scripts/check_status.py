@@ -1,3 +1,5 @@
+#Version 2.0
+
 import asyncio
 import aiohttp
 import json
@@ -31,6 +33,24 @@ def _write_log(message: str, log_dir: Path) -> None:
         f.write(f"{timestamp}: {message}\n")
 
 
+async def _tcp_reachable(host: str, port: int, timeout) -> bool:
+    """Returns True if a TCP connection can be established to host:port."""
+    try:
+        timeout_secs = timeout.total if hasattr(timeout, 'total') else float(timeout)
+        _, writer = await asyncio.wait_for(
+            asyncio.open_connection(host, port),
+            timeout=timeout_secs,
+        )
+        writer.close()
+        try:
+            await writer.wait_closed()
+        except Exception:
+            pass
+        return True
+    except Exception:
+        return False
+
+
 async def check_service_status(session, url, expectedHttpRespose, timeout):
     try:
         async with session.get(url, timeout=timeout) as response:
@@ -42,6 +62,20 @@ async def check_service_status(session, url, expectedHttpRespose, timeout):
 
             print(f"URL: {url}: Status: {response.status}")
             return "online" if status_ok else "offline"
+
+    except aiohttp.ClientResponseError as e:
+        # Server responded but with non-HTTP framing (e.g. raw "Unauthorized").
+        # Fall back to TCP probe: if the port is open the service is up.
+        from urllib.parse import urlparse
+        parsed = urlparse(url)
+        host = parsed.hostname
+        port = parsed.port or (443 if parsed.scheme == 'https' else 80)
+        reachable = await _tcp_reachable(host, port, timeout)
+        if reachable:
+            print(f"URL: {url}: resposta não-HTTP recebida ({type(e).__name__}), TCP online")
+            return "online"
+        print(f"URL: {url}: resposta não-HTTP e TCP falhou ({type(e).__name__})")
+        return "offline"
 
     except Exception as e:
         print(f"Erro ao verificar {url}: {type(e).__name__} - {e}")
