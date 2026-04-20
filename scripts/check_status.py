@@ -1,5 +1,6 @@
-#Version 2.0
+#Version 2.1
 
+import sys
 import asyncio
 import aiohttp
 import json
@@ -7,6 +8,9 @@ import argparse
 from urllib.parse import quote
 from datetime import datetime, UTC
 from pathlib import Path
+
+if hasattr(sys.stdout, 'reconfigure'):
+    sys.stdout.reconfigure(encoding='utf-8', errors='replace')
 
 # ---- Constantes de log ----
 _SCRIPT_DIR  = Path(__file__).parent
