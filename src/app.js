@@ -4,6 +4,7 @@ const express  = require('express');
 const fs       = require('fs');
 const path     = require('path');
 const readline = require('readline');
+const { verifyPassword, createSession, validateSession, destroySession } = require('./auth');
 
 /**
  * Cria e retorna a aplicação Express configurada.
@@ -23,12 +24,132 @@ function createApp(config = {}) {
   const CONFIGS_PATH = path.join(rootDir, 'configs');
   const VIEWS_PATH   = path.join(CONFIGS_PATH, 'views.json');
   const CARDS_PATH   = path.join(rootDir, 'cards', 'cards-list.json');
+  const USERS_PATH   = path.join(CONFIGS_PATH, 'users.json');
 
   const app = express();
 
   app.use(express.static(path.join(rootDir, 'public')));
   app.use(express.json());
   app.use('/local-pages', express.static(path.join(rootDir, 'local-pages')));
+
+  // ------------------------------------------------------------------ auth helpers
+
+  function readUsers() {
+    try {
+      if (!fs.existsSync(USERS_PATH)) return [];
+      return JSON.parse(fs.readFileSync(USERS_PATH, 'utf8'));
+    } catch {
+      return [];
+    }
+  }
+
+  function isAuthEnabled() {
+    const users = readUsers();
+    return Array.isArray(users) && users.length > 0;
+  }
+
+  function getToken(req) {
+    const auth = req.headers.authorization || '';
+    if (auth.startsWith('Bearer ')) return auth.slice(7).trim();
+    return null;
+  }
+
+  function requireAuth(req, res, next) {
+    const token   = getToken(req);
+    const session = validateSession(token);
+    if (!session) return res.status(401).json({ error: 'Não autorizado.' });
+    req.session = session;
+    next();
+  }
+
+  function requireRole(role) {
+    return (req, res, next) => {
+      if (!req.session) return next(); // auth bypassed (no users configured)
+      if (role === 'editor' && req.session.role !== 'editor') {
+        return res.status(403).json({ error: 'Permissão insuficiente.' });
+      }
+      next();
+    };
+  }
+
+  // Rate limiting — IP → { count, windowStart }
+  const loginAttempts = new Map();
+  const MAX_ATTEMPTS  = 5;
+  const WINDOW_MS     = 15 * 60 * 1000;
+
+  // ------------------------------------------------------------------ GET /ping (unprotected)
+  app.get('/ping', (req, res) => {
+    res.json({ status: 'ok' });
+  });
+
+  // ------------------------------------------------------------------ GET /api/auth/status
+  app.get('/api/auth/status', (req, res) => {
+    res.json({ authEnabled: isAuthEnabled() });
+  });
+
+  // ------------------------------------------------------------------ POST /api/auth/login
+  app.post('/api/auth/login', async (req, res) => {
+    const ip  = req.ip || (req.socket && req.socket.remoteAddress) || 'unknown';
+    const now = Date.now();
+
+    const attempts = loginAttempts.get(ip);
+    if (attempts) {
+      if (now - attempts.windowStart < WINDOW_MS) {
+        if (attempts.count >= MAX_ATTEMPTS) {
+          const remaining = Math.ceil((WINDOW_MS - (now - attempts.windowStart)) / 60000);
+          return res.status(429).json({ error: `Muitas tentativas. Tente novamente em ${remaining} minuto(s).` });
+        }
+      } else {
+        loginAttempts.delete(ip);
+      }
+    }
+
+    const { username, password } = req.body || {};
+    const users = readUsers();
+    const user  = users.find(u => u.username === username);
+
+    if (!user || !verifyPassword(password, user.salt, user.hash)) {
+      const cur = loginAttempts.get(ip);
+      if (cur) {
+        cur.count += 1;
+      } else {
+        loginAttempts.set(ip, { count: 1, windowStart: now });
+      }
+      await new Promise(r => setTimeout(r, 200));
+      return res.status(401).json({ error: 'Credenciais inválidas.' });
+    }
+
+    const token = createSession(user.username, user.role);
+    res.json({ token, role: user.role, name: user.name });
+  });
+
+  // ------------------------------------------------------------------ POST /api/auth/logout
+  app.post('/api/auth/logout', (req, res) => {
+    const token = getToken(req);
+    if (token) destroySession(token);
+    res.sendStatus(200);
+  });
+
+  // ------------------------------------------------------------------ GET /api/auth/me
+  app.get('/api/auth/me', (req, res) => {
+    if (!isAuthEnabled()) {
+      return res.json({ username: 'admin', role: 'editor', name: 'Admin' });
+    }
+    const token   = getToken(req);
+    const session = validateSession(token);
+    if (!session) return res.status(401).json({ error: 'Não autorizado.' });
+    const users = readUsers();
+    const user  = users.find(u => u.username === session.username);
+    res.json({ username: session.username, role: session.role, name: user ? user.name : session.username });
+  });
+
+  // ------------------------------------------------------------------ Global auth middleware for /api/*
+  // Bypassed automatically when no users are configured (backward compatible with tests)
+  app.use('/api', (req, res, next) => {
+    if (req.path.startsWith('/auth/')) return next();
+    if (!isAuthEnabled()) return next();
+    requireAuth(req, res, next);
+  });
 
   // ------------------------------------------------------------------ helpers
   function layoutPath(viewName) {
@@ -72,7 +193,7 @@ function createApp(config = {}) {
   });
 
   // ------------------------------------------------------------------ POST /api/layout/:viewName
-  app.post('/api/layout/:viewName', (req, res) => {
+  app.post('/api/layout/:viewName', requireRole('editor'), (req, res) => {
     const viewPath = layoutPath(req.params.viewName);
 
     fs.writeFile(viewPath, JSON.stringify(req.body, null, 2), 'utf8', (err) => {
@@ -98,7 +219,7 @@ function createApp(config = {}) {
   });
 
   // ------------------------------------------------------------------ POST /api/views
-  app.post('/api/views', (req, res) => {
+  app.post('/api/views', requireRole('editor'), (req, res) => {
     const { title } = req.body;
 
     if (!title || !title.trim()) {
@@ -148,7 +269,7 @@ function createApp(config = {}) {
   });
 
   // ------------------------------------------------------------------ DELETE /api/views/:viewName
-  app.delete('/api/views/:viewName', (req, res) => {
+  app.delete('/api/views/:viewName', requireRole('editor'), (req, res) => {
     const { viewName } = req.params;
 
     fs.readFile(VIEWS_PATH, 'utf8', (err, data) => {
@@ -200,7 +321,7 @@ function createApp(config = {}) {
   });
 
   // ------------------------------------------------------------------ POST /api/cards
-  app.post('/api/cards', (req, res) => {
+  app.post('/api/cards', requireRole('editor'), (req, res) => {
     const cards = req.body;
 
     if (!Array.isArray(cards)) {
@@ -231,7 +352,7 @@ function createApp(config = {}) {
   });
 
   // ------------------------------------------------------------------ DELETE /api/cards/:cardId
-  app.delete('/api/cards/:cardId', (req, res) => {
+  app.delete('/api/cards/:cardId', requireRole('editor'), (req, res) => {
     const cardId = req.params.cardId;
 
     fs.readFile(CARDS_PATH, 'utf8', (err, data) => {
@@ -460,7 +581,7 @@ function createApp(config = {}) {
   });
 
   // ------------------------------------------------------------------ POST /api/uptime-config
-  app.post('/api/uptime-config', (req, res) => {
+  app.post('/api/uptime-config', requireRole('editor'), (req, res) => {
     const filePath = req.query.file;
     if (!filePath) {
       return res.status(400).json({ error: 'Parâmetro "file" é obrigatório.' });
@@ -516,7 +637,7 @@ function createApp(config = {}) {
   });
 
   // ------------------------------------------------------------------ POST /api/cve-assessment
-  app.post('/api/cve-assessment', (req, res) => {
+  app.post('/api/cve-assessment', requireRole('editor'), (req, res) => {
     const filePath = req.query.file;
     if (!filePath) {
       return res.status(400).json({ error: 'Parâmetro "file" é obrigatório.' });
@@ -573,7 +694,7 @@ function createApp(config = {}) {
   });
 
   // ------------------------------------------------------------------ GET /api/backup
-  app.get('/api/backup', (req, res) => {
+  app.get('/api/backup', requireRole('editor'), (req, res) => {
     const archiver = require('archiver');
 
     const BACKUP_DIRS = [
@@ -613,6 +734,11 @@ function createApp(config = {}) {
     }
 
     archive.finalize();
+  });
+
+  // ------------------------------------------------------------------ Login page
+  app.get('/login', (req, res) => {
+    res.sendFile(path.join(rootDir, 'public', 'login.html'));
   });
 
   // ------------------------------------------------------------------ SPA fallback

@@ -30,7 +30,8 @@ function subscribeCardToFile(cardId, filePath) {
 }
 
 function signSocketListeners() {
-    const socket = new WebSocket(`ws://${WS_HOST}:${WS_PORT}`);
+    const token  = localStorage.getItem('painel_token') || '';
+    const socket = new WebSocket(`ws://${WS_HOST}:${WS_PORT}?token=${encodeURIComponent(token)}`);
     _ws = socket;
 
     socket.addEventListener('open', () => {

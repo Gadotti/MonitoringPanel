@@ -11,6 +11,29 @@ Self-hosted, real-time security and infrastructure monitoring dashboard. Display
 
 ---
 
+## Authentication
+
+Users are created exclusively via CLI — there is no registration form in the UI.
+
+```bash
+node create-user.js                     # create a new user (interactive)
+node create-user.js --list              # list all users
+node create-user.js --delete <username> # remove a user
+node create-user.js --reset <username>  # reset a user's password
+```
+
+**Roles**
+
+| Role | Access |
+|---|---|
+| `viewer` | Read-only — can view all cards and dashboards |
+| `editor` | Full access — can create, edit, delete cards, views, and download backups |
+
+Sessions are stored in memory and are lost when the server restarts; users simply log in again.
+The `editor` role is required for all write operations (layout changes, card edits, backup download).
+
+---
+
 ## Features
 
 - **Multiple views** — independent layouts, switchable from the sidebar
@@ -41,11 +64,18 @@ Self-hosted, real-time security and infrastructure monitoring dashboard. Display
 
 ```bash
 npm install
+
+# Create the first user (enables authentication)
+node create-user.js
+
 npm start
-# → http://localhost:3123
+# → http://localhost:3123/login
 ```
 
 Port and bind address are configured in `server-config.json` and `websocket-config.json`.
+
+If no users exist, the dashboard runs without authentication — useful during initial setup.
+Once the first user is created, all API endpoints require a valid session.
 
 ---
 

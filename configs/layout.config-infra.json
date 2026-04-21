@@ -62,5 +62,13 @@
     "columns": 3,
     "rows": 2,
     "zoom": 1
+  },
+  {
+    "id": "logs-sistema",
+    "order": 8,
+    "title": "Logs do Sistema",
+    "columns": 1,
+    "rows": 1,
+    "zoom": 1
   }
 ]

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login — Painel 42</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/modal-login.css">
+  </head>
+  <body class="login-page">
+
+    <div class="login-wrapper">
+      <div class="login-card">
+
+        <div class="login-logo">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="7" height="7" rx="1"/>
+            <rect x="14" y="3" width="7" height="7" rx="1"/>
+            <rect x="3" y="14" width="7" height="7" rx="1"/>
+            <rect x="14" y="14" width="7" height="7" rx="1"/>
+          </svg>
+          <span class="login-brand">Painel 42</span>
+        </div>
+
+        <h1 class="login-title">Acesso ao painel</h1>
+
+        <form id="login-form" autocomplete="off" novalidate>
+          <div class="login-field">
+            <label for="login-username">Usuário</label>
+            <input type="text" id="login-username" autocomplete="username" placeholder="seu-usuario" required>
+          </div>
+          <div class="login-field">
+            <label for="login-password">Senha</label>
+            <input type="password" id="login-password" autocomplete="current-password" placeholder="••••••••••••" required>
+          </div>
+          <p class="login-error" id="login-error"></p>
+          <button type="submit" class="login-btn">Entrar</button>
+        </form>
+
+      </div>
+    </div>
+
+    <script src="js/login.js"></script>
+  </body>
+</html>

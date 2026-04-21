@@ -5,7 +5,8 @@ const path = require('path');
 const WebSocket = require('ws');
 const chokidar  = require('chokidar');
 
-const { createApp } = require('./src/app');
+const { createApp }     = require('./src/app');
+const { validateSession } = require('./src/auth');
 
 // ------------------------------------------------------------------ configs
 const SERVERCONFIG_PATH = path.join(__dirname, 'server-config.json');
@@ -56,7 +57,23 @@ function broadcast(messageObj) {
   });
 }
 
-wss.on('connection', (ws) => {
+wss.on('connection', (ws, req) => {
+  const urlObj = new URL(req.url, 'http://localhost');
+  const token  = urlObj.searchParams.get('token') || '';
+
+  // Reject if auth is configured and token is invalid
+  const usersPath = path.join(__dirname, 'configs', 'users.json');
+  let authEnabled = false;
+  try {
+    const users = JSON.parse(fs.readFileSync(usersPath, 'utf8'));
+    authEnabled = Array.isArray(users) && users.length > 0;
+  } catch { /* no users file — auth not configured */ }
+
+  if (authEnabled && !validateSession(token)) {
+    ws.close(4401, 'Unauthorized');
+    return;
+  }
+
   console.log('Cliente WebSocket conectado.');
   clients.add(ws);
 
