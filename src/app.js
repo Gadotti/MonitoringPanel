@@ -4,7 +4,7 @@ const express  = require('express');
 const fs       = require('fs');
 const path     = require('path');
 const readline = require('readline');
-const { verifyPassword, createSession, validateSession, destroySession } = require('./auth');
+const { verifyPassword, createSession, validateSession, destroySession, loadSessions, exportSessions } = require('./auth');
 
 /**
  * Cria e retorna a aplicação Express configurada.
@@ -21,10 +21,22 @@ function createApp(config = {}) {
   // Injeção de dependência: permite substituir em testes sem jest.mock()
   const spawnFn    = config.spawn      || require('child_process').spawn;
 
-  const CONFIGS_PATH = path.join(rootDir, 'configs');
-  const VIEWS_PATH   = path.join(CONFIGS_PATH, 'views.json');
-  const CARDS_PATH   = path.join(rootDir, 'cards', 'cards-list.json');
-  const USERS_PATH   = path.join(CONFIGS_PATH, 'users.json');
+  const CONFIGS_PATH   = path.join(rootDir, 'configs');
+  const VIEWS_PATH     = path.join(CONFIGS_PATH, 'views.json');
+  const CARDS_PATH     = path.join(rootDir, 'cards', 'cards-list.json');
+  const USERS_PATH     = path.join(CONFIGS_PATH, 'users.json');
+  const SESSIONS_PATH  = path.join(CONFIGS_PATH, 'sessions.json');
+
+  // Load persisted sessions on startup
+  try {
+    const raw = fs.readFileSync(SESSIONS_PATH, 'utf8');
+    loadSessions(JSON.parse(raw));
+  } catch { /* file absent or corrupt — start with empty sessions */ }
+
+  function persistSessions() {
+    const data = JSON.stringify(exportSessions(), null, 2);
+    fs.writeFile(SESSIONS_PATH, data, 'utf8', () => {});
+  }
 
   const app = express();
 
@@ -120,13 +132,14 @@ function createApp(config = {}) {
     }
 
     const token = createSession(user.username, user.role);
+    persistSessions();
     res.json({ token, role: user.role, name: user.name });
   });
 
   // ------------------------------------------------------------------ POST /api/auth/logout
   app.post('/api/auth/logout', (req, res) => {
     const token = getToken(req);
-    if (token) destroySession(token);
+    if (token) { destroySession(token); persistSessions(); }
     res.sendStatus(200);
   });
 

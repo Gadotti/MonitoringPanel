@@ -7,6 +7,8 @@ const {
   createSession,
   validateSession,
   destroySession,
+  loadSessions,
+  exportSessions,
 } = require('../src/auth');
 
 // ─── hashPassword / verifyPassword ───
@@ -89,6 +91,61 @@ describe('session lifecycle', () => {
 
   test('destroySession on unknown token does not throw', () => {
     expect(() => destroySession('non-existent')).not.toThrow();
+  });
+
+  test('createSession replaces existing session for same user', () => {
+    const token1 = createSession('carol', 'viewer');
+    const token2 = createSession('carol', 'viewer');
+    expect(token1).not.toBe(token2);
+    expect(validateSession(token1)).toBeNull();
+    expect(validateSession(token2)).not.toBeNull();
+  });
+});
+
+// ─── loadSessions / exportSessions ───
+
+describe('loadSessions / exportSessions', () => {
+  beforeEach(() => {
+    // Start clean
+    loadSessions({});
+  });
+
+  test('exportSessions returns empty object when no sessions', () => {
+    expect(exportSessions()).toEqual({});
+  });
+
+  test('loadSessions populates sessions from plain object', () => {
+    loadSessions({ 'tok-abc': { username: 'dave', role: 'editor' } });
+    const s = validateSession('tok-abc');
+    expect(s).not.toBeNull();
+    expect(s.username).toBe('dave');
+    expect(s.role).toBe('editor');
+  });
+
+  test('loadSessions clears existing sessions before loading', () => {
+    const token = createSession('eve', 'viewer');
+    loadSessions({ 'tok-xyz': { username: 'frank', role: 'viewer' } });
+    expect(validateSession(token)).toBeNull();
+    expect(validateSession('tok-xyz')).not.toBeNull();
+  });
+
+  test('loadSessions ignores entries with missing fields', () => {
+    loadSessions({ 'bad1': { username: 'ghost' }, 'bad2': { role: 'viewer' }, 'bad3': null });
+    expect(validateSession('bad1')).toBeNull();
+    expect(validateSession('bad2')).toBeNull();
+    expect(validateSession('bad3')).toBeNull();
+  });
+
+  test('exportSessions round-trips through loadSessions', () => {
+    createSession('heidi', 'editor');
+    const snapshot = exportSessions();
+    const entries  = Object.values(snapshot);
+    expect(entries).toHaveLength(1);
+    expect(entries[0].username).toBe('heidi');
+
+    loadSessions(snapshot);
+    const token = Object.keys(snapshot)[0];
+    expect(validateSession(token)).toMatchObject({ username: 'heidi', role: 'editor' });
   });
 });
 

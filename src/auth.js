@@ -25,6 +25,10 @@ function generateToken() {
 const sessions = new Map();
 
 function createSession(username, role) {
+  // Remove any existing session for the same user (one session per user)
+  for (const [t, s] of sessions) {
+    if (s.username === username) { sessions.delete(t); break; }
+  }
   const token = generateToken();
   sessions.set(token, { username, role });
   return token;
@@ -41,6 +45,25 @@ function destroySession(token) {
   sessions.delete(token);
 }
 
+function loadSessions(data) {
+  sessions.clear();
+  if (data && typeof data === 'object') {
+    for (const [token, session] of Object.entries(data)) {
+      if (session && session.username && session.role) {
+        sessions.set(token, { username: session.username, role: session.role });
+      }
+    }
+  }
+}
+
+function exportSessions() {
+  const obj = {};
+  for (const [token, session] of sessions) {
+    obj[token] = { username: session.username, role: session.role };
+  }
+  return obj;
+}
+
 module.exports = {
   hashPassword,
   verifyPassword,
@@ -48,4 +71,6 @@ module.exports = {
   createSession,
   validateSession,
   destroySession,
+  loadSessions,
+  exportSessions,
 };
