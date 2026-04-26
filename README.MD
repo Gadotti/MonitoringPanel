@@ -103,7 +103,8 @@ Once the first user is created, all API endpoints require a valid session.
 │   └── card.schema.json
 ├── configs/               # Views and layouts (gitignored, per-instance)
 ├── scripts/
-│   ├── check_status.py    # Async uptime checker (asyncio + aiohttp)
+│   ├── check_status.py    # Async uptime checker for HTTP/TCP services (asyncio + aiohttp)
+│   ├── check_systemd.py   # Async status checker for Linux systemd services
 │   └── count_events_by_weekday.py
 └── tests/                 # Jest + Supertest — backend and frontend unit tests
 ```
@@ -112,10 +113,54 @@ Once the first user is created, all API endpoints require a valid session.
 
 ## Python Scripts
 
-| Script | Purpose |
+Both uptime scripts share the same JSON structure and CLI interface. The config file is read and written in-place on every run.
+
+**Shared JSON format (`public/local-data-uptimes/*.json`)**
+
+```json
+{
+  "lastChecked": "",
+  "notificationHook": "http://host/notify?name={{name}}&status={{status}}&date={{lastStatusOffline}}",
+  "servicesStatus": [
+    {
+      "name": "Display name",
+      "status": "",
+      "notificationHookMode": "when-offline",
+      "lastStatusOnline": "",
+      "lastStatusOffline": ""
+    }
+  ]
+}
+```
+
+`notificationHookMode` accepts `"when-offline"`, `"when-online"`, or `"off"`. Notifications fire only on state transitions to avoid repeated alerts.
+
+| Script | Purpose | Service field | Extra fields |
+|---|---|---|---|
+| `scripts/check_status.py` | Checks HTTP/TCP service availability | `url` | `expectedHttpRespose` (e.g. `"200"` or `"0-399"`) |
+| `scripts/check_systemd.py` | Checks Linux systemd service status via `systemctl is-active` | `service` (unit name, e.g. `nginx`) | — |
+| `scripts/count_events_by_weekday.py` | Aggregates a CSV into per-weekday counts for chart cards | — | — |
+
+**Usage**
+
+```bash
+python scripts/check_status.py public/local-data-uptimes/uptime-results.json
+python scripts/check_systemd.py public/local-data-uptimes/uptime-systemd.json
+
+# Options (both scripts)
+--timeout 10          # systemctl/request timeout in seconds (default: 5)
+--log-dir /path/logs  # log output directory (default: scripts/logs/)
+```
+
+Notification hook placeholders:
+
+| Placeholder | Description |
 |---|---|
-| `scripts/check_status.py` | Checks URL availability, writes results to `public/local-data-uptimes/` |
-| `scripts/count_events_by_weekday.py` | Aggregates a CSV into per-weekday counts for chart cards |
+| `{{name}}` | Display name of the service |
+| `{{url}}` | Service URL (`check_status.py` only) |
+| `{{service}}` | Systemd unit name (`check_systemd.py` only) |
+| `{{status}}` | Current status (`online` or `offline`) |
+| `{{lastStatusOffline}}` | ISO timestamp of last offline event |
 
 ---
 

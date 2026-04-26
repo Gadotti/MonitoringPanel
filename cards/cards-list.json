@@ -481,8 +481,18 @@
         {
           "cardId": "uptime-results",
           "uptimeFilter": "offline"
+        },
+        {
+          "cardId": "systemd-check",
+          "uptimeFilter": "offline"
         }
       ]
     }
+  },
+  {
+    "id": "systemd-check",
+    "title": "Serviços Linux",
+    "cardType": "uptime",
+    "sourceItems": "public/local-data-uptimes/uptime-systemd-example.json"
   }
 ]

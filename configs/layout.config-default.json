@@ -40,11 +40,11 @@
     "zoom": 1
   },
   {
-    "id": "logs-sistema",
+    "id": "systemd-check",
     "order": 5,
-    "title": "Logs do Sistema",
+    "title": "Serviços Linux",
     "columns": 1,
-    "rows": 1,
+    "rows": 2,
     "zoom": 1
   },
   {
