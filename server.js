@@ -8,6 +8,8 @@ const chokidar  = require('chokidar');
 const { createApp }     = require('./src/app');
 const { validateSession } = require('./src/auth');
 
+const VERBOSE = process.argv.includes('--verbose');
+
 // ------------------------------------------------------------------ configs
 const SERVERCONFIG_PATH = path.join(__dirname, 'server-config.json');
 const WSCONFIG_PATH     = path.join(__dirname, 'public', 'websocket-config.json');
@@ -74,7 +76,7 @@ wss.on('connection', (ws, req) => {
     return;
   }
 
-  console.log('Cliente WebSocket conectado.');
+  if (VERBOSE) console.log('Cliente WebSocket conectado.');
   clients.add(ws);
 
   ws.on('message', (raw) => {
@@ -89,24 +91,24 @@ wss.on('connection', (ws, req) => {
           watcher.add(sanitizedPath);
         }
         watchedFiles.get(sanitizedPath).add(cardId);
-        console.log(`Monitorando: ${sanitizedPath} -> ${cardId}`);
+        if (VERBOSE) console.log(`Monitorando: ${sanitizedPath} -> ${cardId}`);
       }
     } catch (err) {
-      console.error('Erro ao processar mensagem WebSocket:', err.message);
+      if (VERBOSE) console.error('Erro ao processar mensagem WebSocket:', err.message);
     }
   });
 
   ws.on('close', () => {
     clients.delete(ws);
-    console.log('Cliente desconectado.');
+    if (VERBOSE) console.log('Cliente desconectado.');
   });
 });
 
-const watcher = chokidar.watch([], { ignoreInitial: true });
+const watcher = chokidar.watch([], { ignoreInitial: true, usePolling: true, interval: 3000 });
 
 watcher.on('change', (changedPath) => {
   const sanitizedPath = sanitizePath(changedPath);
-  console.log(`Alteração detectada em: ${sanitizedPath}`);
+  if (VERBOSE) console.log(`Alteração detectada em: ${sanitizedPath}`);
 
   const cardIds = watchedFiles.get(sanitizedPath);
   if (cardIds) {

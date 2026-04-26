@@ -70,6 +70,9 @@ node create-user.js
 
 npm start
 # → http://localhost:3123/login
+
+# Enable verbose logging (WebSocket clients, file watchers, detected changes)
+npm start -- --verbose
 ```
 
 Port and bind address are configured in `server-config.json` and `websocket-config.json`.
