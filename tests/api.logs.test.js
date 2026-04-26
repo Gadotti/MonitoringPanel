@@ -121,15 +121,28 @@ describe('GET /api/logs/:filename', () => {
     expect(res.body).toHaveProperty('error');
   });
 
-  test('lê o arquivo do caminho correto (scripts/log/)', async () => {
+  test('lê o arquivo do caminho correto (public/logs/)', async () => {
     fs.existsSync.mockReturnValue(true);
     fs.readFile.mockImplementation((p, enc, cb) => cb(null, 'ok'));
 
     await request(app).get('/api/logs/check.log');
 
     const [readPath] = fs.readFile.mock.calls[0];
-    expect(readPath).toContain('scripts');
+    expect(readPath).toContain('public');
     expect(readPath).toContain('logs');
     expect(readPath).toContain('check.log');
+  });
+});
+
+// ============================================================ Bloqueio acesso estático /logs/*
+describe('GET /logs/* (acesso estático bloqueado)', () => {
+  test('retorna 403 para acesso direto a arquivo de log', async () => {
+    const res = await request(app).get('/logs/script.log');
+    expect(res.status).toBe(403);
+  });
+
+  test('retorna 403 para acesso à raiz da pasta logs', async () => {
+    const res = await request(app).get('/logs/');
+    expect(res.status).toBe(403);
   });
 });

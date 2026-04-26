@@ -136,6 +136,7 @@ public/local-data-uptimes/
 public/local-data-charts/
 public/local-events/
 public/local-pages/
+public/logs/
 cards/cards-list.json
 configs/
 scripts/logs

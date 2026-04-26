@@ -56,7 +56,7 @@
 
       if (!files.length) {
         labelEl.textContent = 'Nenhum log disponível';
-        dropdown.innerHTML = '<p class="logs-dd-empty">Nenhum arquivo .log encontrado em scripts/log/</p>';
+        dropdown.innerHTML = '<p class="logs-dd-empty">Nenhum arquivo .log encontrado em public/logs/</p>';
         return;
       }
 

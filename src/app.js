@@ -40,6 +40,9 @@ function createApp(config = {}) {
 
   const app = express();
 
+  // Block direct static access to /logs/* — content is only available via /api/logs (authenticated)
+  app.use('/logs', (req, res) => res.status(403).end());
+
   app.use(express.static(path.join(rootDir, 'public')));
   app.use(express.json());
   app.use('/local-pages', express.static(path.join(rootDir, 'local-pages')));
@@ -525,7 +528,7 @@ function createApp(config = {}) {
 
   // ------------------------------------------------------------------ GET /api/logs
   app.get('/api/logs', (req, res) => {
-    const logsDir = path.join(rootDir, 'scripts', 'logs');
+    const logsDir = path.join(rootDir, 'public', 'logs');
 
     if (!fs.existsSync(logsDir)) {
       return res.json([]);
@@ -551,7 +554,7 @@ function createApp(config = {}) {
       return res.status(400).json({ error: 'Nome de arquivo inválido.' });
     }
 
-    const filePath = path.join(rootDir, 'scripts', 'logs', filename);
+    const filePath = path.join(rootDir, 'public', 'logs', filename);
 
     if (!fs.existsSync(filePath)) {
       return res.status(404).json({ error: 'Arquivo não encontrado.' });

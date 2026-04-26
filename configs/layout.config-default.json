@@ -3,7 +3,7 @@
     "id": "metricas-gerais",
     "order": 0,
     "title": "Dashboard",
-    "columns": 2,
+    "columns": 3,
     "rows": 1,
     "zoom": 1
   },
@@ -19,7 +19,7 @@
     "id": "ssllabs-sample",
     "order": 2,
     "title": "SSLabs Scan",
-    "columns": 3,
+    "columns": 4,
     "rows": 2,
     "zoom": 0.62
   },
