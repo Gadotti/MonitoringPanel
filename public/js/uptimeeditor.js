@@ -362,12 +362,6 @@
       });
     }
 
-    var invalid = services.find(function (s) { return !s.url || !s.url.trim(); });
-    if (invalid !== undefined) {
-      showFeedback('Todos os serviços precisam ter uma URL.', 'error');
-      return;
-    }
-
     if (saveBtn) saveBtn.disabled = true;
     clearFeedback();
 

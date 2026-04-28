@@ -623,18 +623,20 @@ function createApp(config = {}) {
 
       const currentServices = current.servicesStatus || [];
 
-      // Mescla: mantém campos de monitoramento existentes; substitui campos editáveis
+      // Mescla: mantém campos de monitoramento existentes; substitui campos editáveis.
+      // Usa 'service' (systemd) ou 'url' (http) como chave de correspondência.
       const merged = servicesStatus.map(incoming => {
-        const existing = currentServices.find(s => s.url === incoming.url) || {};
+        const existing = currentServices.find(s =>
+          (incoming.service && s.service === incoming.service) ||
+          (incoming.url && s.url === incoming.url)
+        ) || {};
         return {
-          url:                 incoming.url,
-          name:                incoming.name,
-          expectedHttpRespose: incoming.expectedHttpRespose,
+          ...incoming,
           notificationHookMode: incoming.notificationHookMode || 'when-offline',
-          // campos gerenciados pelo script — preservados se existirem
-          status:              existing.status              || 'offline',
-          lastStatusOnline:    existing.lastStatusOnline   || '',
-          lastStatusOffline:   existing.lastStatusOffline  || '',
+          // campos gerenciados pelo script — valor do arquivo atual tem prioridade
+          status:            existing.status            ?? incoming.status            ?? 'offline',
+          lastStatusOnline:  existing.lastStatusOnline  ?? incoming.lastStatusOnline  ?? '',
+          lastStatusOffline: existing.lastStatusOffline ?? incoming.lastStatusOffline ?? '',
         };
       });
 

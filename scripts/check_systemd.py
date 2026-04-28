@@ -5,7 +5,7 @@ import asyncio
 import json
 import argparse
 from urllib.parse import quote
-from datetime import datetime, UTC
+from datetime import datetime, timezone
 from pathlib import Path
 
 if hasattr(sys.stdout, 'reconfigure'):
@@ -57,7 +57,7 @@ async def update_services_status(filepath, timeout=5, log_dir: Path = None):
     with open(filepath, 'r', encoding='utf-8') as f:
         data = json.load(f)
 
-    now_utc = datetime.now(UTC).isoformat()
+    now_utc = datetime.now(timezone.utc).isoformat()
     services = data.get('servicesStatus', [])
 
     tasks = [

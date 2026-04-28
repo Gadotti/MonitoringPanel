@@ -307,4 +307,109 @@ describe('POST /api/uptime-config', () => {
 
     expect(writtenContent.notificationHook).toBe('https://novo-webhook.com');
   });
+
+  test('preserva campo "service" e outros campos extras de serviços systemd', async () => {
+    const systemdFile = JSON.stringify({
+      notificationHook: '',
+      lastChecked: '2024-01-01T00:00:00Z',
+      servicesStatus: [
+        {
+          service:             'nginx',
+          name:                'Nginx',
+          url:                 '',
+          expectedHttpRespose: '',
+          notificationHookMode: 'when-offline',
+          status:              'online',
+          lastStatusOnline:    '2024-06-01T10:00:00Z',
+          lastStatusOffline:   '',
+        },
+      ],
+    });
+
+    fs.readFile.mockImplementation((p, enc, cb) => cb(null, systemdFile));
+
+    let writtenContent = null;
+    fs.writeFile.mockImplementation((p, data, enc, cb) => {
+      writtenContent = JSON.parse(data);
+      cb(null);
+    });
+
+    const payload = {
+      notificationHook: '',
+      servicesStatus: [
+        {
+          service:             'nginx',
+          name:                'Nginx (editado)',
+          url:                 '',
+          expectedHttpRespose: '',
+          notificationHookMode: 'when-online',
+          status:              'online',
+          lastStatusOnline:    '2024-06-01T10:00:00Z',
+          lastStatusOffline:   '',
+        },
+      ],
+    };
+
+    const res = await request(app)
+      .post('/api/uptime-config?file=' + encodeURIComponent('public/uptime.json'))
+      .send(payload)
+      .set('Content-Type', 'application/json');
+
+    expect(res.status).toBe(200);
+
+    const saved = writtenContent.servicesStatus[0];
+    // Campo 'service' deve ser preservado
+    expect(saved.service).toBe('nginx');
+    // Campos editados devem ser atualizados
+    expect(saved.name).toBe('Nginx (editado)');
+    expect(saved.notificationHookMode).toBe('when-online');
+    // Status gerenciado pelo script deve ser preservado do arquivo
+    expect(saved.status).toBe('online');
+    expect(saved.lastStatusOnline).toBe('2024-06-01T10:00:00Z');
+  });
+
+  test('match por campo "service" quando url está vazia', async () => {
+    const systemdFile = JSON.stringify({
+      notificationHook: '',
+      servicesStatus: [
+        { service: 'postgresql', name: 'PostgreSQL', url: '', notificationHookMode: 'off',
+          status: 'online', lastStatusOnline: '2024-06-01T00:00:00Z', lastStatusOffline: '' },
+        { service: 'nginx', name: 'Nginx', url: '', notificationHookMode: 'off',
+          status: 'offline', lastStatusOnline: '', lastStatusOffline: '2024-06-02T00:00:00Z' },
+      ],
+    });
+
+    fs.readFile.mockImplementation((p, enc, cb) => cb(null, systemdFile));
+
+    let writtenContent = null;
+    fs.writeFile.mockImplementation((p, data, enc, cb) => {
+      writtenContent = JSON.parse(data);
+      cb(null);
+    });
+
+    const payload = {
+      notificationHook: '',
+      servicesStatus: [
+        { service: 'nginx',      name: 'Nginx',      url: '', notificationHookMode: 'when-offline',
+          status: 'offline', lastStatusOnline: '', lastStatusOffline: '2024-06-02T00:00:00Z' },
+        { service: 'postgresql', name: 'PostgreSQL', url: '', notificationHookMode: 'when-offline',
+          status: 'online', lastStatusOnline: '2024-06-01T00:00:00Z', lastStatusOffline: '' },
+      ],
+    };
+
+    const res = await request(app)
+      .post('/api/uptime-config?file=' + encodeURIComponent('public/uptime.json'))
+      .send(payload)
+      .set('Content-Type', 'application/json');
+
+    expect(res.status).toBe(200);
+
+    const nginx = writtenContent.servicesStatus.find(s => s.service === 'nginx');
+    const pg    = writtenContent.servicesStatus.find(s => s.service === 'postgresql');
+
+    expect(nginx.status).toBe('offline');
+    expect(nginx.lastStatusOffline).toBe('2024-06-02T00:00:00Z');
+    expect(pg.status).toBe('online');
+    expect(pg.lastStatusOnline).toBe('2024-06-01T00:00:00Z');
+  });
 });
