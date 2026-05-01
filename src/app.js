@@ -673,7 +673,7 @@ function createApp(config = {}) {
       return res.status(400).json({ error: 'Campos "reportItemId" e "cveId" são obrigatórios.' });
     }
 
-    const validAssessments = ['', 'Acknowledge/Mitigating', 'False Positive', 'Accepted Risk'];
+    const validAssessments = ['Not Affected', 'Acknowledge/Mitigating', 'False Positive', 'Accepted Risk', ''];
     if (assessment === undefined || !validAssessments.includes(assessment)) {
       return res.status(400).json({ error: 'Valor de "assessment" inválido.' });
     }

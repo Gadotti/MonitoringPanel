@@ -138,9 +138,9 @@ describe('initCveAssessmentDropdowns', () => {
     expect(panel.classList.contains('open')).toBe(true);
     expect(trigger.classList.contains('open')).toBe(true);
 
-    // Panel should contain the 3 assessment options
+    // Panel should contain the 4 assessment options
     const options = panel.querySelectorAll('.cve-assess-option');
-    expect(options).toHaveLength(3);
+    expect(options).toHaveLength(4);
 
     cardEl.remove();
   });

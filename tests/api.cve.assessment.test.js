@@ -189,7 +189,7 @@ describe('POST /api/cve-assessment', () => {
   });
 
   test('aceita todos os valores de assessment válidos', async () => {
-    const validValues = ['Acknowledge/Mitigating', 'False Positive', 'Accepted Risk', ''];
+    const validValues = ['Not Affected', 'Acknowledge/Mitigating', 'False Positive', 'Accepted Risk', ''];
 
     for (const value of validValues) {
       jest.clearAllMocks();
