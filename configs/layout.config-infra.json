@@ -8,9 +8,9 @@
     "zoom": 1
   },
   {
-    "id": "falhas-diarias",
+    "id": "detecoes-ameaças",
     "order": 1,
-    "title": "Falhas Diárias",
+    "title": "Detecções de Ameaças",
     "columns": 1,
     "rows": 1,
     "zoom": 1
@@ -24,8 +24,16 @@
     "zoom": 1
   },
   {
-    "id": "logins-por-hora",
+    "id": "falhas-diarias",
     "order": 3,
+    "title": "Falhas Diárias",
+    "columns": 1,
+    "rows": 1,
+    "zoom": 1
+  },
+  {
+    "id": "logins-por-hora",
+    "order": 4,
     "title": "Logins por Hora",
     "columns": 1,
     "rows": 1,
@@ -33,23 +41,23 @@
   },
   {
     "id": "estado-maquinas",
-    "order": 4,
+    "order": 5,
     "title": "Estado das Máquinas",
     "columns": 1,
     "rows": 1,
     "zoom": 1
   },
   {
-    "id": "detecoes-ameaças",
-    "order": 5,
-    "title": "Detecções de Ameaças",
+    "id": "logs-sistema",
+    "order": 6,
+    "title": "Logs do Sistema",
     "columns": 1,
     "rows": 1,
     "zoom": 1
   },
   {
     "id": "uso-recursos",
-    "order": 6,
+    "order": 7,
     "title": "Uso de Recursos",
     "columns": 4,
     "rows": 1,
@@ -57,18 +65,10 @@
   },
   {
     "id": "eventos-recentes",
-    "order": 7,
+    "order": 8,
     "title": "Eventos Recentes",
     "columns": 3,
     "rows": 2,
-    "zoom": 1
-  },
-  {
-    "id": "logs-sistema",
-    "order": 8,
-    "title": "Logs do Sistema",
-    "columns": 1,
-    "rows": 1,
     "zoom": 1
   }
 ]

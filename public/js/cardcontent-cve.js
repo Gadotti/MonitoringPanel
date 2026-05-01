@@ -174,7 +174,7 @@ function closeCveAssessPanel() {
 }
 
 function initCveAssessmentDropdowns(cardElement, cardId, sourceFile) {
-  const ASSESSMENT_OPTIONS = ['Acknowledge/Mitigating', 'False Positive', 'Accepted Risk'];
+  const ASSESSMENT_OPTIONS = ['Acknowledge/Mitigating', 'Accepted Risk', 'Not Affected', 'False Positive'];
 
   cardElement.querySelectorAll('.cve-assess-trigger').forEach(trigger => {
     trigger.addEventListener('click', function (e) {
