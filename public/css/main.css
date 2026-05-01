@@ -160,9 +160,21 @@ body {
   border-radius: 2px;
 }
 
+/* Slot do card sendo arrastado: borda tracejada + tinta de accent deixam
+   claro onde o card vai cair, mesmo com o conteúdo oculto. transition:none
+   evita que o accent "escorra" enquanto o slot pula entre posições. */
 .card.dragging {
-  opacity: 0.45;
-  transform: scale(0.98);
+  opacity: 0.6;
+  background-color: rgba(204, 120, 92, 0.08);
+  border-color: var(--accent);
+  border-style: dashed;
+  transform: scale(0.97);
+  transition: none;
+}
+
+.card.dragging:hover {
+  border-color: var(--accent);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.35);
 }
 
 /* Oculta o conteúdo do card durante o drag.

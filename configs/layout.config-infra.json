@@ -8,58 +8,58 @@
     "zoom": 1
   },
   {
-    "id": "detecoes-ameaças",
-    "order": 1,
-    "title": "Detecções de Ameaças",
-    "columns": 1,
-    "rows": 1,
-    "zoom": 1
-  },
-  {
-    "id": "trafego-mbps",
-    "order": 2,
-    "title": "Tráfego de Rede (Mbps)",
-    "columns": 1,
-    "rows": 1,
-    "zoom": 1
-  },
-  {
-    "id": "falhas-diarias",
-    "order": 3,
-    "title": "Falhas Diárias",
-    "columns": 1,
-    "rows": 1,
-    "zoom": 1
-  },
-  {
-    "id": "logins-por-hora",
-    "order": 4,
-    "title": "Logins por Hora",
-    "columns": 1,
-    "rows": 1,
-    "zoom": 1
-  },
-  {
     "id": "estado-maquinas",
-    "order": 5,
+    "order": 1,
     "title": "Estado das Máquinas",
     "columns": 1,
     "rows": 1,
     "zoom": 1
   },
   {
-    "id": "logs-sistema",
-    "order": 6,
-    "title": "Logs do Sistema",
+    "id": "detecoes-ameaças",
+    "order": 2,
+    "title": "Detecções de Ameaças",
     "columns": 1,
     "rows": 1,
     "zoom": 1
   },
   {
     "id": "uso-recursos",
-    "order": 7,
+    "order": 3,
     "title": "Uso de Recursos",
     "columns": 4,
+    "rows": 1,
+    "zoom": 1
+  },
+  {
+    "id": "falhas-diarias",
+    "order": 4,
+    "title": "Falhas Diárias",
+    "columns": 2,
+    "rows": 1,
+    "zoom": 1
+  },
+  {
+    "id": "logins-por-hora",
+    "order": 5,
+    "title": "Logins por Hora",
+    "columns": 1,
+    "rows": 1,
+    "zoom": 1
+  },
+  {
+    "id": "trafego-mbps",
+    "order": 6,
+    "title": "Tráfego de Rede (Mbps)",
+    "columns": 1,
+    "rows": 1,
+    "zoom": 1
+  },
+  {
+    "id": "logs-sistema",
+    "order": 7,
+    "title": "Logs do Sistema",
+    "columns": 1,
     "rows": 1,
     "zoom": 1
   },
