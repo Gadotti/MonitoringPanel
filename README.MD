@@ -4,6 +4,18 @@ Self-hosted, real-time security and infrastructure monitoring dashboard. Display
 
 ---
 
+## Screenshots
+
+Dashboard principal com cards de métricas KPI, board de CVEs por ativo, monitoramento de uptime, listas de eventos (breaches), e múltiplos gráficos de atividade — tudo atualizado em tempo real via WebSocket.
+
+![Dashboard](imgs/dashboard.PNG)
+
+Modal de edição do monitoramento de serviços, onde é possível configurar URLs, respostas HTTP esperadas e webhooks de notificação por serviço.
+
+![Editar Monitoramento](imgs/monitoring-edition.PNG)
+
+---
+
 ## Requirements
 
 - Node.js 18+
