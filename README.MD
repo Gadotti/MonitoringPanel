@@ -11,6 +11,41 @@ Self-hosted, real-time security and infrastructure monitoring dashboard. Display
 
 ---
 
+## Quickstart
+
+```bash
+npm install
+
+# Create the first user (enables authentication)
+node create-user.js
+
+npm start
+# → http://localhost:3123/login
+
+# Enable verbose logging (WebSocket clients, file watchers, detected changes)
+npm start -- --verbose
+```
+
+Port and bind address are configured in `server-config.json` and `websocket-config.json`.
+
+If no users exist, the dashboard runs without authentication — useful during initial setup.
+Once the first user is created, all API endpoints require a valid session.
+
+---
+
+## Features
+
+- **Multiple views** — independent layouts, switchable from the sidebar
+- **Real-time updates** — WebSocket pushes file changes to the browser without page reload
+- **Drag, resize, and configure** — cards can be reordered, resized, titled, and removed directly in the UI
+- **Six card types** — chart, list, dynamic-list, uptime, CVE assets, iframe
+- **Uptime monitoring** — async URL checker with online/offline history and webhook notifications
+- **CVE assessment** — collapsible asset board with per-CVE assessment panel
+- **Backup** — one-click download of all configs and local data as a zip
+- **Health check** — server status, WebSocket info, and active file watchers
+
+---
+
 ## Authentication
 
 Users are created exclusively via CLI — there is no registration form in the UI.
@@ -34,19 +69,6 @@ The `editor` role is required for all write operations (layout changes, card edi
 
 ---
 
-## Features
-
-- **Multiple views** — independent layouts, switchable from the sidebar
-- **Real-time updates** — WebSocket pushes file changes to the browser without page reload
-- **Drag, resize, and configure** — cards can be reordered, resized, titled, and removed directly in the UI
-- **Six card types** — chart, list, dynamic-list, uptime, CVE assets, iframe
-- **Uptime monitoring** — async URL checker with online/offline history and webhook notifications
-- **CVE assessment** — collapsible asset board with per-CVE assessment panel
-- **Backup** — one-click download of all configs and local data as a zip
-- **Health check** — server status, WebSocket info, and active file watchers
-
----
-
 ## Card Types
 
 | Type | Description |
@@ -57,28 +79,6 @@ The `editor` role is required for all write operations (layout changes, card edi
 | `uptime` | Availability monitor for services and URLs |
 | `cve-assets` | Asset board with associated CVEs and inline assessment panel |
 | `frame` | Iframe with zoom controls for local or external pages |
-
----
-
-## Quickstart
-
-```bash
-npm install
-
-# Create the first user (enables authentication)
-node create-user.js
-
-npm start
-# → http://localhost:3123/login
-
-# Enable verbose logging (WebSocket clients, file watchers, detected changes)
-npm start -- --verbose
-```
-
-Port and bind address are configured in `server-config.json` and `websocket-config.json`.
-
-If no users exist, the dashboard runs without authentication — useful during initial setup.
-Once the first user is created, all API endpoints require a valid session.
 
 ---
 
