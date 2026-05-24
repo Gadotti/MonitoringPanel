@@ -31,10 +31,11 @@ async function loadCardContentCveAssets(card) {
 
       let riskCss = '';
       switch ((risk || '').toLowerCase()) {
-        case 'high':   riskCss = 'risco-alto';  break;
-        case 'medium': riskCss = 'risco-medio'; break;
-        case 'low':    riskCss = 'risco-baixo'; break;
-        default:       riskCss = 'risco-nao';   break;
+        case 'critical': riskCss = 'risco-critico'; break;
+        case 'high':     riskCss = 'risco-alto';    break;
+        case 'medium':   riskCss = 'risco-medio';   break;
+        case 'low':      riskCss = 'risco-baixo';   break;
+        default:         riskCss = 'risco-nao';     break;
       }
 
       const counts = { critical: 0, high: 0, medium: 0, low: 0, unknown: 0 };
@@ -84,11 +85,13 @@ async function loadCardContentCveAssets(card) {
 
       cveReportBlocksHtml += `
         <div class="asset-row" onclick="toggleCveAssetsDetails(this)">
-          <div class="col url">
+          <div class="col ativo">
             <span class="asset-toggle-icon">▶</span>
+            ${name}
+          </div>
+          <div class="col url">
             <a href="${url}" target="_blank" class="asset-url-link" onclick="event.stopPropagation()">${url}</a>
           </div>
-          <div class="col ativo">${name}</div>
           <div class="col versao">${currentVersion}</div>
           <div class="col cves-count">${totalCves}</div>
           <div class="col risco"><span class="${riskCss}">${risk}</span></div>
@@ -115,8 +118,8 @@ async function loadCardContentCveAssets(card) {
     wrapper.innerHTML = `
       <div class="asset-card-content">
         <div class="asset-header">
-          <div class="col url">URL / Ativo</div>
           <div class="col ativo">Nome</div>
+          <div class="col url">URL / Ativo</div>
           <div class="col versao">Versão</div>
           <div class="col cves-count">CVEs</div>
           <div class="col risco">Risco</div>
