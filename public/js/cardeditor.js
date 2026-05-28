@@ -470,7 +470,14 @@
           ` : '';
 
           return `
-            <div class="ce-metric-row" data-idx="${idx}">
+            <div class="ce-metric-row" data-idx="${idx}" draggable="true">
+              <span class="ce-metric-drag-handle" title="Arrastar para reordenar">
+                <svg width="10" height="14" viewBox="0 0 10 14" fill="currentColor">
+                  <circle cx="3" cy="2.5" r="1.2"/><circle cx="7" cy="2.5" r="1.2"/>
+                  <circle cx="3" cy="7" r="1.2"/><circle cx="7" cy="7" r="1.2"/>
+                  <circle cx="3" cy="11.5" r="1.2"/><circle cx="7" cy="11.5" r="1.2"/>
+                </svg>
+              </span>
               <span class="ce-metric-card-title">${label}</span>
               <span class="ce-row-type">${type}</span>
               ${uptimeCtrl}
@@ -488,6 +495,37 @@
       const row = btn.closest('.ce-metric-row');
       btn.addEventListener('click', () => {
         metricSources.splice(parseInt(row.dataset.idx, 10), 1);
+        renderMetricPanel();
+      });
+    });
+
+    let dragSrcIdx = null;
+    sourcesContainer.querySelectorAll('.ce-metric-row[draggable]').forEach(row => {
+      row.addEventListener('dragstart', (e) => {
+        dragSrcIdx = parseInt(row.dataset.idx, 10);
+        row.classList.add('dragging');
+        e.dataTransfer.effectAllowed = 'move';
+      });
+      row.addEventListener('dragend', () => {
+        row.classList.remove('dragging');
+        sourcesContainer.querySelectorAll('.ce-metric-row').forEach(r => r.classList.remove('drag-over'));
+      });
+      row.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        sourcesContainer.querySelectorAll('.ce-metric-row').forEach(r => r.classList.remove('drag-over'));
+        if (parseInt(row.dataset.idx, 10) !== dragSrcIdx) row.classList.add('drag-over');
+      });
+      row.addEventListener('dragleave', (e) => {
+        if (!row.contains(e.relatedTarget)) row.classList.remove('drag-over');
+      });
+      row.addEventListener('drop', (e) => {
+        e.preventDefault();
+        const destIdx = parseInt(row.dataset.idx, 10);
+        if (dragSrcIdx === null || dragSrcIdx === destIdx) return;
+        const moved = metricSources.splice(dragSrcIdx, 1)[0];
+        metricSources.splice(destIdx, 0, moved);
+        dragSrcIdx = null;
         renderMetricPanel();
       });
     });

@@ -399,3 +399,30 @@
 .ce-metric-filter-dropdown {
   min-width: 110px;
 }
+
+.ce-metric-drag-handle {
+  display: flex;
+  align-items: center;
+  cursor: grab;
+  color: var(--text-muted);
+  padding: 0 2px;
+  flex-shrink: 0;
+  opacity: 0.4;
+  transition: opacity 0.15s var(--ease-std);
+}
+
+.ce-metric-row:hover .ce-metric-drag-handle {
+  opacity: 1;
+}
+
+.ce-metric-drag-handle:active {
+  cursor: grabbing;
+}
+
+.ce-metric-row.dragging {
+  opacity: 0.35;
+}
+
+.ce-metric-row.drag-over {
+  border-top: 2px solid var(--accent);
+}
