@@ -438,7 +438,11 @@
               </div>
               <div class="modal-row">
                 <label for="ce-format-limit">Limite de itens</label>
-                <input type="number" id="ce-format-limit" value="20" min="1" max="500" style="width:80px;">
+                <div class="ce-stepper">
+                  <button class="ce-stepper-btn" id="ce-limit-dec" type="button">−</button>
+                  <input type="number" id="ce-format-limit" value="20" min="1" max="500">
+                  <button class="ce-stepper-btn" id="ce-limit-inc" type="button">+</button>
+                </div>
               </div>
             </div>
             <div class="ce-fmt-row-pair">

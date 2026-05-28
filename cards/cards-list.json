@@ -503,7 +503,7 @@
       "sourceItems": "public/local-events/top-cves.csv",
       "separator": ",",
       "order": "desc",
-      "limit": 20,
+      "limit": 100,
       "fields": [
         {
           "header": "Vulnerability",

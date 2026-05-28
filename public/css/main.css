@@ -129,7 +129,13 @@ body {
   color: var(--text-bright);
 }
 
-.settings-button,
+.settings-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px;
+}
+
 .expand-button {
   font-size: 0.8rem;
 }

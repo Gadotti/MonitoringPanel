@@ -77,6 +77,20 @@
   const formatSepInput  = document.getElementById('ce-format-separator');
   const formatOrderBy   = document.getElementById('ce-format-orderby');
   const formatLimit     = document.getElementById('ce-format-limit');
+  const limitDec        = document.getElementById('ce-limit-dec');
+  const limitInc        = document.getElementById('ce-limit-inc');
+
+  if (limitDec && formatLimit) {
+    limitDec.addEventListener('click', () => {
+      formatLimit.value = Math.max(1, (parseInt(formatLimit.value, 10) || 20) - 1);
+    });
+  }
+  if (limitInc && formatLimit) {
+    limitInc.addEventListener('click', () => {
+      formatLimit.value = Math.min(500, (parseInt(formatLimit.value, 10) || 20) + 1);
+    });
+  }
+
   const FIELD_TYPES     = ['text', 'date', 'url'];
   const MAX_FIELDS      = 3;
 
@@ -166,6 +180,7 @@
   };
 
   function openFormatPanel() {
+    clearJsonOverride();
     form.style.display = 'none';
     formatPanel.style.display = 'block';
     renderFormatFields();
@@ -174,7 +189,6 @@
   function closeFormatPanel() {
     formatPanel.style.display = 'none';
     form.style.display = 'block';
-    clearJsonOverride();
   }
 
   if (formatBtn) formatBtn.addEventListener('click', openFormatPanel);
@@ -187,16 +201,25 @@
     container.innerHTML = dynamicListFields.map((f, idx) => `
       <div class="ce-fmt-field-row" data-idx="${idx}">
         <div class="ce-fmt-field-inputs">
-          <input type="text" class="ce-fmt-header" placeholder="Nome do campo (header CSV)" value="${f.header || ''}" autocomplete="off">
-          <input type="text" class="ce-fmt-label" placeholder="Rótulo de exibição" value="${f.label || ''}" autocomplete="off">
-          <div class="ce-type-wrapper ce-fmt-type-wrapper">
-            <button class="ce-type-trigger ce-fmt-type-trigger" type="button">
-              <span class="ce-type-label">${f.type || 'text'}</span>
-              <svg class="ce-type-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="6 9 12 15 18 9"/>
-              </svg>
-            </button>
-            <div class="ce-type-dropdown ce-fmt-type-dropdown"></div>
+          <div class="modal-row">
+            <label>Header CSV</label>
+            <input type="text" class="ce-fmt-header" placeholder="Nome do campo" value="${f.header || ''}" autocomplete="off">
+          </div>
+          <div class="modal-row">
+            <label>Rótulo</label>
+            <input type="text" class="ce-fmt-label" placeholder="Exibição" value="${f.label || ''}" autocomplete="off">
+          </div>
+          <div class="modal-row ce-fmt-type-col">
+            <label>Tipo</label>
+            <div class="ce-type-wrapper ce-fmt-type-wrapper">
+              <button class="ce-type-trigger ce-fmt-type-trigger" type="button">
+                <span class="ce-type-label">${f.type || 'text'}</span>
+                <svg class="ce-type-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="6 9 12 15 18 9"/>
+                </svg>
+              </button>
+              <div class="ce-type-dropdown ce-fmt-type-dropdown"></div>
+            </div>
           </div>
         </div>
         <button class="mv-delete-btn ce-fmt-remove-btn" type="button" title="Remover campo">

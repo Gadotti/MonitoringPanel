@@ -249,18 +249,30 @@
   flex-wrap: wrap;
 }
 
-.ce-fmt-field-inputs input {
+.ce-fmt-field-inputs .modal-row {
   flex: 1;
-  min-width: 100px;
+  min-width: 120px;
 }
 
-.ce-fmt-type-wrapper {
+.ce-fmt-field-inputs .modal-row input {
+  line-height: 1.4;
+}
+
+.ce-fmt-type-col {
   flex: 0 0 90px;
+  min-width: 90px;
 }
 
-.ce-fmt-type-trigger {
-  padding: 6px 8px;
-  font-size: 0.8rem;
+.ce-fmt-type-trigger,
+#ce-order-trigger {
+  padding: 8px 12px;
+  font-size: 0.88rem;
+  line-height: 1.4;
+}
+
+.ce-fmt-type-trigger .ce-type-label,
+#ce-order-trigger .ce-type-label {
+  font-size: 0.88rem;
 }
 
 .ce-fmt-type-dropdown {
@@ -268,8 +280,66 @@
 }
 
 .ce-fmt-remove-btn {
-  margin-top: 4px;
+  margin-top: 22px;
   flex-shrink: 0;
+}
+
+/* ── Stepper (limite de itens) ── */
+.ce-stepper {
+  display: flex;
+  align-items: stretch;
+  align-self: flex-start;
+}
+
+.ce-stepper input[type="number"] {
+  width: 52px;
+  text-align: center;
+  border-radius: 0;
+  border-left: none;
+  border-right: none;
+  padding-left: 4px;
+  padding-right: 4px;
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+.ce-stepper input[type="number"]::-webkit-inner-spin-button,
+.ce-stepper input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+}
+
+.ce-stepper-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-mid);
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 0 10px;
+  font-size: 1rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.15s var(--ease-std), color 0.15s var(--ease-std);
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.ce-stepper-btn:first-child {
+  border-radius: var(--radius-md) 0 0 var(--radius-md);
+}
+
+.ce-stepper-btn:last-child {
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+}
+
+.ce-stepper-btn:hover {
+  background: rgba(255, 255, 255, 0.09);
+  color: var(--text-bright);
+}
+
+.ce-stepper-btn:active {
+  background: rgba(204, 120, 92, 0.15);
+  color: var(--accent);
 }
 
 /* ── Metric config panel ── */
