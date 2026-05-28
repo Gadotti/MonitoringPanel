@@ -479,11 +479,11 @@
           "uptimeFilter": "online"
         },
         {
-          "cardId": "uptime-results",
+          "cardId": "systemd-check",
           "uptimeFilter": "offline"
         },
         {
-          "cardId": "systemd-check",
+          "cardId": "uptime-results",
           "uptimeFilter": "offline"
         }
       ]

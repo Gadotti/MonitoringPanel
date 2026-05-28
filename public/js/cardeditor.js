@@ -656,6 +656,7 @@
     if (formatPanel) formatPanel.style.display = 'none';
     metricSources = [];
     if (metricPanel) metricPanel.style.display = 'none';
+    if (metricSaveBtn) metricSaveBtn.style.display = 'none';
     updateFormatBtnVisibility();
     updateMetricBtnVisibility();
     updateSourceRowVisibility();

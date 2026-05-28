@@ -174,3 +174,73 @@ describe('openMetricPanel via metricBtn (modo formulário)', () => {
     expect(document.getElementById('ce-metric-save').style.display).toBe('none');
   });
 });
+
+// ─── Regressão: ce-metric-save não deve persistir visível ao editar card não-métrica ───
+//
+// Cenário do bug: openMetricEditor exibe ce-metric-save (directMode=true). Se o
+// modal for fechado via botão X — sem passar por closeMetricPanel — o botão permanecia
+// visível. Ao editar um card dynamic-list em seguida, o usuário clicava em "Salvar"
+// e recebia a mensagem "Adicione ao menos uma fonte à métrica." indevidamente.
+// A correção foi ocultar ce-metric-save dentro de resetFormFields().
+
+describe('ce-metric-save não persiste visível após openMetricEditor ao editar card não-métrica', () => {
+  test('reabrir o card editor via openBtn oculta ce-metric-save exibido por openMetricEditor', async () => {
+    // 1. openMetricEditor exibe ce-metric-save (directMode = true)
+    global.fetch.mockResolvedValueOnce({ ok: true, json: () => Promise.resolve([]) });
+    const fakeCard = document.createElement('div');
+    fakeCard.dataset.id = 'metric-regression-1';
+    await window.openMetricEditor(fakeCard);
+    expect(document.getElementById('ce-metric-save').style.display).toBe('');
+
+    // 2. Usuário fecha modal pelo botão X — closeModal não chama closeMetricPanel,
+    //    portanto ce-metric-save permanecia visível antes da correção
+    document.getElementById('close-card-editor-modal').click();
+
+    // 3. Usuário reabre o card editor: showList → resetFormFields deve ocultar ce-metric-save
+    document.getElementById('btn-card-editor').click();
+
+    expect(document.getElementById('ce-metric-save').style.display).toBe('none');
+  });
+
+  test('ce-metric-save permanece oculto ao editar card dynamic-list após openMetricEditor', async () => {
+    const dynamicListCard = {
+      id: 'dl-regression',
+      title: 'Lista de Eventos',
+      cardType: 'dynamic-list',
+      dynamicList: {
+        sourceItems: 'public/local-events/events.csv',
+        separator: ';',
+        order: 'desc',
+        limit: 20,
+        fields: [{ header: 'timestamp', label: 'Data', type: 'date' }],
+      },
+    };
+
+    // 1. openMetricEditor exibe ce-metric-save
+    global.fetch.mockResolvedValueOnce({ ok: true, json: () => Promise.resolve([]) });
+    const fakeMetricCard = document.createElement('div');
+    fakeMetricCard.dataset.id = 'metric-regression-2';
+    await window.openMetricEditor(fakeMetricCard);
+    expect(document.getElementById('ce-metric-save').style.display).toBe('');
+
+    // 2. Fecha via X sem passar por "Voltar ao formulário"
+    document.getElementById('close-card-editor-modal').click();
+
+    // 3. Reabre o editor com a lista contendo o card dynamic-list
+    global.fetch.mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve([dynamicListCard]),
+    });
+    document.getElementById('btn-card-editor').click();
+    await new Promise(resolve => setTimeout(resolve, 0)); // aguarda renderCardsList
+
+    // 4. Clica em "Editar" no card dynamic-list — chama startEdit internamente
+    const editBtn = document.querySelector('.ce-edit-btn[data-id="dl-regression"]');
+    expect(editBtn).not.toBeNull();
+    editBtn.click();
+
+    // 5. ce-metric-save deve estar oculto: o usuário não pode acionar saveMetricDirect
+    //    inadvertidamente ao editar um card que não é do tipo metric
+    expect(document.getElementById('ce-metric-save').style.display).toBe('none');
+  });
+});
