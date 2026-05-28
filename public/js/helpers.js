@@ -1,3 +1,16 @@
+function bindStepper(inputId, decId, incId, min, max, fallback) {
+  const input = document.getElementById(inputId);
+  const dec   = document.getElementById(decId);
+  const inc   = document.getElementById(incId);
+  if (!input || !dec || !inc) return;
+  dec.addEventListener('click', () => {
+    input.value = Math.max(min, (parseInt(input.value, 10) || fallback) - 1);
+  });
+  inc.addEventListener('click', () => {
+    input.value = Math.min(max, (parseInt(input.value, 10) || fallback) + 1);
+  });
+}
+
 function csvToJson(csv) {
   const lines = csv.trim().split('\n');
   //const headers = lines[0].split(',').map(h => h.replace(/^"|"$/g, '').trim());

@@ -272,6 +272,71 @@ body {
   background: rgba(255, 255, 255, 0.08);
 }
 
+.modal-row-pair {
+  display: flex;
+  gap: 12px;
+}
+
+/* ------------------------------
+    Stepper (campo numérico com + / −)
+------------------------------- */
+.stepper {
+  display: flex;
+  align-items: stretch;
+  align-self: flex-start;
+}
+
+.stepper input[type="number"] {
+  width: 52px;
+  text-align: center;
+  border-radius: 0;
+  border-left: none;
+  border-right: none;
+  padding-left: 4px;
+  padding-right: 4px;
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+.stepper input[type="number"]::-webkit-inner-spin-button,
+.stepper input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+}
+
+.stepper-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-mid);
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 0 10px;
+  font-size: 1rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.15s var(--ease-std), color 0.15s var(--ease-std);
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.stepper-btn:first-child {
+  border-radius: var(--radius-md) 0 0 var(--radius-md);
+}
+
+.stepper-btn:last-child {
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+}
+
+.stepper-btn:hover {
+  background: rgba(255, 255, 255, 0.09);
+  color: var(--text-bright);
+}
+
+.stepper-btn:active {
+  background: rgba(204, 120, 92, 0.15);
+  color: var(--accent);
+}
+
 /* ------------------------------
     Modal — ações
 ------------------------------- */

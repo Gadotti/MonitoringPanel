@@ -77,19 +77,8 @@
   const formatSepInput  = document.getElementById('ce-format-separator');
   const formatOrderBy   = document.getElementById('ce-format-orderby');
   const formatLimit     = document.getElementById('ce-format-limit');
-  const limitDec        = document.getElementById('ce-limit-dec');
-  const limitInc        = document.getElementById('ce-limit-inc');
 
-  if (limitDec && formatLimit) {
-    limitDec.addEventListener('click', () => {
-      formatLimit.value = Math.max(1, (parseInt(formatLimit.value, 10) || 20) - 1);
-    });
-  }
-  if (limitInc && formatLimit) {
-    limitInc.addEventListener('click', () => {
-      formatLimit.value = Math.min(500, (parseInt(formatLimit.value, 10) || 20) + 1);
-    });
-  }
+  bindStepper('ce-format-limit', 'ce-limit-dec', 'ce-limit-inc', 1, 500, 20);
 
   const FIELD_TYPES     = ['text', 'date', 'url'];
   const MAX_FIELDS      = 3;

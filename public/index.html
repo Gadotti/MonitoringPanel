@@ -438,10 +438,10 @@
               </div>
               <div class="modal-row">
                 <label for="ce-format-limit">Limite de itens</label>
-                <div class="ce-stepper">
-                  <button class="ce-stepper-btn" id="ce-limit-dec" type="button">−</button>
+                <div class="stepper">
+                  <button class="stepper-btn" id="ce-limit-dec" type="button">−</button>
                   <input type="number" id="ce-format-limit" value="20" min="1" max="500">
-                  <button class="ce-stepper-btn" id="ce-limit-inc" type="button">+</button>
+                  <button class="stepper-btn" id="ce-limit-inc" type="button">+</button>
                 </div>
               </div>
             </div>
@@ -532,13 +532,23 @@
             <label for="card-title">Título:</label>
             <input type="text" id="card-title">
           </div>
-          <div class="modal-row">
-            <label for="columns">Colunas:</label>
-            <input type="number" id="columns" min="1">
-          </div>
-          <div class="modal-row">
-            <label for="rows">Linhas:</label>
-            <input type="number" id="rows" min="1">
+          <div class="modal-row-pair">
+            <div class="modal-row">
+              <label for="columns">Colunas:</label>
+              <div class="stepper">
+                <button class="stepper-btn" id="col-dec" type="button">−</button>
+                <input type="number" id="columns" value="1" min="1" max="20">
+                <button class="stepper-btn" id="col-inc" type="button">+</button>
+              </div>
+            </div>
+            <div class="modal-row">
+              <label for="rows">Linhas:</label>
+              <div class="stepper">
+                <button class="stepper-btn" id="row-dec" type="button">−</button>
+                <input type="number" id="rows" value="1" min="1" max="20">
+                <button class="stepper-btn" id="row-inc" type="button">+</button>
+              </div>
+            </div>
           </div> 
           <div class="modal-actions">
             <div class="left-actions">
@@ -555,12 +565,12 @@
     <!-- 🔥 Scripts -->
     <script src="js/login.js"></script>
     <script src="js/consts.js"></script>
+    <script src="js/helpers.js"></script>
     <script src="js/drawer.js"></script>
     <script src="js/cardsettings.js"></script>
     <script src="js/carddrag.js"></script>
     <script src="js/resizecards.js"></script>
     <script src="js/addcards.js"></script>
-    <script src="js/helpers.js"></script>
     <script src="js/main.js"></script>
     <script src="js/cardcontent-chart.js"></script>
     <script src="js/cardcontent-list.js"></script>

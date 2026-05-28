@@ -20,6 +20,9 @@ function closeSettings() {
   currentCard = null;
 }
 
+bindStepper('columns', 'col-dec', 'col-inc', 1, 20, 1);
+bindStepper('rows',    'row-dec', 'row-inc', 1, 20, 1);
+
 [inputTitle, inputColumns, inputRows].forEach(input => {
   input.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {

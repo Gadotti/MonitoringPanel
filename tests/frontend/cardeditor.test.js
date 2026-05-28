@@ -48,6 +48,7 @@ beforeAll(() => {
     </div>
   `;
 
+  loadScript('helpers.js');
   loadScript('cardeditor.js');
 });
 
