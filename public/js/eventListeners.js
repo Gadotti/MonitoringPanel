@@ -111,6 +111,17 @@ function initializeCardEvents(card) {
 
   card.setAttribute('draggable', true);
 
+  card.addEventListener('mousedown', (e) => {
+    const header = card.querySelector('.card-header');
+    if (header && !header.contains(e.target)) {
+      card.setAttribute('draggable', 'false');
+    }
+  });
+
+  card.addEventListener('mouseup', () => {
+    card.setAttribute('draggable', 'true');
+  });
+
   card.addEventListener('dragstart', (e) => {
     draggedItem = card;
 

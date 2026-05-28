@@ -494,5 +494,33 @@
     "title": "Serviços Linux",
     "cardType": "uptime",
     "sourceItems": "public/local-data-uptimes/uptime-systemd-example.json"
+  },
+  {
+    "id": "top-cves",
+    "title": "TOP 100 CVEs",
+    "cardType": "dynamic-list",
+    "dynamicList": {
+      "sourceItems": "public/local-events/top-cves.csv",
+      "separator": ",",
+      "order": "desc",
+      "limit": 20,
+      "fields": [
+        {
+          "header": "Vulnerability",
+          "label": "Vulnerability",
+          "type": "text"
+        },
+        {
+          "header": "Product-Vendor",
+          "label": "Product-Vendor",
+          "type": "text"
+        },
+        {
+          "header": "Datetime",
+          "label": "Datetime",
+          "type": "date"
+        }
+      ]
+    }
   }
 ]
