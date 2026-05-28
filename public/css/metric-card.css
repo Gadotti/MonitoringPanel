@@ -43,3 +43,19 @@
   text-overflow: ellipsis;
   max-width: 100%;
 }
+
+
+.metric-edit-button {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 2px 3px;
+  transition: color 0.18s var(--ease-std);
+}
+
+.metric-edit-button:hover {
+  color: var(--accent);
+}
